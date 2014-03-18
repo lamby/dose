@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# this is the top-level script for the debcheck service on edos.debian.net
+
+scriptdir=/home/web/groups/debian.net/edos/scripts
+htmldir=/home/web/groups/debian.net/edos/public_html/edos-debcheck/results
+
+cd $scriptdir
+./edos.debian.net-mirror
+cd edos-debcheck
+./collect --config config.production
+./xml-index config.dists > $htmldir/available.xml

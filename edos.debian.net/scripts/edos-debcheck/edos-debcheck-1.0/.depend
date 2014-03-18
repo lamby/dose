@@ -1,0 +1,10 @@
+./rpm.cmo: util.cmi solver.cmi common.cmi 
+./rpm.cmx: util.cmx solver.cmx common.cmx 
+./deb.cmo: util.cmi solver.cmi common.cmi 
+./deb.cmx: util.cmx solver.cmx common.cmx 
+./util.cmo: ./util.cmi 
+./util.cmx: ./util.cmi 
+./solver.cmo: ./solver.cmi 
+./solver.cmx: ./solver.cmi 
+./common.cmo: util.cmi ./common.cmi 
+./common.cmx: util.cmx ./common.cmi 

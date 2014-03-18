@@ -1,0 +1,8 @@
+Packets needed for compilation:
+-------------------------------
+ocaml
+
+Packets needed for running the script:
+--------------------------------------
+perl
+libxml-simple-perl 

@@ -1,0 +1,21 @@
+img.weather-logo {
+	border-style: none;
+}
+.weather {
+	padding-top: 10px;
+	padding-bottom: 30px;
+}
+.formatlogo {
+	background: #ff6600;
+	color: white !important;
+	border-left: 1px solid #cc9966;
+	border-top: 1px solid #ccaa99;
+	border-right: 1px solid #993300;
+	border-bottom: 1px solid #331100;
+	padding: 0px 0.2em 0px 0.2em;
+	font-family: sans-serif;
+	font-weight: bold;
+	font-size: 70%;
+	text-decoration: none;
+	margin-top: 1em;
+}

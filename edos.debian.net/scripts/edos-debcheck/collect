@@ -1,0 +1,801 @@
+#!/usr/bin/perl -w
+
+#############################################################################
+# Run edos-debcheck and create reports.
+# Copyright (C) 2006,2007,2008 Ralf Treinen <treinen@debian.org>
+# 
+# Licence: GNU General Public Licence version 2
+#############################################################################
+
+use XML::Simple;
+use File::Path;
+use POSIX qw(strftime);
+require "ctime.pl";
+
+$htmlred   = "red";
+$htmlgreen = "green";
+$htmlgrey  = "gray";
+
+$option_no_debcheck = 0; 
+$option_recompute_diffs = 0;
+$option_recompute_history = 0;
+$option_debug = 0;
+$configfile = "config.local";
+$distsfile  = "config.dists";
+
+while ($option=$ARGV[0]){
+    shift;
+    if ($option eq "--config" && $#ARGV >= 0) {
+	$configfile = shift;
+    } elsif ($option eq "--dists" && $#ARGV >= 0) {
+	$distsfile = shift;
+    } elsif ($option eq "--no-debcheck") {
+	$option_no_debcheck = 1;
+    } elsif ($option eq "--debug") {
+	$option_debug = 1;
+    } elsif ($option eq "--recompute-diffs") {
+	$option_recompute_diffs = 1;
+    } elsif ($option eq "--recompute-history") {
+	$option_recompute_history = 1;
+    } else {
+	die "Unrecognized option: $option";
+    }
+}
+
+do "$configfile";
+do "$distsfile";
+
+$timestamp = time();
+
+############################################################################
+
+sub debug {
+    my $mess = shift(@_);
+    print STDERR "*** $mess.\n" if $option_debug;
+}
+
+################################################################################################
+# create a directy with mode g=w if it does exist already
+
+sub crdir {
+    my $name = shift(@_);
+    -f $name && die "$name exists but is not a directory";
+    -d $name || mkdir($name)
+    }
+
+###############################################################################################
+# print the html start to the file given as argument
+
+sub print_htmlstart {
+    my $out = shift(@_);
+    select($out);
+    print<<EOF;
+<?
+    header('Content-Type: text/html; charset="utf-8"');
+?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Debian Quality Assurance -- EDOS tools</title>
+<link rev="made" href="mailto:treinen\@debian.org">
+<link rel="shortcut icon" href="/favicon.ico">
+</head>
+<? include("../../../../../qa-bodystart.php") ?>
+EOF
+}
+
+#############################################################################################
+# print the html finnish to the file given as argument
+
+sub print_htmlend {
+    my $out = shift(@_);
+    select($out);
+    print<<EOF;
+<hr>
+Made by Ralf Treinen.
+Data last generated on
+<?php echo date("r", getlastmod())?>.
+<br>
+Copyright (©) 2006-2010 <a
+href="http://www.spi-inc.org/">Software in the Public Interest</a> and others;
+See <a href="http://www.debian.org/license">license terms</a>.
+</body>
+</html>
+EOF
+}
+
+############################################################################################
+# &run_debcheck{$i} runs debcheck for all architectures as specified in the $i-th field
+# of the list @dists.
+
+sub run_debcheck {
+    my($i)             = shift(@_);
+    my($distribution)  = $dists[$i]{name};
+    my(@architectures) = @{$dists[$i]{archs}};
+    &crdir("$resultdir/$distribution");
+    &crdir("$resultdir/$distribution/$timestamp");
+
+    foreach $architecture (@architectures) {
+
+	$outdir="$resultdir/$distribution/$timestamp/$architecture";
+	&crdir("$outdir");
+	if (exists $dists[$i]{pfile}{$architecture}) {
+	    $pfile = $dists[$i]{pfile}{$architecture};
+	} else {
+	    ($pfile = $dists[$i]{pfile}{any}) =~ s/__ARCH__/$architecture/g;
+	}
+	print STDERR "====================== $distribution/$architecture ==========\n";
+        system("$pfile > Packages");
+	system("$debcheck -failures -explain -xml < Packages > $outdir/list.xml");
+	system("grep -c \"^Package\" Packages > $outdir/total_number_packages");
+	unlink "Packages";
+    }
+   
+    unlink("$resultdir/$distribution/latest");
+    symlink("$timestamp","$resultdir/$distribution/latest");
+}
+
+
+############################################################################################
+# &build_table{$i} builds for all architectures as specified in the $i-th field
+# of the list @dists the table of the latest run.
+
+sub build_table {
+    my($i)             = shift(@_);
+    my($distribution)  = $dists[$i]{name};
+    my($printname)     = $dists[$i]{printname};
+    my(@architectures) = @{$dists[$i]{archs}};
+    my($numberofarchs) = scalar @architectures;
+    my(%found);
+    my(%count);
+    my(%lastseenarch);
+
+    foreach $architecture (@architectures) {
+        # number of noninstallable packages
+        my($package_count) = 0;
+        # number of noninstallable packages with Architecture=$architecture
+        my($package_count_arch) = 0;
+
+        $outdir="$resultdir/$distribution/$timestamp/$architecture";
+        if (exists $dists[$i]{pfile}{$architecture}) {
+            $pfile = $dists[$i]{pfile}{$architecture};
+        } else {
+            ($pfile = $dists[$i]{pfile}{any}) =~ s/__ARCH__/$architecture/g;
+        }
+
+	&crdir("$resultdir/$distribution/history");
+	$histoutdir="$resultdir/$distribution/history/$architecture";
+	&crdir("$histoutdir");
+
+	$xml = new XML::Simple;
+	$data = $xml->XMLin("$outdir/list.xml",ForceArray=>1);
+	@resultlist = sort {$a->{package} cmp $b->{package}} @{$data->{package}};
+
+	my($histxml) = new XML::Simple;
+	my($histdata) =  $xml->XMLin("$outdir/history.xml",ForceArray=>1);
+	my(@histlist) =  sort {$a->{content} cmp $b->{content}} @{$histdata->{package}};
+	my(%history);
+	foreach $record (@histlist) {
+	    ($history{$record->{package}} = $record->{content}) =~ s/base$//;
+	}
+
+	open(ARCHOUT, ">","$outdir/list.php");
+	&print_htmlstart(ARCHOUT);
+	print ARCHOUT "<h1>Not Installable Packages in $distribution/main on $architecture</h1>\n";
+	print ARCHOUT "<p>This distribution (Package file) was constructed as follows:</p>\n";
+	print ARCHOUT "<p><kbd>$pfile</kbd></p>\n";
+	print ARCHOUT "<p>Package names displayed in <i>italics</i> have their <i>architecture</i> set to <kbd>all</kbd>.</p>\n";
+	print ARCHOUT "<p><table border=1><tr><td>Package</td><td>Since</td><td>Version</td><td>Explanation</td></tr>\n";
+
+	open(BINOUT, ">","$outdir/this.php");
+	&print_htmlstart(BINOUT);
+	print BINOUT "<h1>Not Installable Packages in $distribution/main on $architecture</h1>\n";
+	print BINOUT "This page shows only those package that have their <i>architecture</i> set to <kbd>$architecture</kbd>.\n";
+	print BINOUT "See <a href=list.php>here</a> for a listing of packages whose <i>architecture</i> is either\n";
+	print BINOUT "<kbd>$architecture</kbd> or <kbd>all</kbd>.<p>\n";
+	print BINOUT "<p>This distribution (Package file) was constructed as follows:</p>\n";
+	print BINOUT "<p><kbd>$pfile</kbd></p>\n";
+	print BINOUT "<p><table border=1><tr><td>Package</td><td>Since</td><td>Version</td><td>Explanation</td></tr>\n";
+	
+	open(HISTOUT, ">", "$histoutdir/history.php");
+        &print_htmlstart(HISTOUT);
+        print HISTOUT "<h1>Not Installable Packages in $distribution/main on $architecture sorted by duration</h1>\n";
+        print HISTOUT "<p>This distribution (Package file) was constructed as follows:</p>\n";
+        print HISTOUT "<p><kbd>$pfile</kbd></p>\n";
+        print HISTOUT "<p>Package names displayed in <i>italics</i> have their <i>architecture</i> set to <kbd>all</kbd>\
+.</p>\n";
+        print HISTOUT "<p><table border=1><tr><td>Package</td><td>Since</td></tr>\n";
+
+
+        foreach $record (@resultlist) {
+	    $thispackage=$record->{package};
+	    $archspec=$record->{architecture};
+	    $decorated_thispackage = $archspec eq "all" ? "<i>$thispackage</i>" : "$thispackage" ;
+	    print ARCHOUT
+		"<tr><td><a name=$thispackage>$decorated_thispackage</a></td><td>",
+		strftime("%e&nbsp;%h&nbsp;%y", localtime($history{$thispackage})),
+		"</td><td>",$record->{version};
+	    print ARCHOUT "</td><td>",$record->{content},"</td></tr>\n";
+
+	    if ($archspec ne "all") {
+		print BINOUT
+		    "<tr><td><a name=$thispackage>$decorated_thispackage</a></td><td>",
+		    strftime("%e&nbsp;%h&nbsp;%y", localtime($history{$thispackage})),
+		    "</td><td>$record->{version}</td><td>",
+		    $record->{content},
+		    "</td></tr>\n";
+	    }
+	    
+	    $found{$thispackage} .=
+		"<a href=../../$timestamp/$architecture/list.php\#$thispackage>$architecture</a> ";
+	    $count{$thispackage}++;
+	    $package_count++;
+	    unless ($archspec eq "all") { $package_count_arch++; }
+	    $lastseenarch{$thispackage} = $archspec;
+	}
+	
+	print ARCHOUT "</table>\n";
+	&print_htmlend(ARCHOUT);
+	close ARCHOUT;
+
+	print BINOUT "</table>\n";
+	&print_htmlend(BINOUT);
+	close BINOUT;
+
+	open(SUMMARY, ">", "$outdir/summary");
+	print SUMMARY "<td><a href=results/$distribution/$timestamp/$architecture/list.php>$package_count</a>";
+	print SUMMARY " (<a href=results/$distribution/$timestamp/$architecture/this.php>$package_count_arch</a>)</td>\n";
+	close SUMMARY;
+
+        foreach $record (@histlist) {
+            $thispackage=$record->{package};
+            ($thistime=$record->{content}) =~ s/base$//;
+            print HISTOUT
+                "<tr><td>$thispackage</td><td>",
+                strftime("%e&nbsp;%h&nbsp;%y", localtime($thistime)),
+                "</td></tr>\n";
+            }
+        print HISTOUT "</table>\n";
+        &print_htmlend(HISTOUT);
+        close HISTOUT;
+
+        # weather report
+        my($today_plain) = strftime("%e %h %y", localtime($timestamp));
+        open(TOTAL,"$outdir/total_number_packages");
+        my($total_number_packages)=<TOTAL>;
+        chop $total_number_packages;
+        close TOTAL;
+
+        my($brokenpercentage) = 
+	  $total_number_packages?$package_count*100/$total_number_packages:0;
+        my($weatherindex);
+        if    ($brokenpercentage <= 1) {$weatherindex = 1;}
+        elsif ($brokenpercentage <= 2) {$weatherindex = 2;}
+        elsif ($brokenpercentage <= 3) {$weatherindex = 3;}
+        elsif ($brokenpercentage <= 4) {$weatherindex = 4;}
+        else                      {$weatherindex = 5;}
+
+        open(WEATHER, ">", "$outdir/weather.xml");
+        print WEATHER<<EOF;
+<weather>
+  <bundle>
+    <id>$distribution</id>
+    <description>$printname</description>
+  </bundle>
+  <architecture>$architecture</architecture>
+  <date>$today_plain</date>
+  <packages>
+    <total>$total_number_packages</total>
+    <broken>$package_count</broken>
+  </packages>
+  <index>$weatherindex</index>
+  <url>http://edos.debian.net/edos-debcheck/results/$distribution/$timestamp/$architecture/list.php</url>
+</weather>
+EOF
+        close WEATHER;
+
+    }
+
+    # make summaries only when more then one architecture
+    if ($#architectures > 0) {
+
+	&crdir("$resultdir/$distribution/$timestamp/some");
+	&crdir("$resultdir/$distribution/$timestamp/every");
+	open(SOMEOUT,">","$resultdir/$distribution/$timestamp/some/list.php");
+	open(SOMEBINOUT,">","$resultdir/$distribution/$timestamp/some/this.php");
+	open(ALLOUT,">","$resultdir/$distribution/$timestamp/every/list.php");
+	open(ALLBINOUT,">","$resultdir/$distribution/$timestamp/every/this.php");
+	
+	&print_htmlstart(SOMEOUT);
+	print SOMEOUT "<h1>Packages in $distribution/main which are not installable in some architectures</h1>\n";
+	print SOMEOUT "Package names displayed in <i>italics</i> have their <i>architecture</i> set to <kbd>all</kbd>.\n";
+	print SOMEOUT "<p><table border=1><tr><td>Package</td><td>Architectures</td></tr>\n";
+	
+	&print_htmlstart(SOMEBINOUT);
+	print SOMEBINOUT "<h1>Packages in $distribution/main which are not installable in some architectures</h1>\n";
+	print SOMEBINOUT "This page shows only those package that have their <i>architecture</i> not set to <kbd>all</kbd>.\n";
+	print SOMEBINOUT "See <a href=list.php>here</a> for a complete listing of packages.\n";
+	print SOMEBINOUT "<p><table border=1><tr><td>Package</td><td>Architectures</td></tr>\n";
+	
+	&print_htmlstart(ALLOUT);
+	print ALLOUT "<h1>Packages in $distribution/main that are not installable on any architecture</h1>\n";
+	print ALLOUT "Package names displayed in <i>italics</i> have their <i>architecture</i> set to <kbd>all</kbd>.\n";
+	print ALLOUT "<p><table border=1><tr><td>Package</td><td>Architectures</td></tr>\n";
+	
+	&print_htmlstart(ALLBINOUT);
+	print ALLBINOUT "<h1>Packages in $distribution/main that are not installable on any architecture</h1>\n";
+	print ALLBINOUT "This page shows only those package that have their <i>architecture</i> not set to <kbd>all</kbd>.\n";
+	print ALLBINOUT "See <a href=list.php>here</a> for a complete listing of packages.\n";
+	print ALLBINOUT "<p><table border=1><tr><td>Package</td><td>Architectures</td></tr>\n";
+	
+	$allcount=0;
+	$allcount_arch=0;
+	$somecount_arch=0;
+	for $p (sort keys %found) {
+
+	    my $decorated_p;
+	    # decorate as italics if architecture=all
+	    if ($lastseenarch{$p} eq "all") {
+		$decorated_p = "<i>$p</i>";
+	    } else {
+		$decorated_p = $p;
+		$somecount_arch++;
+	    }
+
+	    # output to tables for some 
+	    print SOMEOUT "<tr><td>$decorated_p</td><td>",$found{$p},"</td></tr>\n";
+	    if ($lastseenarch{$p} ne "all") {
+		print SOMEBINOUT "<tr><td>$decorated_p</td><td>",$found{$p},"</td></tr>\n";
+	    }
+
+	    # output to tables for every
+	    if ($count{$p} == $numberofarchs) { 
+		print ALLOUT "<tr><td>$decorated_p</td><td>",$found{$p},"</td></tr>\n";
+		$allcount++;
+		if ($lastseenarch{$p} ne "all") {
+		    print ALLBINOUT "<tr><td>$decorated_p</td><td>",$found{$p},"</td></tr>\n";
+		    $allcount_arch++;
+		}
+	    }
+	}
+	
+	print SOMEOUT "</table>\n";
+	&print_htmlend(SOMEOUT);
+	close SOMEOUT;
+	
+	print SOMEBINOUT "</table>\n";
+	&print_htmlend(SOMEBINOUT);
+	close SOMEBINOUT;
+	
+	print ALLOUT "</table>\n";
+	&print_htmlend(ALLOUT);
+	close ALLOUT;
+	
+	print ALLBINOUT "</table>\n";
+	&print_htmlend(ALLBINOUT);
+	close ALLBINOUT;
+
+	open(SUMMARY,">","$resultdir/$distribution/$timestamp/some/summary");
+	$somecount=scalar keys %found;
+	print SUMMARY "<td><a href=results/$distribution/$timestamp/some/list.php>$somecount</a>";
+	print SUMMARY " (<a href=results/$distribution/$timestamp/some/this.php>$somecount_arch</a>)</td>\n";
+	close SUMMARY;
+	
+	open(SUMMARY,">","$resultdir/$distribution/$timestamp/every/summary");
+	print SUMMARY "<td><a href=results/$distribution/$timestamp/every/list.php>$allcount</a>";
+	print SUMMARY " (<a href=results/$distribution/$timestamp/every/this.php>$allcount_arch</a>)</td>\n";
+	close SUMMARY;
+    }
+}
+    
+############################################################################################
+# &clean_up{$i} cleans up the $i-th distribution of the the list $dists
+# only directories in [0-9]* are removed, that is .*base is not touched
+
+sub numerically_reverse { 
+    my($an,$bn);
+    ($an = $a) =~ s/[a-z]*$//;
+    ($bn = $b) =~ s/[a-z]*$//;
+    $bn <=> $an;
+}
+
+sub clean_up {
+    my($i) = shift(@_);
+    my($distribution) = $dists[$i]{name};
+    my($maxruns) = $dists[$i]{maxruns};
+
+    opendir(RESULTDIR,"$resultdir/$distribution");
+    @allruns = sort numerically_reverse (grep(/^[0-9]*$/, readdir(RESULTDIR)));
+    closedir RESULTDIR;
+
+    while ( ($#allruns+1) && $maxruns ) {
+	shift(@allruns);
+	$maxruns--;
+    }
+    
+    foreach $dir (@allruns) {
+	rmtree "$resultdir/$distribution/$dir";
+    }
+}
+
+
+#############################################################################################
+# &build_summary{$i} builds the summary table for the $i-th distribution of the list $dists
+
+sub build_summary {
+    my ($i) = shift(@_);
+    my($distribution)  = $dists[$i]{name};
+    my(@architectures) = @{$dists[$i]{archs}};
+    my($has_base)      = $dists[$i]{has_base};
+    my($comment)       = (exists $dists[$i]{comment})?"$dists[$i]{comment}\n<p>\n":"";
+
+    open(TABLE, ">", "$resultdir/$distribution/table.php");
+    print TABLE "<h2>",$dists[$i]{printname},"</h2>\n<p>\n";
+    print TABLE "$comment";
+
+    print TABLE "<h3>Sorted by duration of continuous uninstallability</h3>\n";
+    print TABLE "<table border=1 cellpadding=2>\n";
+    foreach $architecture (@architectures) {
+	print TABLE "<td><a href=results/$distribution/history/$architecture/history.php>$architecture</a></td>";
+    }
+    print TABLE "</table>\n";
+
+    print TABLE "<h3>Chronological listing of the last runs (limited to ", $dists[$i]{maxruns}, ")</h3>\n"; 
+    print TABLE "<table border=1 cellpadding=2>\n";
+    print TABLE "<tr><td>Date</td>";
+    foreach $architecture (@architectures) {
+	print TABLE "<td>$architecture</td>";
+    }
+    if ($#architectures > 0) {
+	print TABLE "<td><b>some</b></td><td><b>every</b></td>\n";
+	push(@architectures, ("some", "every"));
+    }
+
+    opendir(RESULTDIR,"$resultdir/$distribution");
+    @allruns = sort numerically_reverse (grep(/^[0-9]+[a-z]*$/, readdir(RESULTDIR)));
+    closedir RESULTDIR;
+
+    foreach $rd (@allruns) {
+	($thisdate = $rd) =~ s/[a-z]*$//;
+
+	# print the results for $rd
+	print TABLE "<tr><td>",&ctime($thisdate),"</td>\n";
+	foreach $architecture (@architectures) {
+	    if (-e "$resultdir/$distribution/$rd/$architecture/summary") {
+		open(PARTIAL, "<", "$resultdir/$distribution/$rd/$architecture/summary");
+		while (<PARTIAL>) { print TABLE $_; }
+		close  PARTIAL;
+	    } else {
+		print TABLE "<td></td>";
+	    }
+	}
+	print TABLE "</tr>";
+	
+	# print the differences with the preceeding run
+	if ($rd ne $allruns[$#allruns]) {
+	    # do not print a difference line for the last entry
+	    print TABLE "<tr><td align=center><i>Diff with ",$has_base?"base":"next","</i></td>\n";
+	    foreach $architecture (@architectures) {
+		if (-e "$resultdir/$distribution/$rd/$architecture/diffsummary") {
+		    open(PARTIAL, "<", "$resultdir/$distribution/$rd/$architecture/diffsummary");
+		    while (<PARTIAL>) { print TABLE $_; }
+		    close  PARTIAL;
+		} else {
+		    print TABLE "<td></td>";
+		}
+	    }
+	}
+    }
+    print TABLE "</table>\n";
+    close TABLE;
+}
+
+#############################################################################################
+# &build-history{$i} builds the history table for the $i-th distribution. 
+# this is done only for the latest run, except when $option_recompute_history is set, in which
+#    case all histories are rebuild
+
+sub build_history {
+    my ($i) = shift(@_);
+    my($distribution)  = $dists[$i]{name};
+    my(@architectures) = @{$dists[$i]{archs}};
+    my($newdir,$olddir);
+
+    opendir(RESULTDIR,"$resultdir/$distribution");
+    my(@allruns) = sort (grep(/^[0-9]+[a-z]*$/, readdir(RESULTDIR)));
+    closedir RESULTDIR;
+
+    if ($option_recompute_history) {
+	$firstindex = 0;
+    } else {
+	$firstindex = $#allruns;
+    }
+
+    for ($i = $firstindex; $i <= $#allruns; $i++) {
+	$newdir = "$resultdir/$distribution/$allruns[$i]";
+	$olddir = "$resultdir/$distribution/$allruns[$i-1]";
+	foreach $architecture (@architectures) {
+	    my(%history); # associates to package name first known date of continuous uninstallability
+	    my($newxml) = new XML::Simple;
+            my($newdata) = $newxml->XMLin("$newdir/$architecture/list.xml",ForceArray=>1);
+	    my(@resultlist) = @{$newdata->{package}};
+	    foreach $record (@resultlist) {
+		$history{$record->{package}} = $allruns[$i];
+	    }
+	    if ($i > 0 && -e "$olddir/$architecture/history.xml") {
+		my($oldxml) = new XML::Simple;
+		my($olddata) = $oldxml->XMLin("$olddir/$architecture/history.xml",ForceArray=>1);
+		my(@oldlist) = @{$olddata->{package}};
+		foreach $record (@oldlist) {
+		    if (exists $history{$record->{package}}) {
+			$history{$record->{package}} = $record->{content};
+		    }
+		}
+	    }
+	    open(HISTOUT, ">", "$newdir/$architecture/history.xml");
+	    print HISTOUT "<firstuninstallable>\n";
+	    foreach $unit (keys %history) {
+		print HISTOUT "<package package=\"$unit\">", $history{$unit}, "</package>\n";
+	    }
+	    print HISTOUT "</firstuninstallable>\n";
+	    close HISTOUT;
+	}
+    }
+}
+
+
+#############################################################################################
+# &build-difference{$i} builds for the $i-th distribution the difference between runs.
+# this is done only for the latest run, except when $option_recompute_diffs is set, in which
+#    case all diffs are rebuild
+# diffs are with the predecessor, except when configuration field has_base is set to true.
+
+sub build_difference {
+    my ($i) = shift(@_);
+    my($distribution)  = $dists[$i]{name};
+    my(@architectures) = @{$dists[$i]{archs}};
+    my($has_base)      = $dists[$i]{has_base};
+    my($newdir,$olddir);
+    
+    opendir(RESULTDIR,"$resultdir/$distribution");
+    my(@allruns) = sort numerically_reverse (grep(/^[0-9]+[a-z]*$/, readdir(RESULTDIR)));
+    closedir RESULTDIR;
+    
+    # we continue only when we have at least two runs.
+    if ($#allruns == 0) { return 0; }
+    
+    if ($option_recompute_diffs) {
+	$lastindex = $#allruns-1;
+    } else {
+	$lastindex = 0;
+    }
+    
+    for ($i = 0; $i <= $lastindex; $i++) {  
+	$newdir = "$resultdir/$distribution/$allruns[$i]";
+	($newtime = $allruns[$i]) =~ s/[a-z]*$//;
+	if ($has_base) {
+	    $olddir = "$resultdir/$distribution/$allruns[$#allruns]";
+	    ($oldtime = $allruns[$#allruns]) =~ s/[a-z]*$//;
+	} else {
+	    $olddir = "$resultdir/$distribution/$allruns[$i+1]";
+	    ($oldtime = $allruns[$i+1]) =~ s/[a-z]*$//;
+	}
+	
+	foreach $architecture (@architectures) {
+	    my($newxml,$newdata,@newlist);
+	    my($oldxml,$olddata,@oldlist);
+	    my(@inlist);  # @newlist - @oldlist
+	    my(@outlist); # @oldlist - @newlist
+	    
+	    if (! -e "$newdir/$architecture/list.php") {
+		&debug("Building diffs: $newdir/$architecture/list.php does not exist");
+		return 1;
+	    }
+	    
+	    if (! -e "$olddir/$architecture/list.php") {
+		&debug("Building diffs: $olddir/$architecture/list.php does not exist");
+		# there is no previous archive for this architecture - just skip
+		next;
+	    }
+	    
+	    $newxml = new XML::Simple;
+	    $newdata =
+		$newxml->XMLin("$newdir/$architecture/list.xml",ForceArray=>1);
+	    if (exists $newdata->{package}) {
+		@newlist = sort {$a->{package} cmp $b->{package}} @{$newdata->{package}};
+	    } else {
+		@newlist = ();
+	    }
+	    
+	    $oldxml = new XML::Simple;
+	    $olddata =
+		$oldxml->XMLin("$olddir/$architecture/list.xml",ForceArray=>1);
+	    if (exists $olddata->{package}) {
+		@oldlist = sort {$a->{package} cmp $b->{package}} @{$olddata->{package}};
+	    } else {
+		@oldlist = ();
+	    }
+	    
+	    while () {
+		if (scalar(@newlist) == 0) {
+		    push(@outlist,@oldlist);
+		    last;
+		} elsif (scalar(@oldlist) == 0) {
+		    push(@inlist,@newlist);
+		    last;
+		} elsif ($newlist[0]->{package} eq $oldlist[0]->{package}) {
+		    shift @newlist;
+		    shift @oldlist;
+		} elsif ($newlist[0]->{package} lt $oldlist[0]->{package}) {
+		    push (@inlist, $newlist[0]);
+		    shift @newlist;
+		} else  { # $oldlist[0]->{package} lt $newlist[0]->{package}
+		    push (@outlist, $oldlist[0]);
+		    shift @oldlist;
+		}
+	    }
+	    
+	    open (DIFFSUMMARY, ">", "$newdir/$architecture/diffsummary");
+	    if ( scalar(@inlist) > scalar(@outlist) ) {
+		$color = "$htmlred";
+	    } elsif ( scalar(@inlist) < scalar(@outlist) ) {
+		$color = "$htmlgreen";
+	    } else {
+		$color = "$htmlgrey";
+	    }
+	    print DIFFSUMMARY "<td><a href=results/$distribution/$allruns[$i]/$architecture/diff.php><font color=$color> + ";
+	    print DIFFSUMMARY scalar(@inlist), " / - ", scalar(@outlist), "</font></a></td>\n";
+	    close DIFFSUMMARY;
+	    
+	    open(DIFFOUT, ">", "$newdir/$architecture/diff.php");
+	    &print_htmlstart(DIFFOUT);
+	    print DIFFOUT "<h1>Not Installable Packages in $distribution/main on $architecture</h1>\n";
+	    print DIFFOUT "<h2>Changes from ", &ctime($oldtime), " to ", &ctime($newtime);
+	    print DIFFOUT "</h2>\n";
+	    
+	    print DIFFOUT "<h3>Packages that have become uninstallable</h3>\n";
+	    if (scalar(@inlist) > 0) {
+		print DIFFOUT "<table border=1><tr><td>Package</td><td>Version</td><td>Explanation</td></tr>\n";
+		foreach $record (@inlist) {
+		    print DIFFOUT "<tr><td>", $record->{package}, "</td><td>" ,$record->{version}, "</td>";
+		    print DIFFOUT "<td>", $record->{content}, "</td></tr>\n";
+		}
+		print DIFFOUT "</table>\n";
+	    } else {
+		print DIFFOUT "<i> -- none -- </i>\n";
+	    }
+	    
+	    print DIFFOUT "<h3>Packages that are no longer uninstallable</h3>\n";
+	    if (scalar(@outlist) > 0) {
+		print DIFFOUT "<table border=1><tr><td>Package</td><td>Version</td><td>Explanation</td></tr>\n";
+		foreach $record (@outlist) {
+		    print DIFFOUT "<tr><td>", $record->{package}, "</td><td>", $record->{version}, "</td>";
+		    print DIFFOUT "<td>", $record->{content}, "</td></tr>\n";
+		}
+		print DIFFOUT "</table>\n";
+	    } else {
+		print DIFFOUT "<i> -- none -- </i>\n";
+	    }
+	    
+	    &print_htmlend(DIFFOUT);
+	    close DIFFOUT;
+	}
+	if ($#architectures >0) {
+	    foreach $architecture ("some", "every") {
+		my(%newtable,%oldtable,@newlist,@oldlist,@inlist,@outlist);
+		
+		if (! -e "$newdir/$architecture/list.php") {
+		    &debug("Building diffs: $newdir/$architecture/list.php does not exist");
+		    next;
+		}
+		
+		if (! -e "$olddir/$architecture/list.php") {
+		    &debug("Building diffs: $olddir/$architecture/list.php does not exist");
+		    next;
+		}
+		
+		open(NEW, "<", "$newdir/$architecture/list.php");
+		while (<NEW>) {
+		    next unless /^<tr>/;
+		    m/^<tr><td.*?>(.*?)<\/td><td>(.*)<\/td><\/tr>\s*/;
+		    $newtable{$1} = $2;
+		}
+		close NEW;
+		
+		open(OLD, "<", "$olddir/$architecture/list.php");
+		while (<OLD>) {
+		    next unless /^<tr>/;
+		    m/^<tr><td.*?>(.*?)<\/td><td>(.*)<\/td><\/tr>/;
+		    $oldtable{$1} = $2;
+		}
+		close OLD;
+		
+		@newlist = sort (keys %newtable);
+		@oldlist = sort (keys %oldtable);
+		
+		while () {
+		    if (scalar(@newlist) == 0) {
+			push(@outlist,@oldlist);
+			last;
+		    } elsif (scalar(@oldlist) == 0) {
+			push(@inlist,@newlist);
+			last;
+		    } elsif ($newlist[0] eq $oldlist[0]) {
+			shift @newlist;
+			shift @oldlist;
+		    } elsif ($newlist[0] lt $oldlist[0]) {
+			push (@inlist, $newlist[0]);
+			shift @newlist;
+		    } else  { # $oldlist[0] lt $newlist[0]
+			push (@outlist, $oldlist[0]);
+			shift @oldlist;
+		    }
+		}
+		
+		open (DIFFSUMMARY, ">", "$newdir/$architecture/diffsummary");
+		if ( scalar(@inlist) > scalar(@outlist) ) {
+		    $color = "$htmlred";
+		} elsif ( scalar(@inlist) < scalar(@outlist) ) {
+		    $color = "$htmlgreen";
+		} else {
+		    $color = "$htmlgrey";
+		}
+		print DIFFSUMMARY "<td><a href=results/$distribution/$allruns[$i]/$architecture/diff.php><font color=$color> + ";
+		print DIFFSUMMARY scalar(@inlist), " / - ", scalar(@outlist), "</font></a></td>\n";
+		close DIFFSUMMARY;
+		
+		open(DIFFOUT, ">", "$newdir/$architecture/diff.php");
+		&print_htmlstart(DIFFOUT);
+		print DIFFOUT "<h1>Not Installable Packages in $distribution/main on $architecture</h1>\n";
+		print DIFFOUT "<h2>Changes from ", &ctime($oldtime), " to ", &ctime($newtime);
+		print DIFFOUT "</h2>\n";
+		
+		print DIFFOUT "<h3>Packages that have become uninstallable</h3>\n";
+		if (scalar(@inlist) > 0) {
+		    print DIFFOUT "<table border=1><tr><td>Package</td><td>Explanation</td></tr>\n";
+		    foreach $package (@inlist) {
+			print DIFFOUT "<tr><td>", $package, "</td>";
+			print DIFFOUT "<td>", $newtable{$package}, "</td></tr>\n";
+		    }
+		    print DIFFOUT "</table>\n";
+		} else {
+		    print DIFFOUT "<i> -- none -- </i>\n";
+		}
+		
+		print DIFFOUT "<h3>Packages that are no longer uninstallable</h3>\n";
+		if (scalar(@outlist) > 0) {
+		    print DIFFOUT "<table border=1><tr><td>Package</td><td>Explanation</td></tr>\n";
+		    foreach $package (@outlist) {
+			print DIFFOUT "<tr><td>", $package, "</td>";
+			print DIFFOUT "<td>", $oldtable{$package}, "</td></tr>\n";
+		    }
+		    print DIFFOUT "</table>\n";
+		} else {
+		    print DIFFOUT "<i> -- none -- </i>\n";
+		}
+		
+		&print_htmlend(DIFFOUT);
+		close DIFFOUT;
+	    }
+	}
+    }
+}
+#############################################################################################
+
+&crdir("$resultdir");
+
+for my $i (0..$#dists) {
+
+    &run_debcheck($i) unless $option_no_debcheck;
+    &clean_up($i);
+    &build_history($i);
+    &build_table($i) unless $option_no_debcheck;
+    &build_difference($i);
+    &build_summary($i);
+
+}
+
+open(TIMESTAMP, ">","$resultdir/timestamp");
+close TIMESTAMP;
+

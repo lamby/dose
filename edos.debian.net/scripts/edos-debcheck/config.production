@@ -1,0 +1,17 @@
+# configuration file for dev.mancoosi.org
+
+$home            = "/home/web/groups/debian.net/edos/";
+
+# location of web pages
+$htroot 	 = "$home/public_html";
+$resultdir       = "$htroot/edos-debcheck/results";
+
+# root of the mirror
+$dataroot        = "$home/mirror";
+$debianftpdir    = "$dataroot/debian/dists";
+$skoleftpdir     = "$dataroot/skolelinux/dists";
+$gripftpdir	 = "$dataroot/grip/dists";
+
+# binaries
+$debcheck = "/usr/bin/edos-debcheck -quiet";
+$bin      = ".";

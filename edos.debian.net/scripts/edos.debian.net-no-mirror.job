@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# this is the top-level script for the debcheck service on edos.debian.net
+
+htmldir=/home/web/groups/debian.net/edos/public_html/edos-debcheck/results
+
+cd edos-debcheck
+./collect --config config.production
+./xml-index config.dists > $htmldir/available.xml

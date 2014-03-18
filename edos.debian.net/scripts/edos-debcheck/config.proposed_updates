@@ -1,0 +1,10 @@
+     {	
+	 name  => "proposed_updates",
+	 printname => "Debian stable (etch) proposed updates",
+	 comment => "For this distribution the base is the most recent <i>stable</i> distribution.",
+	 archs => ["alpha", "amd64", "arm", "hppa", "i386", "ia64", "mips", "mipsel", "powerpc", "s390",  "sparc"],
+	 maxruns => 7,
+         has_base => 1,	
+	 pfile => {
+	     any => "$bin/update-packages $debianftpdir/proposed-updates/main/binary-__ARCH__/Packages.gz  $debianftpdir/stable/main/binary-__ARCH__/Packages.gz"},
+     }

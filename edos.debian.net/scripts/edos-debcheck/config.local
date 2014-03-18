@@ -1,0 +1,12 @@
+$htroot 	 = "../../test/htdocs";
+$dataroot        = "../../test/inputs";
+$debianftpdir    = "$dataroot/debian/dists";
+$skoleftpdir     = "$dataroot/skolelinux/dists";
+$gripftpdir      = "$dataroot/grip/dists";
+
+# the directory where the results are dropped off.
+# the direct subdirectories of $resultdir are the timestamp diretories
+$resultdir = "$htroot/edos-debcheck/results";
+
+$debcheck="/usr/bin/edos-debcheck -quiet";
+$bin=".";

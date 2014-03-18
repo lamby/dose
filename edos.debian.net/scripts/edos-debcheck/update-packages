@@ -1,0 +1,41 @@
+#!/usr/bin/perl
+# all arguments are names of files, "-" is stdin
+# outputs the concatenation of the files but without any records whose
+# package name has already occurred earlier.
+
+$/="\n\n";
+
+while (@ARGV) {
+    $inputfile = shift;
+    if ($inputfile eq "-") {
+	while (<STDIN>) {
+	    m/Package:\s*(.*)\n/;
+	    print unless $packages{$1};
+	    $packages{$1}=1;
+	}
+    } elsif ($inputfile =~ m/.gz$/) {
+	open (IN, "zcat $inputfile |") ;
+        while (<IN>) {
+            m/Package:\s*(.*)\n/;
+            print unless $packages{$1};
+            $packages{$1}=1;
+	}
+	close IN;
+    } elsif ($inputfile =~ m/.bz2$/) {
+	open (IN, "bzcat $inputfile |") ;
+        while (<IN>) {
+            m/Package:\s*(.*)\n/;
+            print unless $packages{$1};
+            $packages{$1}=1;
+	}
+	close IN;
+    } else {
+	open (IN, "<", $inputfile) ;
+	while (<IN>) {
+	    m/Package:\s*(.*)\n/;
+	    print unless $packages{$1};
+	    $packages{$1}=1;
+	}
+	close IN;
+    }
+}

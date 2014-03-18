@@ -1,0 +1,32 @@
+#!/usr/bin/perl
+
+# Read configuration file (needed command line argument) and print on stdout an
+# XML index of available suites and architectures.
+#
+# Sample usage (and output):
+# $ ./xml-index config.dists
+#  <weather>
+#    <name>unstable</name>
+#    <title>Debian unstable (sid)</title>
+#    <archs>
+#      <arch>alpha</arch>
+#      <arch>amd64</arch>
+#      <arch>armel</arch>
+#      ...
+
+$distsfile  = $ARGV[0] or die "Usage: make-index CONFIG_FILE\n";
+
+do "$distsfile";
+print "<weathers>\n";
+foreach $weather (@dists) {
+    print "  <weather>\n";
+    print "    <name>", $$weather{name}, "</name>\n";
+    print "    <title>", $$weather{printname}, "</title>\n";
+    print "    <archs>\n";
+    foreach $arch (@{$$weather{archs}}) {
+	print " " x 6, "<arch>$arch</arch>\n";
+    }
+    print "    </archs>\n";
+    print " </weather>\n";
+}
+print "</weathers>\n";

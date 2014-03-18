@@ -1,0 +1,24 @@
+     {
+	 name  => "grip-unstable",
+	 printname => "Grip unstable (sid)",
+	 archs => ["amd64", "armel", "i386",  "mips", "mipsel", "powerpc"],
+	 maxruns => 7,
+	 pfile => {
+	     any => "zcat $gripftpdir/unstable/main/binary-__ARCH__/Packages.gz" },
+     },
+     {
+	 name  => "grip-testing", 
+	 printname => "Grip testing",
+	 archs => ["amd64", "armel", "i386",  "mips", "mipsel", "powerpc"],
+	 maxruns => 7,
+	 pfile => {
+	     any => "zcat $gripftpdir/testing/main/binary-__ARCH__/Packages.gz" },
+     },
+     {
+	 name  => "grip-stable", 
+	 printname => "Grip stable",
+	 archs => ["amd64", "armel", "i386",  "mips", "mipsel", "powerpc"],
+	 maxruns => 7,
+	 pfile => {
+	     any => "zcat $gripftpdir/stable/main/binary-__ARCH__/Packages.gz" },
+     },

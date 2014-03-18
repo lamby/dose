@@ -1,0 +1,59 @@
+#!/bin/bash
+
+# Copyright (C): Stefano Zacchiroli <zack@pps.jussieu.fr>
+# License: GPL v3 or above
+
+if [ $(hostname) = "dev" ];
+then
+    destdir="/home/web/groups/debian.net/edos/mirror"
+    wget_opts="-q";
+else
+    destdir="../test/inputs"
+    wget_opts="";
+fi
+
+wget="wget $wget_opts"
+gunzip="gunzip"
+
+debian_mirror="http://ftp.fr.debian.org"
+debian_distro="stable testing unstable proposed-updates stable-updates"
+debian_archs="alpha amd64 arm armel armhf hppa hurd-i386 i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 sparc s390x"
+
+skole_mirror="http://ftp.skolelinux.org"
+skole_archs="amd64 i386 powerpc"
+skole_distro="lenny lenny-test squeeze squeeze-test sid" 
+
+grip_mirror="http://www.emdebian.org"
+grip_distro="unstable testing stable"
+grip_archs="amd64 arm armel i386 mips mipsel powerpc sh4"
+
+# debian mirroring
+for d in $debian_distro ; do
+    for a in $debian_archs ; do
+	path="debian/dists/$d/main"
+	dest="$destdir/$path/binary-$a/Packages.bz2"
+	mkdir -p $(dirname $dest)
+	$wget -O $dest $debian_mirror/$path/binary-$a/Packages.bz2
+    done
+done
+
+# skolelinux mirroring
+for d in $skole_distro ; do
+    for a in $skole_archs ; do
+	path="skolelinux/dists/$d/local"
+	dest="$destdir/$path/binary-$a/Packages.bz2"
+	mkdir -p $(dirname $dest)
+	$wget -O $dest $skole_mirror/$path/binary-$a/Packages.bz2
+    done
+done
+    
+# embedian (grip) mirroring
+for d in $grip_distro ; do
+    for a in $grip_archs ; do
+	path="grip/dists/$d/main"
+	dest="$destdir/$path/binary-$a/Packages.gz"
+	mkdir -p $(dirname $dest)
+	$wget -O $dest $grip_mirror/$path/binary-$a/Packages.gz
+    done
+done
+

@@ -1,0 +1,82 @@
+# @dists is the list of distributions for which we do the analysis.
+# - name: unique name for that distribution
+# - arch: the list of relevant architectures for that distribution
+# - maxruns: the maximal number of runs to keep
+# - pfile: the UNIX command to construct the Package file for a distribution
+#   and an architecture. If here is a method given for a specific achitecture
+#   then this takes precedence, otherwise the mehod given for "any" is used.
+#   In the latter case, "__ARCH__" has to be replaced by the acual architecture.
+
+@dists =
+    (
+     {
+	 name  => "unstable",
+	 printname => "Debian unstable (sid)",
+	 archs => ["amd64", "armel", "armhf", "ia64", "i386", 
+		   "mips", "mipsel", "powerpc", "s390x", "sparc",
+		   "kfreebsd-amd64", "kfreebsd-i386", "hurd-i386"],
+	 maxruns => 7,
+	 pfile => {
+	     any => "bzcat $debianftpdir/unstable/main/binary-__ARCH__/Packages.bz2" },
+     },
+     {
+	 name  => "testing", 
+	 printname => "Debian testing",
+	 archs => ["amd64", "armel", "armhf", "i386", "ia64",  "kfreebsd-amd64",
+		   "kfreebsd-i386" , "mips", "mipsel", "powerpc", "s390x",
+		   "sparc"], 
+	 maxruns => 7,
+	 pfile => {
+	     any => "bzcat $debianftpdir/testing/main/binary-__ARCH__/Packages.bz2" },
+     },
+     {
+	 name  => "stable", 
+	 printname => "Debian stable",
+	 archs => ["amd64", "armel", "i386", "ia64", 
+	           "mips", "mipsel", "powerpc", "sparc",
+		   "kfreebsd-amd64", "kfreebsd-i386"],
+	 maxruns => 7,
+	 pfile => {
+	     any => "bzcat $debianftpdir/stable/main/binary-__ARCH__/Packages.bz2" },
+     },
+     {	
+	 name  => "stable_updates",
+	 printname => "Debian stable updates",
+	 comment => "For this distribution the base is the most recent <i>stable</i> distribution.",
+	 archs => ["amd64", "armel", "i386", "ia64", 
+	           "mips", "mipsel", "powerpc", "sparc",
+		   "kfreebsd-amd64", "kfreebsd-i386"],
+	 maxruns => 7,
+         has_base => 0,	
+	 pfile => {
+	     any => "$bin/update-packages $debianftpdir/stable-updates/main/binary-__ARCH__/Packages.bz2  $debianftpdir/stable/main/binary-__ARCH__/Packages.bz2"},
+     },
+     {	
+	 name  => "proposed_updates",
+	 printname => "Debian stable proposed updates",
+	 comment => "For this distribution the base is the most recent <i>stable</i> distribution.",
+	 archs => ["amd64", "armel", "i386", "ia64", 
+	           "mips", "mipsel", "powerpc", "sparc",
+		   "kfreebsd-amd64", "kfreebsd-i386"],
+	 maxruns => 7,
+         has_base => 0,	
+	 pfile => {
+	     any => "$bin/update-packages $debianftpdir/proposed-updates/main/binary-__ARCH__/Packages.bz2  $debianftpdir/stable/main/binary-__ARCH__/Packages.bz2"},
+     },
+     {
+	 name  => "skolelinux_lenny",
+         printname => "Debian Edu/Skolelinux Lenny",
+	 archs => ["amd64", "i386", "powerpc"],
+	 maxruns => 7,
+	 pfile => {
+	     any => "bzcat $skoleftpdir/lenny/local/binary-__ARCH__/Packages.bz2 $debianftpdir/stable/main/binary-__ARCH__/Packages.bz2"},
+     },
+     {
+	 name  => "skolelinux_lenny-test",
+         printname => "Debian Edu/Skolelinux Lenny-Test",
+	 archs => ["amd64", "i386", "powerpc"],
+	 maxruns => 7,
+	 pfile => {
+	     any =>  "bzcat $skoleftpdir/lenny-test/local/binary-__ARCH__/Packages.bz2 $debianftpdir/stable/main/binary-__ARCH__/Packages.bz2"},
+     },
+     );
