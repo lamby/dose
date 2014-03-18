@@ -1,92 +1,38 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Debian QA: dose-debcheck</title>
-    <link rev="made" href="mailto:debian-qa@lists.debian.org">
-    <link rel="shortcut icon" href="/favicon.ico">
-    <link type="text/css" rel="stylesheet" href="/debian.css">
-    <link type="text/css" rel="stylesheet" href="debian.css">
-  </head>
-  
-  <body>
-    <div id="header">
-      <div id="upperheader">
-	<div id="logo">
-          <a href="http://www.debian.org/" title="Debian Home"><img src="/Pics/openlogo-50.png"
-								    alt="Debian" width="50" height="61"></a>
-	</div>
-	<p class="section"><a href="/">QA</a></p>
-      </div>
-      <div id="navbar">
-	<p class="hidecss"><a href="#inner">Skip Quicknav</a></p>
-	<ul>
-          <li><a href="http://www.debian.org/intro/about">About Debian</a></li>
-          <li><a href="http://www.debian.org/distrib/">Getting Debian</a></li>
-          <li><a href="http://www.debian.org/support">Support</a></li>
-          <li><a href="http://www.debian.org/devel/">Developers'&nbsp;Corner</a></li>
-	</ul>
-      </div>
-      <p id="breadcrumbs">Debian Quality Assurance</p>
-    </div>
+<h1>Dose-Debcheck: Not Installable Packages</h1>
 
-    <div id="content">
-    
-    <h1>Dose-Debcheck: Not Installable Packages</h1>
-    
-    <h2>Currently checked scenarios</h2>
-    
-    <ul>
-      <li><a href=unstable_main/index.php>unstable, main only</a>
-      <li><a href=unstable_contrib+nonfree/index.php>unstable contrib and
-	  non-free, against main background</a>
-      <li><a href=testing_main/index.php>testing, main only</a>
-      <li><a href=testing_contrib+nonfree/index.php>testing contrib and
-	  non-free, against main background</a>
-    </ul>
-    
-    <h2>What this means</h2>
-    <p>
-      We call a package installable if all its (recursive) dependencies
-      can be satisfied without violating any conflicts. Alternative
-      dependencies and virtual packages are taken into account. More
-      precisely, a package <i>p</i> is called <em>installable</em> in a
-      package respository <i>D</i> if there there is a subset <i>S</i>
-      of <i>D</i> containing <i>p</i>, and such that for each package
-      in <i>S</i>
-      <ul>
-	<li>every dependency relation is satisfied by some package in <i>S</i>
-	<li>and it is not in conflict with any package in <i>S</i>
-      </ul> 
-      Packages from a <em>background</em> can be used to satisfy dependencies,
-      but we are not interested in background packages per se.
-    </p>
-    <p>
-      The set of not installable packages is computed by
-      the <i>dose-debcheck</i> tool available in
-      the <a href="https://packages.debian.org/wheezy/dose-distcheck">
-      dose-distcheck package</a>, the successor of
-      the previously used <i>edos-debcheck</i> tool.
-    </p>
-    <div id="footer">
-      <hr class="hidecss">
-      <p>Back to the <a href="http://www.debian.org/">Debian Project homepage</a>.</p>
-      <hr>
-      <div id="fineprint">
-	<p>To report a problem with the QA web site,
-	  e-mail <a href="mailto:debian-qa@lists.debian.org">debian-qa@lists.debian.org</a>. For
-	  other contact information, see the
-	  Debian <a href="http://www.debian.org/contact">contact
-	    page</a>.</p>
-	<p>
-	  Made by Ralf Treinen.<br>
-	  Copyright &copy; 2014
-	  <a href="http://www.spi-inc.org/">SPI</a>;
-	  see <a href="http://www.debian.org/license" rel="copyright">license terms</a>.<br>
-	  Debian is a registered <a href="http://www.debian.org/trademark">trademark</a> of
-	  Software in the Public Interest, Inc.
-	</p>
-      </div>
-    </div>
-  </body>
-</html>
+<h2>Currently checked scenarios</h2>
+
+<ul>
+  <li><a href="../../data/dose/debcheck/unstable_main/index.php">unstable,
+      main only</a>
+  <li><a href="../../data/dose/debcheck/unstable_contrib+nonfree/index.php">unstable
+      contrib and non-free, against main background</a>
+  <li><a href="../../data/dose/debcheck/testing_main/index.php">testing,
+      main only</a>
+  <li><a href="../../data/dose/debcheck/testing_contrib+nonfree/index.php">testing
+      contrib and non-free, against main background</a>
+</ul>
+
+<h2>What this means</h2>
+<p>
+  We call a package installable if all its (recursive) dependencies
+  can be satisfied without violating any conflicts. Alternative
+  dependencies and virtual packages are taken into account. More
+  precisely, a package <i>p</i> is called <em>installable</em> in a
+  package respository <i>D</i> if there there is a subset <i>S</i>
+  of <i>D</i> containing <i>p</i>, and such that for each package
+  in <i>S</i>
+  <ul>
+    <li>every dependency relation is satisfied by some package in <i>S</i>
+    <li>and it is not in conflict with any package in <i>S</i>
+  </ul> 
+  Packages from a <em>background</em> can be used to satisfy dependencies,
+  but we are not interested in background packages per se.
+</p>
+<p>
+  The set of not installable packages is computed by
+  the <i>dose-debcheck</i> tool available in
+  the <a href="https://packages.debian.org/wheezy/dose-distcheck">
+    dose-distcheck package</a>, the successor of
+  the previously used <i>edos-debcheck</i> tool.
+</p>
