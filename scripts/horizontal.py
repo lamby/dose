@@ -172,8 +172,8 @@ def write_tables(timestamp,scenario,architectures):
                 print(shortexplanation[hash],'</a></td>',file=out_each,sep='')
                 continuation_line=True
 
-    print(html_footer,file=out_some)
-    print(html_footer,file=out_each)
+    print('</table>',html_footer,file=out_some)
+    print('</table>',html_footer,file=out_each)
     out_some.close ()
     out_each.close ()
 
