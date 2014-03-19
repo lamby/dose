@@ -171,7 +171,7 @@ def create_reasons_file(package, version, reasons, outfile_name):
     '''
     
     outfile=open(outfile_name, 'w')
-    
+
     print('<b>Version {v}</b>'.format(v=version), file=outfile)
     print('<ol>',file=outfile)
     for reason in reasons:
@@ -182,11 +182,6 @@ def create_reasons_file(package, version, reasons, outfile_name):
 
 
 summary_header = '''
-<html>
-<head>
-  <title>dose-debcheck {scenario} {arch} {timestamp}</title>
-</head>
-<body>
 <h1>Packages not installable on {arch} in scenario {scenario}</h1>
 <b>Date: {utctime} UTC</b>
 <p>
@@ -219,6 +214,7 @@ def build(timestamp,scenario,arch):
     outdir=htmldir(timestamp,scenario)
     if not os.path.isdir(outdir): os.makedirs(outdir)
     outfile = open(outdir+'/'+arch+'.html', 'w')
+    print(html_header,file=outfile)
     print(summary_header.format(
             timestamp=str(timestamp),
             scenario=scenario,
@@ -250,6 +246,6 @@ def build(timestamp,scenario,arch):
                   file=sumfile, sep='#')
         print("</table>", file=outfile)
 
-    print('</body></html>',file=outfile)
+    print(html_footer,file=outfile)
     outfile.close ()
     sumfile.close ()

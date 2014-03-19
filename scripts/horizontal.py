@@ -89,10 +89,7 @@ def write_package_page(timestamp,scenario,architectures):
     for package in uninstallables:
         
         outfile = open('{d}/{p}.html'.format(d=htmlpooldir,p=package), 'w')
-        print('<html><head><title>',file=outfile)
-        print('dose-debcheck:',package, scenario, str(timestamp),
-              file=outfile)
-        print('</title></head><body>',file=outfile)
+        print(html_header,file=outfile)
         print('<h1>Package {p} in scenario {s} on {d}</h1>'.format(
                 p=package,
                 s=scenario,
@@ -107,7 +104,7 @@ def write_package_page(timestamp,scenario,architectures):
             print(blob.read(),file=outfile)
             blob.close()
                   
-        print('</body></html>',file=outfile)
+        print(html_footer,file=outfile)
         outfile.close ()
 
 def write_tables(timestamp,scenario,architectures):
@@ -121,8 +118,14 @@ def write_tables(timestamp,scenario,architectures):
     out_some = open(outdir+'/some.html', 'w')
     out_each = open(outdir+'/each.html', 'w')
     
-    print(summarytable_header,file=out_some)
-    print(summarytable_header,file=out_each)
+    print(html_header,
+          '<h1>Package not installable on some architectures</h1>',
+          summarytable_header,
+          file=out_some)
+    print(html_header,
+          '<h1>Packages not installable on any architecture</h1>',
+          summarytable_header,
+          file=out_each)
     for package in sorted(uninstallables.keys()):
         print('<tr><td>',package,'</td>',file=out_some,sep='')
         continuation_line=False
@@ -169,8 +172,8 @@ def write_tables(timestamp,scenario,architectures):
                 print(shortexplanation[hash],'</a></td>',file=out_each,sep='')
                 continuation_line=True
 
-    print('</table></body></html>',file=out_some)
-    print('</table></body></html>',file=out_each)
+    print(html_footer,file=out_some)
+    print(html_footer,file=out_each)
     out_some.close ()
     out_each.close ()
 
