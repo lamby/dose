@@ -2,6 +2,7 @@
 
 <h2>Currently checked scenarios</h2>
 
+These checks run daily on <kbd>qa.debian.org</kbd>: 
 <ul>
   <li><a href="../../data/dose/debcheck/unstable_main/index.php">unstable,
       main only</a>
@@ -94,3 +95,5 @@ thread</a>. Detected bugs are marked there with user
 <li><a href="http://bugs.debian.org/cgi-bin/pkgreport.cgi?tag=edos-uninstallable;users=treinen@debian.org">All bugs</a>
 </ul>
 
+<h2>Further reading</h2>
+(to be completed)

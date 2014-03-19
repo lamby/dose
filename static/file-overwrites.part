@@ -43,3 +43,8 @@ are found by piuparts this way:
 <ul>
 <li><a href=http://bugs.debian.org/cgi-bin/pkgreport.cgi?tag=replaces-without-breaks;users=debian-qa@lists.debian.org>Replaces without breaks</a>
 </ul>
+
+<h2>Further Reading</h2>
+<ul>
+<li><a href="http://upsilon.cc/~zack/research/publications/debconf8-mancoosi.pdf">Presentation of this at other tools at Debconf8</a>
+</ul>
