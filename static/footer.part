@@ -1,0 +1,22 @@
+<div id="footer">
+  <hr class="hidecss">
+  <p>Back to the <a href="http://www.debian.org/">Debian Project homepage</a>.</p>
+  <hr>
+  <div id="fineprint">
+    <p>To report a problem with the QA web site,
+      e-mail <a href="mailto:debian-qa@lists.debian.org">debian-qa@lists.debian.org</a>. For
+      other contact information, see the
+      Debian <a href="http://www.debian.org/contact">contact
+	page</a>.</p>
+    <p>
+      Made by Ralf Treinen.<br>
+      Copyright &copy; 2014
+      <a href="http://www.spi-inc.org/">SPI</a>;
+      see <a href="http://www.debian.org/license" rel="copyright">license terms</a>.<br>
+      Debian is a registered <a href="http://www.debian.org/trademark">trademark</a> of
+      Software in the Public Interest, Inc.
+    </p>
+      </div>
+    </div>
+  </body>
+</html>
