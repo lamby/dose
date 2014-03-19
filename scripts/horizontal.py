@@ -59,6 +59,7 @@ def analyze_horizontal(timestamp,scenario,architectures):
         arch_summary=open(cachedir(timestamp,scenario,arch)+'/summary')
         for entry in arch_summary: 
             package,version,isnative,hash,explanation = entry.split('#')
+            explanation = explanation.rstrip()
             uninstallables_here.add(package)
             if not package in uninstallables:
                 uninstallables[package] = { hash: {'archs'   : [arch],
