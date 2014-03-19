@@ -81,7 +81,7 @@ situation:
 </ol>
 This policy has been announced and discussed in
 <a href=http://lists.debian.org/debian-devel/2010/08/msg00063.html>this
-thread</a>. Detected bugs are marked there with user
+thread</a>. Detected bugs are marked in teh BTS with user
 <kbd>treinen@debian.org</kbd> and usertag <kbd>edos-uninstallable</kbd>.
 <ul>
 <li><a href="http://bugs.debian.org/cgi-bin/pkgreport.cgi?tag=edos-uninstallable;users=treinen@debian.org;dist=unstable">Bugs in unstable</a>
@@ -90,7 +90,7 @@ thread</a>. Detected bugs are marked there with user
 <li><a href="http://bugs.debian.org/cgi-bin/pkgreport.cgi?tag=edos-uninstallable;users=treinen@debian.org">All bugs</a>
 </ul>
 
-<h2>Realted checks</h2>
+<h2>Related checks</h2>
 See also the check for <a href="outdated.html">outdated packages</a>
 which is much more restricted, but is also much more likely to
 pinpoint the source of a non-installabity.
