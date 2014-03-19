@@ -1,7 +1,7 @@
 INSTALLDIR=/srv/qa.debian.org/web/dose
-FILES=debcheck.html
+FILES=debcheck.html outdated.html file-overwrites.html
 
-install: $(INSTALLDIR)/debcheck.html
+all: $(FILES)
 
-$(INSTALL)/debcheck.html: header.part footer.part debcheck.part
-	cat header.part debcheck.part footer.part > $@
+$(FILES): %.html: %.part header.part footer.part
+	cat header.part $< footer.part > $@
