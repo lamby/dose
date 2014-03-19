@@ -4,7 +4,7 @@
 
 These checks run daily on <kbd>qa.debian.org</kbd>: 
 <ul>
-  <li><a href="debcheck/unstable_main/index.index">unstable,
+  <li><a href="debcheck/unstable_main/index.html">unstable,
       main only</a>
   <li><a href="debcheck/unstable_contrib+nonfree/index.html">unstable
       contrib and non-free, against main background</a>
