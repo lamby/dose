@@ -1,0 +1,48 @@
+<h1>Dose-outdated</h1>
+
+<h2>What it means</h2>
+
+We call a package <i>p</i> in version <i>n</i> outdated w.r.t. a certain
+repository <i>R</i> if:
+<ul>
+<li> it is not installable in <i>R</i>
+<li> no matter how the <em>other</em> packages in <i>R</i> evolve,
+ this package remains uninstallable. This includes the possibility that
+ missing packages are added to the repository, or that packages change
+ their dependencies and conflicts while being updated.
+</ul>
+We attempt to take into account the fact that packages that stem from the
+same source package cannot be updated independently: if we find that
+two binary packages <i>p1</i> and <i>p2</i> have the same source package
+and have similar version numbers (that is, the same version up to epoch
+and up to a binNMU), then we assume that also in the future these two packages
+will advance in a synchronised way. This is an approximation since we do
+not take the possibility into account that packages may change their source
+package.
+<p>
+This means that package <i>p</i> can only be made installable by updating
+it in the repository (either by a sourceful or a recompilation upload).
+
+<h2>How it is done</h2>
+
+Outdated packages are found by running the <i>dose-outdated</i> tool
+from the <a href="https://packages.debian.org/sid/dose-extra">
+dose-extra package</a> (currently not automated).
+<p>
+
+<h2>Filing bugs</h2>
+Currently I file bugs with severity=serious against such packages.
+<p>
+Detected bugs are marked there with user
+<kbd>treinen@debian.org</kbd> and usertag <kbd>edos-outdated</kbd>.
+<ul>
+<li><a href=http://bugs.debian.org/cgi-bin/pkgreport.cgi?tag=edos-outdated;users=treinen@debian.org;dist=unstable>Bugs in unstable</a>
+</ul>
+
+<h2>Further Reading</h2>
+<ul>
+  <li><a href="http://www.pps.univ-paris-diderot.fr/~treinen/publi/slides/slides-debconf12.pdf">Slides of a presentation at debconf12</a>
+  <li>Academic article describing the theory:
+    <!-- ACM DL Article: Learning from the future of component repositories -->
+    <div class="acmdlitem" id="item2304747"><img src="http://dl.acm.org/images/oa.gif" width="25" height="25" border="0" alt="ACM DL Author-ize service" style="vertical-align:middle"/><a href="http://dl.acm.org/authorize?6700055" title="Learning from the future of component repositories">Learning from the future of component repositories</a><div style="margin-left:25px"><a href="http://dl.acm.org/author_page.cfm?id=81458642817" >Pietro Abate</a>, <a href="http://dl.acm.org/author_page.cfm?id=81503641580" >Roberto Di Cosmo</a>, <a href="http://dl.acm.org/author_page.cfm?id=81100446488" >Ralf Treinen</a>, <a href="http://dl.acm.org/author_page.cfm?id=81329493001" >Stefano Zacchiroli</a><br />CBSE '12 Proceedings of the 15th ACM SIGSOFT symposium on Component Based Software Engineering,&nbsp;2012</div></div>
+</ul>

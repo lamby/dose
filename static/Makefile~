@@ -1,4 +1,0 @@
-HOST=quantz.debian.org
-
-install:
-	rsync dose-debcheck.html $(HOST):/src/qa/debian.org/data/dose-debcheck

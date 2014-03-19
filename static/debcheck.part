@@ -1,0 +1,99 @@
+<h1>Dose-Debcheck: Not Installable Packages</h1>
+
+<h2>Currently checked scenarios</h2>
+
+These checks run daily on <kbd>qa.debian.org</kbd>: 
+<ul>
+  <li><a href="../../data/dose/debcheck/unstable_main/index.php">unstable,
+      main only</a>
+  <li><a href="../../data/dose/debcheck/unstable_contrib+nonfree/index.php">unstable
+      contrib and non-free, against main background</a>
+  <li><a href="../../data/dose/debcheck/testing_main/index.php">testing,
+      main only</a>
+  <li><a href="../../data/dose/debcheck/testing_contrib+nonfree/index.php">testing
+      contrib and non-free, against main background</a>
+</ul>
+
+<h2>What it means</h2>
+<p>
+  We call a package installable if all its (recursive) dependencies
+  can be satisfied without violating any conflicts. More precisely, a
+  package <i>p</i> is called <em>installable</em> in a package
+  repository <i>D</i> if there is a subset <i>S</i> of <i>D</i>
+  containing <i>p</i>, and such that for each package in <i>S</i>
+  <ul>
+    <li>every dependency relation is satisfied by some package in <i>S</i>
+    <li>and it is not in conflict with any package in <i>S</i>
+  </ul>
+  Alternative dependencies and virtual packages are taken into
+  account, as well as other aspects of Debian package relations like
+  the fact that a versioned dependency is not matched by a virtual
+  package, or the fact that there are no self-conflicts via a provided
+  virtual package. Packages from a so-called <em>background</em> can
+  be used to satisfy dependencies, but we are not interested in
+  installability of background packages per se.
+</p>
+<p>
+  In case a package exists with multiple versions in a distribution (which
+  may happen in the <i>unstable</i> distribution), only the latest version
+  is checked for installability.
+</p>
+
+
+<h2>How it is done</h2>
+<p>
+  The set of not installable packages is computed by
+  the <i>dose-debcheck</i> tool available in
+  the <a href="https://packages.debian.org/wheezy/dose-distcheck">
+    dose-distcheck package</a>, the successor of
+  the previously used <i>edos-debcheck</i> tool.
+</p>
+<p>
+  See also the check for <a href="outdated.html">outdated packages</a>
+  which is much more restricted, but is also much more likely to
+  pinpoint the source of a non-installabity.
+</p>
+
+<h2>Filing bugs</h2>
+Whether a not-installable package deserves a bug report depends on the 
+situation:
+<ol>
+  <li>All packages in the <i>stable</i> and <i>testing</i>
+    distribution should be installable, with the exception of packages
+    with <kbd>Architecture=all</kbd>. The reason for the latter
+    exception is that these packages are always available for each
+    architecture, regardless of the fact whether their dependencies
+    can be satisfied on that architecture or not. However, when a
+    package with <kbd>Architecture=all</kbd> is not installable on any
+    architecture then something is wrong.
+    <p>
+    Normally, a bug should be filed only when a package is not installable
+    on any architecture (regardless of the value of the <kbd>Architecture</kbd>
+    field of the package). 
+    In any case, the situation should be investigated before filing a bug.
+    For instance, it may be the case that a package is installable only in
+    a multi-arch setting.
+  <li>By its very nature, the <i>unstable</i> distribution is expected to
+    have many packages that are not installable. However, this should normally
+    be temporary. That means that, in addition to the above restrictions:
+    <ul>
+      <li>Bugs should be filed only when the problem exists over an
+	extended period of time (say, 1 month).
+      <li>Bugs should not be filed when a package is involved in a
+      <a href="https://release.debian.org/transitions/">transition</a>
+	as these cases are already monitored.
+    </ul>
+</ol>
+This policy has been announced and discussed in
+<a href=http://lists.debian.org/debian-devel/2010/08/msg00063.html>this
+thread</a>. Detected bugs are marked there with user
+<kbd>treinen@debian.org</kbd> and usertag <kbd>edos-uninstallable</kbd>.
+<ul>
+<li><a href="http://bugs.debian.org/cgi-bin/pkgreport.cgi?tag=edos-uninstallable;users=treinen@debian.org;dist=unstable">Bugs in unstable</a>
+<li><a href="http://bugs.debian.org/cgi-bin/pkgreport.cgi?tag=edos-uninstallable;users=treinen@debian.org;dist=testing">Bugs in testing</a>
+<li><a href="http://bugs.debian.org/cgi-bin/pkgreport.cgi?tag=edos-uninstallable;users=treinen@debian.org;dist=stable">Bugs in stable</a>
+<li><a href="http://bugs.debian.org/cgi-bin/pkgreport.cgi?tag=edos-uninstallable;users=treinen@debian.org">All bugs</a>
+</ul>
+
+<h2>Further reading</h2>
+(to be completed)
