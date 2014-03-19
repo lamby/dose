@@ -91,7 +91,7 @@ def write_package_page(timestamp,scenario,architectures):
         
         outfile = open('{d}/{p}.html'.format(d=htmlpooldir,p=package), 'w')
         print(html_header,file=outfile)
-        print('<h1>Package: {p}<br>Scenario: {s}<br>Date: {d}</h1>'.format(
+        print('<h1>Package: {p}</h1><h1>Scenario: {s}</h1><h1>Date: {d}</h1>'.format(
                 p=package,
                 s=scenario,
                 d=datetime.datetime.utcfromtimestamp(float(timestamp))),

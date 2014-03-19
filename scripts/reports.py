@@ -172,7 +172,7 @@ def create_reasons_file(package, version, reasons, outfile_name):
     
     outfile=open(outfile_name, 'w')
 
-    print('<b>Version {v}</b>'.format(v=version), file=outfile)
+    print('<b>Version: {v}</b>'.format(v=version), file=outfile)
     print('<ol>',file=outfile)
     for reason in reasons:
         print_reason(package,version,reason,outfile)
