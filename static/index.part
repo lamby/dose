@@ -4,7 +4,7 @@
 <ul>
 <li><a href="debcheck.html">Non-installable packages</a>
 <li><a href="outdated.html">Outdated packages</a>
-<li><a href="file-overwrite.html">File-overwrite errors</a>
+<li><a href="file-overwrites.html">File-overwrite errors</a>
 </ul>
 
 <h2>What it is</h2>
