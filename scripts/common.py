@@ -95,7 +95,9 @@ html_footer='''    <div id="footer">
 	  Debian <a href="http://www.debian.org/contact">contact
 	    page</a>.</p>
 	<p>
-	  Made by Ralf Treinen.<br>
+	  Made by Ralf Treinen; code is
+      <a href="https://alioth.debian.org/plugins/scmgit/cgi-bin/gitweb.cgi?p=qa/dose.git;a=summary">
+	available</a>.<br>
 	  Copyright &copy; 2014
 	  <a href="http://www.spi-inc.org/">SPI</a>;
 	  see <a href="http://www.debian.org/license" rel="copyright">license terms</a>.<br>
