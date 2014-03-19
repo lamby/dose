@@ -91,13 +91,13 @@ def write_package_page(timestamp,scenario,architectures):
         
         outfile = open('{d}/{p}.html'.format(d=htmlpooldir,p=package), 'w')
         print(html_header,file=outfile)
-        print('<h1>Package {p} in scenario {s} on {d}</h1>'.format(
+        print('<h1>Package: {p}<br>Scenario: {s}<br>Date: {d}</h1>'.format(
                 p=package,
                 s=scenario,
                 d=datetime.datetime.utcfromtimestamp(float(timestamp))),
               file=outfile)
         for hash in uninstallables[package]:
-            print('<a name={h}><h2>{a}</h2></a>'.format(
+            print('<hr><a name={h}><b>Architectures: {a}</b></a>'.format(
                     h=hash,
                     a=str_of_list(uninstallables[package][hash]['archs'])),
                   file=outfile)
