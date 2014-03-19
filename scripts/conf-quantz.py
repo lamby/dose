@@ -19,7 +19,9 @@ locations = {
 
 scenarios = {
     'unstable_main': {
-        'archs' : [ 'amd64', 'i386', 'powerpc' ],
+        'archs' : [ 'amd64', 'armel', 'armhf', 'hurd-i386', 'i386',
+                    'kfreebsd-amd64', 'kfreebsd-i386',
+                    'mips', 'mipsel', 'powerpc', 's390x', 'sparc' ],
         'fgs'   : [ '{m}/unstable/main/binary-{a}/Packages.gz' ],
         'bgs'   : []
         }
