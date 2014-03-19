@@ -33,8 +33,9 @@ by others and that I have reproduced with my script) carry a usertag
   <li><a href=http://bugs.debian.org/cgi-bin/pkgreport.cgi?tag=edos-file-overwrite;users=treinen@debian.org>All detected bugs</a>
 </ul>
 
-<h2>Related checks</h2> Note that
-<a href=http://wiki.debian.org/piuparts>piuparts</a> does much more
+<h2>Related checks</h2>
+
+Note that <a href=http://wiki.debian.org/piuparts>piuparts</a> does much more
 extensive tests of package installation and removal, and checks for
 different kinds of problems that may occur. One of the many tests done
 by piuparts now uses edos-debcheck to generate test candidates

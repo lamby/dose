@@ -4,13 +4,13 @@
 
 These checks run daily on <kbd>qa.debian.org</kbd>: 
 <ul>
-  <li><a href="../../data/dose/debcheck/unstable_main/index.php">unstable,
+  <li><a href="debcheck/unstable_main/index.php">unstable,
       main only</a>
-  <li><a href="../../data/dose/debcheck/unstable_contrib+nonfree/index.php">unstable
+  <li><a href="debcheck/unstable_contrib+nonfree/index.php">unstable
       contrib and non-free, against main background</a>
-  <li><a href="../../data/dose/debcheck/testing_main/index.php">testing,
+  <li><a href="debcheck/testing_main/index.php">testing,
       main only</a>
-  <li><a href="../../data/dose/debcheck/testing_contrib+nonfree/index.php">testing
+  <li><a href="debcheck/testing_contrib+nonfree/index.php">testing
       contrib and non-free, against main background</a>
 </ul>
 
@@ -47,11 +47,6 @@ These checks run daily on <kbd>qa.debian.org</kbd>:
   the <a href="https://packages.debian.org/wheezy/dose-distcheck">
     dose-distcheck package</a>, the successor of
   the previously used <i>edos-debcheck</i> tool.
-</p>
-<p>
-  See also the check for <a href="outdated.html">outdated packages</a>
-  which is much more restricted, but is also much more likely to
-  pinpoint the source of a non-installabity.
 </p>
 
 <h2>Filing bugs</h2>
@@ -94,6 +89,11 @@ thread</a>. Detected bugs are marked there with user
 <li><a href="http://bugs.debian.org/cgi-bin/pkgreport.cgi?tag=edos-uninstallable;users=treinen@debian.org;dist=stable">Bugs in stable</a>
 <li><a href="http://bugs.debian.org/cgi-bin/pkgreport.cgi?tag=edos-uninstallable;users=treinen@debian.org">All bugs</a>
 </ul>
+
+<h2>Realted checks</h2>
+See also the check for <a href="outdated.html">outdated packages</a>
+which is much more restricted, but is also much more likely to
+pinpoint the source of a non-installabity.
 
 <h2>Further reading</h2>
 (to be completed)
