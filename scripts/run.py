@@ -7,7 +7,7 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-import time, os, argparse
+import time, os, argparse, re
 import conf, universes, reports, horizontal, vertical, cleanup
 
 argparser=argparse.ArgumentParser(
@@ -18,7 +18,8 @@ argparser.add_argument('--skip-debcheck',dest='skip_debcheck',
 arguments=argparser.parse_args()
 
 timestamp_now = str(int(time.time()))
-timestamps_known = os.listdir(conf.locations['cacheroot'])
+timestamps_known = [t for t in os.listdir(conf.locations['cacheroot'])
+                    if re.match(r'^[0-9]+$', t)]
 timestamps_known.sort(reverse=True)
 if timestamps_known:
     timestamp_last = timestamps_known[0]
@@ -50,7 +51,8 @@ for scenario in conf.scenarios.keys():
 
     vertical.build(timestamps_keep,scenario,architectures)
 
-    cleanup.cleanup(timestamps_keep, conf.scenarios.keys())
+    cleanup.cleanup(timestamps_keep, timestamps_known, 
+                    conf.scenarios.keys())
 
 
 

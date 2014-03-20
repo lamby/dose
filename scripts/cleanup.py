@@ -8,11 +8,10 @@
 import os, shutil
 import conf
 
-def cleanup(timestamps,scenarios):
+def cleanup(timestamps_keep,timestamps_known,scenarios):
 
-    cacheroot = conf.locations['cacheroot']
-    for directory in os.listdir(cacheroot):
-        if directory not in timestamps:
+    for directory in timestamps_known:
+        if directory not in timestamps_keep:
             shutil.rmtree(cacheroot+'/'+directory)
 
     htmlroot = conf.locations['htmlroot']
@@ -24,7 +23,7 @@ def cleanup(timestamps,scenarios):
             else:
                 for directory2 in os.listdir(path1):
                     path2=path1+'/'+directory2
-                    if directory2 not in timestamps and os.path.isdir(path2):
+                    if directory2 not in timestamps_keep and os.path.isdir(path2):
                         shutil.rmtree(path2)
             
 
