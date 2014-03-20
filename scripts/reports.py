@@ -201,6 +201,9 @@ def build(timestamp,scenario,arch):
     and prettyprint chunks of detailed explanations that do not yet exist in 
     the pool.
     '''
+
+    info('building report for {s} on {a}'.format(s=scenario,a=arch))
+
     # the directory where we store chunks of explanations
     pooldir = cachedir(timestamp,scenario,'pool')
     if not os.path.isdir(pooldir): os.mkdir(pooldir)

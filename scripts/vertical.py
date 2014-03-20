@@ -54,4 +54,5 @@ def write_table(timestamps,scenario,architectures):
 # top level
 
 def build(timestamps,scenario,architectures):
+    info('update vertical table for {s}'.format(s=scenario))
     write_table(timestamps,scenario,architectures)

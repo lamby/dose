@@ -7,6 +7,11 @@
 
 import conf
 
+verbose=True
+
+def info(message):
+    if verbose: print(message)
+
 def cachedir(timestamp,scenario,arch):
     '''
     absolute path of a cache directory for given timestamp, scenario, arch

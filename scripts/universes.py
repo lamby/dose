@@ -19,6 +19,7 @@ def run_debcheck(scenario,arch,outdir):
     run dose-debcheck and store the resulting report
     """
 
+    info('running debcheck for {s} on {a}'.format(a=arch,s=scenario))
     invocation = ['dose-debcheck', '--explain', '--failures', '--latest' ]
     for fg in conf.scenarios[scenario]['fgs']:
         invocation.append('--fg')
@@ -40,6 +41,7 @@ def get_fg_packages(scenario,arch,outdir):
     create a list of foreground packages
     """
     
+    info('extracting foreground for {s} on {a}'.format(a=arch,s=scenario))
     packages=set()
     for fg in conf.scenarios[scenario]['fgs']:
         if fg[-3:]=='.gz':

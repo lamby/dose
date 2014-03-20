@@ -7,8 +7,11 @@
 
 import os, shutil
 import conf
+from common import *
 
 def cleanup(timestamps_keep,timestamps_known,scenarios):
+
+    info('cleaning up')
 
     for directory in timestamps_known:
         if directory not in timestamps_keep:

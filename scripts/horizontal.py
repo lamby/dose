@@ -246,6 +246,7 @@ def write_row(timestamp,scenario,architectures):
 ########################################################################
 # top level
 def build(timestamp,scenario,architectures):
+    info('build horizontal tables for {s}'.format(s=scenario))
     analyze_horizontal(timestamp,scenario,architectures)
     write_package_page(timestamp,scenario,architectures)
     write_tables(timestamp,scenario,architectures)
