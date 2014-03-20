@@ -18,7 +18,7 @@ locations = {
 }
 
 scenarios = {
-    'sid_main': {
+    'unstable_main': {
         'archs' : [ 'amd64', 'i386', 'powerpc' ],
         'fgs'   : [ '{m}/unstable/main/binary-{a}/Packages' ],
         'bgs'   : []
