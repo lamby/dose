@@ -146,7 +146,11 @@ def print_depchains(source_package,source_version,
     print one or several dependency chains between two given packages
     '''
 
-    if len(depchains) == 1:
+    if not depchains:
+        print('no depchains for package {p}, version {v}'.format(
+                p=source_package,
+                v=source_version))
+    elif len(depchains) == 1:
         print(format_depchain.format(
                 sp=source_package,sv=source_version,
                 tp=target_package,tv=target_version),
