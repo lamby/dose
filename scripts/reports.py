@@ -12,8 +12,8 @@ from common import *
 format_short_dep="missing dependency on {d}"
 format_short_con="conflict between {c1} and {c2}"
 
-format_long_dep='<li>No package matches the dependency <i>{d}</i> of package {p} (={v})<br>.'
-format_long_con='<li>Conflict between package {c1} (={v1}) and package {c2} (={v2})<br>.'
+format_long_dep='<li>No package matches the dependency <i>{d}</i> of package {p} (={v})<br>'
+format_long_con='<li>Conflict between package {c1} (={v1}) and package {c2} (={v2})<br>'
 
 format_depchain='Dependency chain from {sp} (={sv}) to {tp} (={tv}):'
 format_depchains='Multiple dependency chains from {sp} (={sv}) to {tp} (={tv}):'
