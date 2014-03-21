@@ -15,6 +15,9 @@ from common import *
 summary_header = '''
 <h1>Summary of packages not installable in scenario {scenario}</h1>
 
+In a pair <i>n/m</i>,
+<i>n</i> is the number of packages that are build for that architecture,
+<i>m</i> is the number packages with <kbd>Architecture=all</kbd>.
 <p>
 <table border=1>
 <tr>

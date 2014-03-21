@@ -32,6 +32,8 @@ installables_somewhere = set()
 # number of packages not installables somewhere / everywhere
 
 summarytable_header="""
+<kbd>[all]</kbd> indicates a package with <kbd>Architecture=all</kbd>.
+<p>
 <table border=1>
 <tr>
 <th>Package</th>
@@ -97,7 +99,7 @@ def write_package_page(timestamp,scenario,architectures):
                 d=datetime.datetime.utcfromtimestamp(float(timestamp))),
               file=outfile)
         for hash in uninstallables[package]:
-            print('<hr><a name={h}><b>Architectures: {a}</b></a>'.format(
+            print('<hr><a name={h}><b>Architectures: {a}</b></a><br>'.format(
                     h=hash,
                     a=str_of_list(uninstallables[package][hash]['archs'])),
                   file=outfile)
