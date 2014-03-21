@@ -238,7 +238,7 @@ def build(timestamp,scenario,arch):
             version  = stanza['version']
             reasons  = stanza['reasons']
             isnative = stanza['architecture'] != 'all'
-            all_mark = '[*]' if isnative else ''
+            all_mark = '' if isnative else '[all]'
             print('<tr><td>',all_mark,package,'</td>', file=outfile,sep='')
             print('<td>',version,'</td>', file=outfile,sep='')
             reasons_hash=hash_reasons(reasons)

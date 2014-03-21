@@ -134,9 +134,9 @@ def write_tables(timestamp,scenario,architectures):
             if continuation_line:
                     print('<tr><td></td>',file=out_some)
             if uninstallables[package][hash]['isnative'] == 'True':
-                all_mark = '[*]' 
+                all_mark = '' 
             else:
-                all_mark=''
+                all_mark='[all]'
             print('<td>',
                   all_mark,uninstallables[package][hash]['version'],
                   '</td>',
@@ -157,9 +157,9 @@ def write_tables(timestamp,scenario,architectures):
                 if continuation_line:
                     print('<tr><td></td>',file=out_each)
                 if uninstallables[package][hash]['isnative'] == 'True':
-                    all_mark = '[*]' 
+                    all_mark = '' 
                 else:
-                    all_mark=''
+                    all_mark='[all]'
                 print('<td>',
                       all_mark,uninstallables[package][hash]['version'],
                       '</td>',
