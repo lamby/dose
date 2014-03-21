@@ -12,11 +12,11 @@ from common import *
 format_short_dep="missing dependency on {d}"
 format_short_con="conflict between {c1} and {c2}"
 
-format_long_dep='<li>No package matches the dependency <i>{d}</i> of package {p} (={v}).'
-format_long_con='<li>Conflict between package {c1} (={v1}) and package {c2} (={v2}).'
+format_long_dep='<li>No package matches the dependency <i>{d}</i> of package {p} (={v})<br>.'
+format_long_con='<li>Conflict between package {c1} (={v1}) and package {c2} (={v2})<br>.'
 
-format_depchain='There is a dependency chain from {sp} (={sv}) to {tp} (={tv}):'
-format_depchains='There are several dependency chains from {sp} (={sv}) to {tp} (={tv}):'
+format_depchain='Dependency chain from {sp} (={sv}) to {tp} (={tv}):'
+format_depchains='Multiple dependency chains from {sp} (={sv}) to {tp} (={tv}):'
 
 
 ##########################################################################
@@ -147,7 +147,7 @@ def print_depchains(source_package,source_version,
     '''
 
     if not depchains:
-        print('no depchains for package {p}, version {v}'.format(
+        info('no depchains for package {p}, version {v}'.format(
                 p=source_package,
                 v=source_version))
     elif len(depchains) == 1:
