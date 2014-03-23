@@ -2,16 +2,10 @@
 
 <h2>Currently checked scenarios</h2>
 
-These checks run daily on <kbd>qa.debian.org</kbd>: 
+These checks are run daily on <kbd>qa.debian.org</kbd>: 
 <ul>
   <li><a href="debcheck/unstable_main/index.html">unstable,
       main only</a>
-  <li><a href="debcheck/unstable_contrib+nonfree/index.html">unstable
-      contrib and non-free, against main background</a>
-  <li><a href="debcheck/testing_main/index.html">testing,
-      main only</a>
-  <li><a href="debcheck/testing_contrib+nonfree/index.html">testing
-      contrib and non-free, against main background</a>
 </ul>
 
 <h2>What it means</h2>
