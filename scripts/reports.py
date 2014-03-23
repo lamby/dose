@@ -241,9 +241,9 @@ def build(timestamp,scenario,arch):
             version  = stanza['version']
             reasons  = stanza['reasons']
             isnative = stanza['architecture'] != 'all'
-            all_mark = '' if isnative else '[all]'
-            print('<tr><td>',all_mark,package,'</td>', file=outfile,sep='')
-            print('<td>',version,'</td>', file=outfile,sep='')
+            all_mark = '' if isnative else '[all] '
+            print('<tr><td>',package,'</td>', file=outfile,sep='')
+            print('<td>',all_mark,version,'</td>', file=outfile,sep='')
             reasons_hash=hash_reasons(reasons)
             reasons_summary=summary_of_reasons(reasons)
             reasons_filename = pooldir + '/' + str(reasons_hash)
