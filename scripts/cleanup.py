@@ -9,6 +9,8 @@ import os, shutil
 import conf
 from common import *
 
+cacheroot=conf.locations['cacheroot']
+
 def cleanup(timestamps_keep,timestamps_known,scenarios):
 
     info('cleaning up')
