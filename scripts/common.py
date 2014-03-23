@@ -63,6 +63,15 @@ html_header = '''<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
     <link rel="shortcut icon" href="/favicon.ico">
     <link type="text/css" rel="stylesheet" href="/debian.css">
     <link type="text/css" rel="stylesheet" href="debian.css">
+    <style>
+        td, th {
+          padding: 6px;
+          border-left: 1pt solid black;
+          border-right: 1pt solid black;
+          border-bottom: 1pt solid black;
+          border-top: 1pt solid black;
+        }
+    </style>
   </head>
   
   <body>
