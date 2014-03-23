@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# CRON=0 5 * * *
+# MAILTO=treinen@free.fr
+
+/home/treinen/dose/scripts/run.py
