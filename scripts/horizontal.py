@@ -46,6 +46,10 @@ def analyze_horizontal(timestamp,scenario,architectures):
     fill shortexplanation, uninstallables, and installables_somewhere
     '''
 
+    shortexplanation = {}
+    uninstallables = {}
+    installables_somewhere = set() 
+
     for arch in architectures:
         
         # get the set of foreground packages for this architecture
@@ -98,6 +102,7 @@ def write_package_page(timestamp,scenario,architectures):
                 s=scenario,
                 d=datetime.datetime.utcfromtimestamp(float(timestamp))),
               file=outfile)
+        print(package)
         for hash in uninstallables[package]:
             print('<hr><a name={h}><b>Architectures: {a}</b></a><br>'.format(
                     h=hash,
