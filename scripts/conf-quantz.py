@@ -24,6 +24,14 @@ scenarios = {
                     'mips', 'mipsel', 'powerpc', 's390x', 'sparc' ],
         'fgs'   : [ '{m}/unstable/main/binary-{a}/Packages.gz' ],
         'bgs'   : []
+        },
+    'unstable_contrib+nonfree': {
+        'archs' : [ 'amd64', 'armel', 'armhf', 'hurd-i386', 'i386',
+                    'kfreebsd-amd64', 'kfreebsd-i386',
+                    'mips', 'mipsel', 'powerpc', 's390x', 'sparc' ],
+        'fgs'   : [ '{m}/unstable/contrib/binary-{a}/Packages.gz',
+                    '{m}/unstable/non-free/binary-{a}/Packages.gz' ],
+        'bgs'   : [ '{m}/unstable/main/binary-{a}/Packages.gz' ]
         }
 }
 
