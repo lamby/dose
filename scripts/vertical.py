@@ -17,7 +17,7 @@ summary_header = '''
 
 In a pair <i>n/m</i>,
 <i>n</i> is the number of packages that are build for that architecture,
-<i>m</i> is the number packages with <kbd>Architecture=all</kbd>.
+<i>m</i> is the number of packages with <kbd>Architecture=all</kbd>.
 <p>
 <table border=1>
 <tr>
