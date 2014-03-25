@@ -10,6 +10,7 @@ Generation of html pages for stuff that requires accumulation over
 different timestamps.
 - constructing a summary page for the last timestamps
 '''
+import os.path
 from common import *
 
 summary_header = '''
@@ -32,6 +33,11 @@ def write_table(timestamps,scenario,architectures):
         print('<th>',arch,'</th>',file=outfile,sep='')
     print('<th>some</th><th>each</th></tr>',file=outfile)
     for timestamp in timestamps:
+        if not os.path.isfile(cachedir(timestamp,scenario,'summary')+'/row'):
+            info('Dropping timestamp {t} from vertical table for {s}'.format(
+                    t=timestamp,
+                    s=scenario))
+            continue
         infile=open(cachedir(timestamp,scenario,'summary')+'/row')
         contents={}
         for entry in infile:
