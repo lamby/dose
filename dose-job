@@ -3,4 +3,5 @@
 # CRON=0 5 * * *
 # MAILTO=treinen@free.fr
 
+umask 2
 /home/treinen/dose/scripts/run.py
