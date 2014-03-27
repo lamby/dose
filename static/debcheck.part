@@ -6,6 +6,8 @@ These checks are run daily on <kbd>qa.debian.org</kbd>:
 <ul>
   <li><a href="debcheck/unstable_main/index.html">unstable,
       main only</a>
+  <li><a href="debcheck/unstable_contrib+nonfree/index.html">unstable,
+      contrib and non_free with main as background</a>
 </ul>
 
 <h2>What it means</h2>
