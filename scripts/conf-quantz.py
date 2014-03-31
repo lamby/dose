@@ -7,9 +7,14 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-import os
-
-home=os.getenv("HOME")
+architectures = {
+    'unstable' : [ 'amd64', 'armel', 'armhf', 'hurd-i386', 'i386',
+                   'kfreebsd-amd64', 'kfreebsd-i386', 'mips', 'mipsel',
+                   'powerpc', 's390x', 'sparc' ],
+    'testing' :  [ 'amd64', 'armel', 'armhf', 'i386', 'kfreebsd-amd64',
+                   'kfreebsd-i386', 'mips', 'mipsel', 'powerpc', 's390x',
+                   'sparc' ]
+}
 
 locations = {
     'debmirror' : '/srv/mirrors/debian/dists',
@@ -19,20 +24,28 @@ locations = {
 
 scenarios = {
     'unstable_main': {
-        'archs' : [ 'amd64', 'armel', 'armhf', 'hurd-i386', 'i386',
-                    'kfreebsd-amd64', 'kfreebsd-i386',
-                    'mips', 'mipsel', 'powerpc', 's390x', 'sparc' ],
+        'archs' : architectures['unstable'],
         'fgs'   : [ '{m}/unstable/main/binary-{a}/Packages.gz' ],
         'bgs'   : []
         },
     'unstable_contrib+nonfree': {
-        'archs' : [ 'amd64', 'armel', 'armhf', 'hurd-i386', 'i386',
-                    'kfreebsd-amd64', 'kfreebsd-i386',
-                    'mips', 'mipsel', 'powerpc', 's390x', 'sparc' ],
+        'archs' : architectures['unstable'],
+        'fgs'   : [ '{m}/unstable/contrib/binary-{a}/Packages.gz',
+                    '{m}/unstable/non-free/binary-{a}/Packages.gz' ],
+        'bgs'   : [ '{m}/unstable/main/binary-{a}/Packages.gz' ]
+        },
+    'testing_main': {
+        'archs' : architectures['testing'],
+        'fgs'   : [ '{m}/unstable/main/binary-{a}/Packages.gz' ],
+        'bgs'   : []
+        },
+    'testing_contrib+nonfree': {
+        'archs' : architectures['testing'],
         'fgs'   : [ '{m}/unstable/contrib/binary-{a}/Packages.gz',
                     '{m}/unstable/non-free/binary-{a}/Packages.gz' ],
         'bgs'   : [ '{m}/unstable/main/binary-{a}/Packages.gz' ]
         }
+
 }
 
 slices = 7
