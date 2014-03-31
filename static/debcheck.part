@@ -1,6 +1,6 @@
 <h1>Dose-Debcheck: Not Installable Packages</h1>
 
-<h2>Currently checked scenarios</h2>
+<h2>Checks currently done</h2>
 
 These checks are run daily on <kbd>qa.debian.org</kbd>: 
 <ul>
@@ -38,11 +38,11 @@ These checks are run daily on <kbd>qa.debian.org</kbd>:
 
 <h2>How it is done</h2>
 <p>
-  The set of not installable packages is computed by
+  The set of not installable packages is computed using
   the <i>dose-debcheck</i> tool available in
   the <a href="https://packages.debian.org/wheezy/dose-distcheck">
-    dose-distcheck package</a>, the successor of
-  the previously used <i>edos-debcheck</i> tool.
+  dose-distcheck package</a>, the successor of the previously
+  used <i>edos-debcheck</i> tool.
 </p>
 
 <h2>Filing bugs</h2>
@@ -52,7 +52,7 @@ situation:
   <li>All packages in the <i>stable</i> and <i>testing</i>
     distribution should be installable, with the exception of packages
     with <kbd>Architecture=all</kbd>. The reason for the latter
-    exception is that these packages are always available for each
+    exception is that these packages are usually available for each
     architecture, regardless of the fact whether their dependencies
     can be satisfied on that architecture or not. However, when a
     package with <kbd>Architecture=all</kbd> is not installable on any
