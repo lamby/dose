@@ -51,7 +51,7 @@ for scenario in conf.scenarios.keys():
 
     vertical.build(timestamps_keep,scenario,architectures)
 
-cleanup.cleanup(timestamps_keep, timestamps_known, 
+cleanup.cleanup(timestamps_keep, timestamps_known, timestamp_this, 
                 conf.scenarios.keys())
 
 
