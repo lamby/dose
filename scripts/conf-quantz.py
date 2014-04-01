@@ -36,14 +36,14 @@ scenarios = {
         },
     'testing_main': {
         'archs' : architectures['testing'],
-        'fgs'   : [ '{m}/unstable/main/binary-{a}/Packages.gz' ],
+        'fgs'   : [ '{m}/testing/main/binary-{a}/Packages.gz' ],
         'bgs'   : []
         },
     'testing_contrib+nonfree': {
         'archs' : architectures['testing'],
-        'fgs'   : [ '{m}/unstable/contrib/binary-{a}/Packages.gz',
-                    '{m}/unstable/non-free/binary-{a}/Packages.gz' ],
-        'bgs'   : [ '{m}/unstable/main/binary-{a}/Packages.gz' ]
+        'fgs'   : [ '{m}/testing/contrib/binary-{a}/Packages.gz',
+                    '{m}/testing/non-free/binary-{a}/Packages.gz' ],
+        'bgs'   : [ '{m}/testing/main/binary-{a}/Packages.gz' ]
         }
 
 }
