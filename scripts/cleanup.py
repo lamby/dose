@@ -15,12 +15,20 @@ def cleanup(timestamps_keep,timestamps_known,timestamp_this,scenarios):
 
     info('cleaning up')
 
-    # remove stuff from the current run we dont need any more
+    # remove the pool dir from the current cache
     for scenario in scenarios:
         path1=cachedir(timestamp_this,scenario,'pool')
         if os.path.isdir(path1):
             shutil.rmtree(path1)
 
+    # remove the raw debcheck output from the current cache 
+    for scenario in scenarios: 
+        path1=cachedir(timestamp_this,scenario,'')
+        for directory1 in os.listdir(path1):
+            path2=path1+directory1+'/debcheck.out'
+            if os.path.isfile(path2):
+                os.unlink(path2)
+                
     # remove old cache dirs
     for directory in timestamps_known:
         if directory not in timestamps_keep:
