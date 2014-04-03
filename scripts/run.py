@@ -8,7 +8,7 @@
 # License, or (at your option) any later version.
 
 import time, os, argparse, re
-import conf, universes, reports, horizontal, vertical, cleanup
+import conf, universes, reports, horizontal, vertical, cleanup, common
 
 argparser=argparse.ArgumentParser(
     description="Run dose-debcheck and analyze the result.")
@@ -17,7 +17,10 @@ argparser.add_argument('--skip-debcheck',dest='skip_debcheck',
                        help='Only rebuild tables for the last run.')
 arguments=argparser.parse_args()
 
-timestamp_now = str(int(time.time()))
+time_now = int(time.time())
+timestamp_now = str(time_now)
+daystamp_now = str(common.days_since_epoch(time_now))
+
 timestamps_known = [t for t in os.listdir(conf.locations['cacheroot'])
                     if re.match(r'^[0-9]+$', t)]
 timestamps_known.sort(reverse=True)
@@ -34,6 +37,7 @@ if arguments.skip_debcheck and timestamp_last:
     timestamps_keep = timestamps_known[0:conf.slices]
 else:
     timestamp_this = timestamp_now
+    daystamp_this  = daystamp_now
     timestamps_keep = timestamps_known[0:conf.slices-1]
     timestamps_keep[0:0] = [timestamp_now]
             
@@ -45,7 +49,7 @@ for scenario in conf.scenarios.keys():
             universes.build(timestamp_this,scenario,arch)
 
     for arch in architectures:
-        reports.build(timestamp_this,scenario,arch)
+        reports.build(timestamp_this,daystamp_this,scenario,arch)
             
     horizontal.build(timestamp_this,scenario,architectures)
 

@@ -22,6 +22,17 @@ def cachedir(timestamp,scenario,arch):
             s=scenario,
             a=arch))
 
+def historydir(scenario):
+    return('{r}/history/{s}'.format(
+            r=conf.locations['cacheroot'],
+            s=scenario))
+
+def historyfile(scenario,architecture):
+    return('{r}/history/{s}/{a}'.format(
+            r=conf.locations['cacheroot'],
+            s=scenario,
+            a=architecture))
+
 def htmldir(timestamp,scenario):
     '''
     absolute path of a html directory for given timestamp, scenario
@@ -123,3 +134,8 @@ html_footer='''    <div id="footer">
   </body>
 </html>
 '''
+
+seconds_per_day = 60 * 60 * 24
+
+def days_since_epoch(time):
+    return(time//seconds_per_day)

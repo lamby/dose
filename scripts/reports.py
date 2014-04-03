@@ -200,9 +200,38 @@ summary_header = '''
 '''
 
 #########################################################################
+# update history
+
+def update_history(daystamp,scenario,arch,report):
+    dir=historydir(scenario)
+    if not os.path.isdir(dir): os.makedirs(dir)
+
+    # read in the old contents of the history file
+    histfile=historyfile(scenario,arch)
+    history={}
+    if os.path.isfile(histfile):
+        h=open(histfile)
+        for entry in h:
+            package,date=entry.split('#')
+            history[package] = date.rstrip()
+        h.close()
+
+    # rewrite the history file: for each file that is now not installable,
+    # write the date found in the old historyfile if it exists, otherwise
+    # write the current day.
+    outfile=open(histfile,'w')
+    if report['report']:
+        for stanza in report['report']:
+            package  = stanza['package']
+            print(package,history.get(package,daystamp),
+                  sep='#',
+                  file=outfile)
+    outfile.close ()
+
+#########################################################################
 # top level 
 
-def build(timestamp,scenario,arch):
+def build(timestamp,daystamp,scenario,arch):
     '''
     summarize a complete output produced by dose-debcheck to outfilename,
     and prettyprint chunks of detailed explanations that do not yet exist in 
@@ -259,3 +288,5 @@ def build(timestamp,scenario,arch):
     print(html_footer,file=outfile)
     outfile.close ()
     sumfile.close ()
+
+    update_history(daystamp,scenario,arch,report)
