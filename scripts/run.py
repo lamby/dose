@@ -51,7 +51,7 @@ for scenario in conf.scenarios.keys():
     for arch in architectures:
         reports.build(timestamp_this,daystamp_this,scenario,arch)
             
-    horizontal.build(timestamp_this,scenario,architectures)
+    horizontal.build(timestamp_this,daystamp_now,scenario,architectures)
 
     vertical.build(timestamps_keep,scenario,architectures)
 

@@ -16,6 +16,7 @@ architectures:
 
 import os, datetime
 from common import *
+import history
 
 # map a hash of explanation to a short explanation
 shortexplanation = {}
@@ -253,9 +254,13 @@ def write_row(timestamp,scenario,architectures):
 
 ########################################################################
 # top level
-def build(timestamp,scenario,architectures):
+def build(timestamp,daystamp,scenario,architectures):
     info('build horizontal tables for {s}'.format(s=scenario))
     analyze_horizontal(timestamp,scenario,architectures)
     write_package_page(timestamp,scenario,architectures)
     write_tables(timestamp,scenario,architectures)
     write_row(timestamp,scenario,architectures)
+    history.update_history_summary(daystamp,scenario,'some',
+                                   uninstallables, set())
+    history.update_history_summary(daystamp,scenario,'each',
+                                   uninstallables, installables_somewhere)

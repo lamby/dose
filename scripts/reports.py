@@ -6,7 +6,9 @@
 # License, or (at your option) any later version.
 
 import yaml,os, hashlib, datetime
+import history
 from common import *
+
 
 
 format_short_dep="missing dependency on {d}"
@@ -199,34 +201,6 @@ summary_header = '''
 <th>Short explanation (click for detailed explanation)</th>
 '''
 
-#########################################################################
-# update history
-
-def update_history(daystamp,scenario,arch,report):
-    dir=historydir(scenario)
-    if not os.path.isdir(dir): os.makedirs(dir)
-
-    # read in the old contents of the history file
-    histfile=historyfile(scenario,arch)
-    history={}
-    if os.path.isfile(histfile):
-        h=open(histfile)
-        for entry in h:
-            package,date=entry.split('#')
-            history[package] = date.rstrip()
-        h.close()
-
-    # rewrite the history file: for each file that is now not installable,
-    # write the date found in the old historyfile if it exists, otherwise
-    # write the current day.
-    outfile=open(histfile,'w')
-    if report['report']:
-        for stanza in report['report']:
-            package  = stanza['package']
-            print(package,history.get(package,daystamp),
-                  sep='#',
-                  file=outfile)
-    outfile.close ()
 
 #########################################################################
 # top level 
@@ -289,4 +263,4 @@ def build(timestamp,daystamp,scenario,arch):
     outfile.close ()
     sumfile.close ()
 
-    update_history(daystamp,scenario,arch,report)
+    history.update_history_arch(daystamp,scenario,arch,report)
