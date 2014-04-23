@@ -28,7 +28,7 @@ def history_cachedir(scenario):
             r=conf.locations['cacheroot'],
             s=scenario))
 
-def historyfile(scenario,architecture):
+def history_cachefile(scenario,architecture):
     return('{r}/history/{s}/{a}'.format(
             r=conf.locations['cacheroot'],
             s=scenario,

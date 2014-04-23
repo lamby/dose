@@ -14,7 +14,7 @@ def update_history_arch(daystamp,scenario,arch,report):
     if not os.path.isdir(dir): os.makedirs(dir)
 
     # read in the old contents of the history file
-    histfile=historyfile(scenario,arch)
+    histfile=history_cachefile(scenario,arch)
     history={}
     if os.path.isfile(histfile):
         h=open(histfile)
@@ -24,8 +24,8 @@ def update_history_arch(daystamp,scenario,arch,report):
         h.close()
 
     # rewrite the history file: for each file that is now not installable,
-    # write the date found in the old historyfile if it exists, otherwise
-    # write the current day.
+    # write the date found in the old history_cachefile if it exists,
+    # otherwise write the current day.
     outfile=open(histfile,'w')
     if report['report']:
         for stanza in report['report']:
@@ -41,7 +41,7 @@ def update_history_summary(daystamp,scenario,name,packages,excludes):
     if not os.path.isdir(dir): os.makedirs(dir)
 
     # read in the old contents of the history file
-    histfile=historyfile(scenario,name)
+    histfile=history_cachefile(scenario,name)
     history={}
     if os.path.isfile(histfile):
         h=open(histfile)
@@ -51,8 +51,8 @@ def update_history_summary(daystamp,scenario,name,packages,excludes):
         h.close()
 
     # rewrite the history file: for each file that is now not installable,
-    # write the date found in the old historyfile if it exists, otherwise
-    # write the current day.
+    # write the date found in the old history_cachefile if it exists,
+    # otherwise write the current day.
     outfile=open(histfile,'w')
     for package in packages:
         if package in excludes: continue
