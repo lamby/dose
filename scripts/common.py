@@ -6,6 +6,7 @@
 # License, or (at your option) any later version.
 
 import conf
+from datetime import date
 
 verbose=True
 
@@ -139,3 +140,10 @@ seconds_per_day = 60 * 60 * 24
 
 def days_since_epoch(time):
     return(time//seconds_per_day)
+
+# ordinal number of 1/1/1970, where 1 = 1/1/0000 
+proleptic_of_epoch = 719163
+
+# date corresponding to a number of days since epoch
+def date_of_days(days):
+    (date.fromordinal(days+proleptic_of_epoch)).isoformat()
