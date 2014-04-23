@@ -23,7 +23,7 @@ def cachedir(timestamp,scenario,arch):
             s=scenario,
             a=arch))
 
-def historydir(scenario):
+def history_cachedir(scenario):
     return('{r}/history/{s}'.format(
             r=conf.locations['cacheroot'],
             s=scenario))

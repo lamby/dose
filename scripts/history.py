@@ -10,7 +10,7 @@ from common import *
 
 # update history for an arch (where we have a report in yaml)
 def update_history_arch(daystamp,scenario,arch,report):
-    dir=historydir(scenario)
+    dir=history_cachedir(scenario)
     if not os.path.isdir(dir): os.makedirs(dir)
 
     # read in the old contents of the history file
@@ -37,7 +37,7 @@ def update_history_arch(daystamp,scenario,arch,report):
 
 # update history for horizontal summaries (each,some)
 def update_history_summary(daystamp,scenario,name,packages,excludes):
-    dir=historydir(scenario)
+    dir=history_cachedir(scenario)
     if not os.path.isdir(dir): os.makedirs(dir)
 
     # read in the old contents of the history file
