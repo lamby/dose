@@ -34,6 +34,19 @@ def history_cachefile(scenario,architecture):
             s=scenario,
             a=architecture))
 
+def history_htmldir(scenario,architecture):
+    return('{r}/{s}/history/{a}'.format(
+            r=conf.locations['htmlroot'],
+            s=scenario,
+            a=architecture))
+
+def history_htmlfile(scenario,architecture,days):
+    return('{r}/{s}/history/{a}/{d}.html'.format(
+            r=conf.locations['htmlroot'],
+            s=scenario,
+            a=architecture,
+            d=days))
+
 def htmldir(timestamp,scenario):
     '''
     absolute path of a html directory for given timestamp, scenario

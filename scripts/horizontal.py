@@ -254,13 +254,13 @@ def write_row(timestamp,scenario,architectures):
 
 ########################################################################
 # top level
-def build(timestamp,daystamp,scenario,architectures):
+def build(timestamp,day,scenario,architectures):
     info('build horizontal tables for {s}'.format(s=scenario))
     analyze_horizontal(timestamp,scenario,architectures)
     write_package_page(timestamp,scenario,architectures)
     write_tables(timestamp,scenario,architectures)
     write_row(timestamp,scenario,architectures)
-    history.update_history_summary(daystamp,scenario,'some',
+    history.update_history_summary(day,scenario,'some',
                                    uninstallables, set())
-    history.update_history_summary(daystamp,scenario,'each',
+    history.update_history_summary(day,scenario,'each',
                                    uninstallables, installables_somewhere)

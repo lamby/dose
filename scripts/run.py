@@ -18,8 +18,8 @@ argparser.add_argument('--skip-debcheck',dest='skip_debcheck',
 arguments=argparser.parse_args()
 
 time_now = int(time.time())
+day_now  = common.days_since_epoch(time_now)
 timestamp_now = str(time_now)
-daystamp_now = str(common.days_since_epoch(time_now))
 
 timestamps_known = [t for t in os.listdir(conf.locations['cacheroot'])
                     if re.match(r'^[0-9]+$', t)]
@@ -37,7 +37,6 @@ if arguments.skip_debcheck and timestamp_last:
     timestamps_keep = timestamps_known[0:conf.slices]
 else:
     timestamp_this = timestamp_now
-    daystamp_this  = daystamp_now
     timestamps_keep = timestamps_known[0:conf.slices-1]
     timestamps_keep[0:0] = [timestamp_now]
             
@@ -49,9 +48,9 @@ for scenario in conf.scenarios.keys():
             universes.build(timestamp_this,scenario,arch)
 
     for arch in architectures:
-        reports.build(timestamp_this,daystamp_this,scenario,arch)
+        reports.build(timestamp_this,day_now,scenario,arch)
             
-    horizontal.build(timestamp_this,daystamp_now,scenario,architectures)
+    horizontal.build(timestamp_this,day_now,scenario,architectures)
 
     vertical.build(timestamps_keep,scenario,architectures)
 
