@@ -6,7 +6,6 @@
 # License, or (at your option) any later version.
 
 import yaml,os, hashlib, datetime
-import history
 from common import *
 
 
@@ -202,26 +201,44 @@ summary_header = '''
 '''
 
 
+
+
 #########################################################################
 # top level 
 
-def build(timestamp,daystamp,scenario,arch):
+def build(timestamp,day,scenario,arch):
     '''
     summarize a complete output produced by dose-debcheck to outfilename,
     and prettyprint chunks of detailed explanations that do not yet exist in 
     the pool.
     '''
 
+    daystamp=str(day)
+
     info('building report for {s} on {a}'.format(s=scenario,a=arch))
 
-    # the directory where we store chunks of explanations
+    # assure existence of output directories:
+    histcachedir=history_cachedir(scenario)
+    if not os.path.isdir(histcachedir): os.mkdir(histcachedir)
     pooldir = cachedir(timestamp,scenario,'pool')
     if not os.path.isdir(pooldir): os.mkdir(pooldir)
+    histhtmldir=history_htmldir(scenario,arch)
+    if not os.path.isdir(histhtmldir): os.makedirs(histhtmldir)
 
-    # the report obtained from dose-debcheck
+    # fetch the report obtained from dose-debcheck
     reportfile = open(cachedir(timestamp,scenario,arch)+'/debcheck.out')
-    report= yaml.load(reportfile)
+    report = yaml.load(reportfile)
     reportfile.close()
+
+    # fetch the history of packages
+    histfile=history_cachefile(scenario,arch)
+    history={}
+    if os.path.isfile(histfile):
+        h=open(histfile)
+        for entry in h:
+            package,date=entry.split('#')
+            history[package] = date.rstrip()
+        h.close()
 
     # html output: a summary for this architecture
     outdir=htmldir(timestamp,scenario)
@@ -245,6 +262,7 @@ def build(timestamp,daystamp,scenario,arch):
             reasons  = stanza['reasons']
             isnative = stanza['architecture'] != 'all'
             all_mark = '' if isnative else '[all] '
+    
             print('<tr><td>',package,'</td>', file=outfile,sep='')
             print('<td>',all_mark,version,'</td>', file=outfile,sep='')
             reasons_hash=hash_reasons(reasons)
@@ -263,4 +281,32 @@ def build(timestamp,daystamp,scenario,arch):
     outfile.close ()
     sumfile.close ()
 
-    history.update_history_arch(daystamp,scenario,arch,report)
+
+
+    # rewrite the history file: for each file that is now not installable,
+    # write the date found in the old history_cachefile if it exists,
+    # otherwise write the current day.
+    outfile=open(histfile,'w')
+    if report['report']:
+        for stanza in report['report']:
+            package  = stanza['package']
+            print(package,history.get(package,daystamp),
+                  sep='#',
+                  file=outfile)
+    outfile.close ()
+
+    # write summaries in history html files
+    hlengths={0:2,1:4,2:8,3:16,4:32,5:64,6:128,7:256,8:512}
+    hfiles={i:open(history_htmlfile(scenario,arch,d),'w')
+            for i,d in hlengths.items()}
+    if report['report']:
+        for stanza in report['report']:
+            package  = stanza['package']
+            if package in history:
+                firstday=int(history[package])
+                duration=day-firstday
+                for i in sorted(hlengths.keys(),reverse=True):
+                    if duration >= hlengths[i]:
+                        print(package,file=hfiles[i])
+                        break
+    for f in hfiles.values(): f.close()
