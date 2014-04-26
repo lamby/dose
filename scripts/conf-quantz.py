@@ -10,7 +10,7 @@
 architectures = {
     'unstable' : [ 'amd64', 'armel', 'armhf', 'hurd-i386', 'i386',
                    'kfreebsd-amd64', 'kfreebsd-i386', 'mips', 'mipsel',
-                   'powerpc', 's390x', 'sparc' ],
+                   'powerpc', 's390x' ],
     'testing' :  [ 'amd64', 'armel', 'armhf', 'i386', 'kfreebsd-amd64',
                    'kfreebsd-i386', 'mips', 'mipsel', 'powerpc', 's390x',
                    'sparc' ]
