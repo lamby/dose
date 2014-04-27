@@ -12,8 +12,7 @@ architectures = {
                    'kfreebsd-amd64', 'kfreebsd-i386', 'mips', 'mipsel',
                    'powerpc', 's390x' ],
     'testing' :  [ 'amd64', 'armel', 'armhf', 'i386', 'kfreebsd-amd64',
-                   'kfreebsd-i386', 'mips', 'mipsel', 'powerpc', 's390x',
-                   'sparc' ]
+                   'kfreebsd-i386', 'mips', 'mipsel', 'powerpc', 's390x' ]
 }
 
 locations = {
