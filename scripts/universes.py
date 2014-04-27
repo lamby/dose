@@ -44,12 +44,15 @@ def get_fg_packages(scenario,arch,outdir):
     info('extracting foreground for {s} on {a}'.format(a=arch,s=scenario))
     packages=set()
     for fg in conf.scenarios[scenario]['fgs']:
-        if fg[-3:]=='.gz':
-            infile = codecs.getreader('utf-8')(gzip.open(
-                    fg.format(m=conf.locations['debmirror'],a=arch),'r'))   
+        fg_expanded = fg.format(m=conf.locations['debmirror'],a=arch)
+        if not os.path.exists(fg_expanded):
+            warning('no such file: {p}, dropping from foregrounds'.format(
+                    p=fg_expanded,))
+            continue
+        elif fg[-3:]=='.gz':
+            infile = codecs.getreader('utf-8')(gzip.open(fg_expanded,'r'))   
         else:
-            infile = open(
-                fg.format(m=conf.locations['debmirror'],a=arch))
+            infile = open(fg_expanded)
         for line in infile:
             if line.startswith('Package:'):
                 packages.add(line.split()[1])

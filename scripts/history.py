@@ -27,7 +27,7 @@ def update_history_arch(daystamp,scenario,arch,report):
     # write the date found in the old historyfile if it exists, otherwise
     # write the current day.
     outfile=open(histfile,'w')
-    if report['report']:
+    if report and report['report']:
         for stanza in report['report']:
             package  = stanza['package']
             print(package,history.get(package,daystamp),
