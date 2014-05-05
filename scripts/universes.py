@@ -46,7 +46,7 @@ def get_fg_packages(scenario,arch,outdir):
     for fg in conf.scenarios[scenario]['fgs']:
         fg_expanded = fg.format(m=conf.locations['debmirror'],a=arch)
         if not os.path.exists(fg_expanded):
-            warning('no such file: {p}, dropping from foregrounds'.format(
+            warning('No such file: {p}, dropping from foregrounds'.format(
                     p=fg_expanded,))
             continue
         elif fg[-3:]=='.gz':
