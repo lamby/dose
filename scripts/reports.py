@@ -287,7 +287,7 @@ def build(timestamp,day,scenario,arch):
     # write the date found in the old history_cachefile if it exists,
     # otherwise write the current day.
     outfile=open(histfile,'w')
-    if report['report']:
+    if report and report['report']:
         for stanza in report['report']:
             package  = stanza['package']
             print(package,history.get(package,daystamp),
@@ -299,7 +299,7 @@ def build(timestamp,day,scenario,arch):
     hlengths={0:2,1:4,2:8,3:16,4:32,5:64,6:128,7:256,8:512}
     hfiles={i:open(history_htmlfile(scenario,arch,d),'w')
             for i,d in hlengths.items()}
-    if report['report']:
+    if report and report['report']:
         for stanza in report['report']:
             package  = stanza['package']
             if package in history:
