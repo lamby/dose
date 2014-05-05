@@ -255,7 +255,7 @@ def build(timestamp,day,scenario,arch):
     # a summary of the analysis in the cache directory
     sumfile = open(cachedir(timestamp,scenario,arch)+'/summary', 'w')
 
-    if report['report']:
+    if report and report['report']:
         for stanza in report['report']:
             package  = stanza['package']
             version  = stanza['version']

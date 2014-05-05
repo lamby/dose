@@ -8,7 +8,6 @@
 import os
 from common import *
 
-
 # update history for horizontal summaries (each,some)
 def update_history_summary(day,scenario,name,packages,excludes):
     daystamp=str(day)
