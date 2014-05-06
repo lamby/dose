@@ -200,6 +200,25 @@ summary_header = '''
 <th>Short explanation (click for detailed explanation)</th>
 '''
 
+summary_history_header = '''
+<h1>Packages not installable on {arch} in scenario {scenario}
+for {d} days</h1>
+<b>Date: {utctime} UTC</b>
+<p>
+
+Packages that have been continuously found to be not installable
+(not necessarily in the same version, and not necessarily with the
+same explanation all the time).<p>
+<kbd>[all]</kbd> indicates a package with <kbd>Architecture=all</kbd>.
+<p>
+<table border=1>
+<tr>
+<th>Package</th>
+<th>Version</th>
+<th>Since</th>
+<th>Short explanation (click for detailed explanation) as of today</th>
+'''
+
 
 
 
@@ -224,6 +243,8 @@ def build(timestamp,day,scenario,arch):
     if not os.path.isdir(pooldir): os.mkdir(pooldir)
     histhtmldir=history_htmldir(scenario,arch)
     if not os.path.isdir(histhtmldir): os.makedirs(histhtmldir)
+    outdir=htmldir(timestamp,scenario)
+    if not os.path.isdir(outdir): os.makedirs(outdir)
 
     # fetch the report obtained from dose-debcheck
     reportfile = open(cachedir(timestamp,scenario,arch)+'/debcheck.out')
@@ -241,8 +262,6 @@ def build(timestamp,day,scenario,arch):
         h.close()
 
     # html output: a summary for this architecture
-    outdir=htmldir(timestamp,scenario)
-    if not os.path.isdir(outdir): os.makedirs(outdir)
     outfile = open(outdir+'/'+arch+'.html', 'w')
     print(html_header,file=outfile)
     print(summary_header.format(
@@ -252,8 +271,25 @@ def build(timestamp,day,scenario,arch):
             utctime=datetime.datetime.utcfromtimestamp(float(timestamp))),
           file=outfile)
 
+    # historic html files for different time slices
+    hlengths={0:2,1:4,2:8,3:16,4:32,5:64,6:128,7:256,8:512}
+    hfiles={i:open(history_htmlfile(scenario,arch,d),'w')
+            for i,d in hlengths.items()}
+    for i in hfiles.keys():
+        print(html_header,file=hfiles[i])
+        print(summary_history_header.format(
+                timestamp=str(timestamp),
+                scenario=scenario,
+                arch=arch,
+                d=hlengths[i],
+                utctime=datetime.datetime.utcfromtimestamp(float(timestamp))),
+              file=hfiles[i])
+
     # a summary of the analysis in the cache directory
     sumfile = open(cachedir(timestamp,scenario,arch)+'/summary', 'w')
+
+    # file recording the first day of observed non-installability per package
+    historyfile=open(histfile,'w')
 
     if report and report['report']:
         for stanza in report['report']:
@@ -263,50 +299,55 @@ def build(timestamp,day,scenario,arch):
             isnative = stanza['architecture'] != 'all'
             all_mark = '' if isnative else '[all] '
     
-            print('<tr><td>',package,'</td>', file=outfile,sep='')
-            print('<td>',all_mark,version,'</td>', file=outfile,sep='')
+            # create short and complete explanation, add complete
+            # explanation to the corresponding file
             reasons_hash=hash_reasons(reasons)
             reasons_summary=summary_of_reasons(reasons)
             reasons_filename = pooldir + '/' + str(reasons_hash)
             if not os.path.isfile(reasons_filename):
                 create_reasons_file(package,version,reasons,reasons_filename)
+
+            # write to html summary for that day
+            print('<tr><td>',package,'</td>', file=outfile,sep='')
+            print('<td>',all_mark,version,'</td>', file=outfile,sep='')
             print('<td>',pack_anchor(timestamp,package,reasons_hash),
                   reasons_summary,'</a>',
                   file=outfile, sep='')
-            print(package,version,isnative,reasons_hash,reasons_summary,
-                  file=sumfile, sep='#')
-        print("</table>", file=outfile)
 
-    print(html_footer,file=outfile)
-    outfile.close ()
-    sumfile.close ()
-
-
-
-    # rewrite the history file: for each file that is now not installable,
-    # write the date found in the old history_cachefile if it exists,
-    # otherwise write the current day.
-    outfile=open(histfile,'w')
-    if report and report['report']:
-        for stanza in report['report']:
-            package  = stanza['package']
-            print(package,history.get(package,daystamp),
-                  sep='#',
-                  file=outfile)
-    outfile.close ()
-
-    # write summaries in history html files
-    hlengths={0:2,1:4,2:8,3:16,4:32,5:64,6:128,7:256,8:512}
-    hfiles={i:open(history_htmlfile(scenario,arch,d),'w')
-            for i,d in hlengths.items()}
-    if report and report['report']:
-        for stanza in report['report']:
-            package  = stanza['package']
+            # write to the corresponding historic html page
             if package in history:
                 firstday=int(history[package])
                 duration=day-firstday
                 for i in sorted(hlengths.keys(),reverse=True):
                     if duration >= hlengths[i]:
-                        print(package,file=hfiles[i])
+                        hfile=hfiles[i]
                         break
-    for f in hfiles.values(): f.close()
+            print('<tr><td>',package,'</td>', file=hfile,sep='')
+            print('<td>',all_mark,version,'</td>', file=hfile,sep='')
+            print('<td>',date_of_days(firstday),'</td>', file=hfile,sep="")
+            print('<td>',pack_anchor_from_hist(timestamp,package,reasons_hash),
+                  reasons_summary,'</a>',
+                  file=hfile, sep='')
+
+            # write into the summary file in the cache
+            print(package,version,isnative,reasons_hash,reasons_summary,
+                  file=sumfile, sep='#')
+
+            # rewrite the history file: for each file that is now not
+            # installable, write the date found in the old history_cachefile
+            # if it exists, otherwise write the current day.
+            print(package,history.get(package,daystamp),
+                  sep='#',
+                  file=historyfile)
+
+        print("</table>", file=outfile)
+        for f in hfiles.values():  print("</table>", file=f)
+
+    print(html_footer,file=outfile)
+    outfile.close ()
+    sumfile.close ()
+    historyfile.close ()
+    for f in hfiles.values():
+        print(html_footer,file=f)
+        f.close()
+

@@ -75,6 +75,14 @@ def pack_anchor(timestamp,package,hash):
             p=package,
             h=hash))
 
+def pack_anchor_from_hist(timestamp,package,hash):
+    '''
+    relative path, from an architecture page, to a package page 
+    '''
+    return('<a href="../../{t}/packages/{p}.html#{h}">'.format(
+            t=timestamp,p=package,
+            h=hash))
+
 def str_of_list(liste):
     if not liste: return ''
     result, *rest = liste
@@ -162,4 +170,4 @@ proleptic_of_epoch = 719163
 
 # date corresponding to a number of days since epoch
 def date_of_days(days):
-    (date.fromordinal(days+proleptic_of_epoch)).isoformat()
+    return (date.fromordinal(days+proleptic_of_epoch)).isoformat()
