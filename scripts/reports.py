@@ -272,7 +272,6 @@ def build(timestamp,day,scenario,arch):
           file=outfile)
 
     # historic html files for different time slices
-    hlengths={0:2,1:4,2:8,3:16,4:32,5:64,6:128,7:256,8:512}
     hfiles={i:open(history_htmlfile(scenario,arch,d),'w')
             for i,d in hlengths.items()}
     for i in hfiles.keys():
@@ -290,6 +289,11 @@ def build(timestamp,day,scenario,arch):
 
     # file recording the first day of observed non-installability per package
     historyfile=open(histfile,'w')
+
+    # number of uninstallable arch=all packages per slice
+    count_archall={i:0 for i in hlengths.keys()}
+    # number of uninstallable native packages per slice
+    count_natives={i:0 for i in hlengths.keys()}
 
     if report and report['report']:
         for stanza in report['report']:
@@ -315,19 +319,26 @@ def build(timestamp,day,scenario,arch):
                   file=outfile, sep='')
 
             # write to the corresponding historic html page
+            # and count archall/native uninstallable packages per slice
             if package in history:
                 firstday=int(history[package])
                 duration=day-firstday
                 for i in sorted(hlengths.keys(),reverse=True):
                     if duration >= hlengths[i]:
-                        hfile=hfiles[i]
+                        if isnative:
+                            count_natives[i] += 1
+                        else:
+                            count_archall[i] += 1
+                        print('<tr><td>',package,'</td>',file=hfiles[i],sep='')
+                        print('<td>',all_mark,version,'</td>',
+                              file=hfiles[i],sep='')
+                        print('<td>',date_of_days(firstday),'</td>',
+                              file=hfiles[i],sep="")
+                        print('<td>',pack_anchor_from_hist(
+                                timestamp,package,reasons_hash),
+                              reasons_summary,'</a>',
+                              file=hfiles[i], sep='')
                         break
-            print('<tr><td>',package,'</td>', file=hfile,sep='')
-            print('<td>',all_mark,version,'</td>', file=hfile,sep='')
-            print('<td>',date_of_days(firstday),'</td>', file=hfile,sep="")
-            print('<td>',pack_anchor_from_hist(timestamp,package,reasons_hash),
-                  reasons_summary,'</a>',
-                  file=hfile, sep='')
 
             # write into the summary file in the cache
             print(package,version,isnative,reasons_hash,reasons_summary,
@@ -350,4 +361,9 @@ def build(timestamp,day,scenario,arch):
     for f in hfiles.values():
         print(html_footer,file=f)
         f.close()
+    vertical=open(history_verticalfile(scenario,arch),'w')
+    for i in hlengths.keys():
+        print('{i}={cn}/{ca}'.format(
+                i=i,cn=count_natives[i],ca=count_archall[i]),file=vertical)
+    vertical.close()
 

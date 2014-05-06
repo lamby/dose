@@ -19,10 +19,10 @@ locations = {
 
 scenarios = {
     'unstable_main': {
-        'archs' : [ 'amd64', 'i386', 'powerpc' ],
+        'archs' : [ 'amd64', 'i386' ],
         'fgs'   : [ '{m}/unstable/main/binary-{a}/Packages' ],
         'bgs'   : []
-        }
+        },
 }
 
 slices = 7

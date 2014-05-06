@@ -37,6 +37,12 @@ def history_cachefile(scenario,architecture):
             s=scenario,
             a=architecture))
 
+def history_verticalfile(scenario,architecture):
+    return('{r}/history/{s}/{a}-perslice'.format(
+            r=conf.locations['cacheroot'],
+            s=scenario,
+            a=architecture))
+
 def history_htmldir(scenario,architecture):
     return('{r}/{s}/history/{a}'.format(
             r=conf.locations['htmlroot'],
@@ -171,3 +177,5 @@ proleptic_of_epoch = 719163
 # date corresponding to a number of days since epoch
 def date_of_days(days):
     return (date.fromordinal(days+proleptic_of_epoch)).isoformat()
+
+hlengths={0:2,1:4,2:8,3:16,4:32,5:64,6:128,7:256,8:512}
