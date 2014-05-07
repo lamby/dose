@@ -10,7 +10,7 @@ from common import *
 
 
 
-format_short_dep="missing dependency on {d}"
+format_short_dep="unsatisfied dependency on {d}"
 format_short_con="conflict between {c1} and {c2}"
 
 format_long_dep='<li>No package matches the dependency <i>{d}</i> of package {p} (={v})<br>'
