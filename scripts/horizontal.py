@@ -31,7 +31,10 @@ installables_somewhere = set()
 
 # number of packages not installables somewhere / everywhere
 
-summarytable_header="""
+summary_header='''
+<h1>Packages not installable on {what} architecture in scenario {scenario}</h1>
+<b>Date: {utctime} UTC</b>
+<p>
 <kbd>[all]</kbd> indicates a package with <kbd>Architecture=all</kbd>.
 <p>
 <table border=1>
@@ -39,7 +42,8 @@ summarytable_header="""
 <th>Package</th>
 <th>Version</th>
 <th>Architectures</th>
-<th>Short Explanation (click for details)</th>"""
+<th>Short Explanation (click for details)</th>
+'''
 
 def analyze_horizontal(timestamp,scenario,architectures):
     '''
@@ -116,54 +120,57 @@ def write_package_page(timestamp,scenario,architectures):
         print(html_footer,file=outfile)
         outfile.close ()
 
-def write_tables(timestamp,scenario,architectures):
+#############################################################################
+def write_tables(timestamp,day,scenario,what,includes,excludes):
     '''
-    Create a summary table of packages that are not installable on
-    some architectures, and on each architecture
+    Create a summary table of packages that are not installable a certain
+    set of architectures. 
     '''
 
+    daystamp=str(day)
+
+    # assure existence of output directories:
+    histcachedir=history_cachedir(scenario)
+    if not os.path.isdir(histcachedir): os.makedirs(histcachedir)
+    pooldir = cachedir(timestamp,scenario,'pool')
+    if not os.path.isdir(pooldir): os.mkdir(pooldir)
+    histhtmldir=history_htmldir(scenario,what)
+    if not os.path.isdir(histhtmldir): os.makedirs(histhtmldir)
     outdir=htmldir(timestamp,scenario)
     if not os.path.isdir(outdir): os.makedirs(outdir)
-    out_some = open(outdir+'/some.html', 'w')
-    out_each = open(outdir+'/each.html', 'w')
-    
-    print(html_header,
-          '<h1>Package not installable on some architectures</h1>',
-          summarytable_header,
-          file=out_some)
-    print(html_header,
-          '<h1>Packages not installable on any architecture</h1>',
-          summarytable_header,
-          file=out_each)
-    for package in sorted(uninstallables.keys()):
-        print('<tr><td>',package,'</td>',file=out_some,sep='')
-        continuation_line=False
-        for hash in uninstallables[package]:
-            if continuation_line:
-                    print('<tr><td></td>',file=out_some)
-            if uninstallables[package][hash]['isnative'] == 'True':
-                all_mark = '' 
-            else:
-                all_mark='[all]'
-            print('<td>',
-                  all_mark,uninstallables[package][hash]['version'],
-                  '</td>',
-                  file=out_some,sep='')
-            print('<td>',file=out_some,end='')
-            for arch in uninstallables[package][hash]['archs']:
-                print(arch, file=out_some, end=' ')
-            print('</td>',file=out_some,end='')
-            print('<td>',pack_anchor(timestamp,package,hash),
-                  file=out_some,sep='',end='')
-            print(shortexplanation[hash],'</a><td>',file=out_some,sep='')
-            continuation_line=True
 
-        if not package in installables_somewhere:
-            print('<tr><td>',package,'</td>',file=out_each,sep='')
+    # fetch the history of packages
+    histfile=history_cachefile(scenario,what)
+    history={}
+    if os.path.isfile(histfile):
+        h=open(histfile)
+        for entry in h:
+            package,date=entry.split('#')
+            history[package] = date.rstrip()
+        h.close()
+
+    # html output: a summary for this accumulator
+    outfile = open('{d}/{w}.html'.format(d=outdir,w=what), 'w')
+    print(html_header,file=outfile)
+    print(summary_header.format(
+            timestamp=str(timestamp),
+            scenario=scenario,
+            what=what,
+            utctime=datetime.datetime.utcfromtimestamp(float(timestamp))),
+          file=outfile)
+
+    # file recording the first day of observed non-installability per package
+    historyfile=open(histfile,'w')
+
+    for package in sorted(includes.keys()):
+        if not package in excludes:
+
+            # write to html file for that day
+            print('<tr><td>',package,'</td>',file=outfile,sep='')
             continuation_line=False
             for hash in uninstallables[package]:
                 if continuation_line:
-                    print('<tr><td></td>',file=out_each)
+                    print('<tr><td></td>',file=outfile)
                 if uninstallables[package][hash]['isnative'] == 'True':
                     all_mark = '' 
                 else:
@@ -171,20 +178,30 @@ def write_tables(timestamp,scenario,architectures):
                 print('<td>',
                       all_mark,uninstallables[package][hash]['version'],
                       '</td>',
-                      file=out_each,sep='')
-                print('<td>',file=out_each,end='')
+                      file=outfile,sep='')
+                print('<td>',file=outfile,end='')
                 for arch in uninstallables[package][hash]['archs']:
-                    print(arch, file=out_each, end=' ')
-                print('</td>',file=out_each)
+                    print(arch, file=outfile, end=' ')
+                print('</td>',file=outfile,end='')
                 print('<td>',pack_anchor(timestamp,package,hash),
-                      file=out_each,sep='',end='')
-                print(shortexplanation[hash],'</a></td>',file=out_each,sep='')
+                      file=outfile,sep='',end='')
+                print(shortexplanation[hash],'</a><td>',file=outfile,sep='')
                 continuation_line=True
 
-    print('</table>',html_footer,file=out_some)
-    print('</table>',html_footer,file=out_each)
-    out_some.close ()
-    out_each.close ()
+
+            # rewrite the history file: for each file that is now not
+            # installable, write the date found in the old history_cachefile
+            # if it exists, otherwise write the current day.
+            print(package,history.get(package,daystamp),
+                  sep='#',
+                  file=historyfile)
+
+    print('</table>',html_footer,file=outfile)
+    outfile.close ()
+    historyfile.close ()
+
+
+#############################################################################
 
 def write_row(timestamp,scenario,architectures):
     '''
@@ -248,33 +265,6 @@ def write_row(timestamp,scenario,architectures):
 
     row.close ()
     
-# update history for horizontal summaries (each,some)
-def write_history(day,scenario,name,packages,excludes):
-    daystamp=str(day)
-    
-    cachedir=history_cachedir(scenario)
-    if not os.path.isdir(cachedir): os.makedirs(cachedir)
-
-    # read in the old contents of the history file
-    histfile=history_cachefile(scenario,name)
-    history={}
-    if os.path.isfile(histfile):
-        h=open(histfile)
-        for entry in h:
-            package,date=entry.split('#')
-            history[package] = date.rstrip()
-        h.close()
-
-    # rewrite the history file: for each file that is now not installable,
-    # write the date found in the old history_cachefile if it exists,
-    # otherwise write the current day.
-    outfile=open(histfile,'w')
-    for package in packages:
-        if package in excludes: continue
-        print(package,history.get(package,daystamp),
-              sep='#',
-              file=outfile)
-    outfile.close ()
 
 ########################################################################
 # top level
@@ -282,7 +272,8 @@ def build(timestamp,day,scenario,architectures):
     info('build horizontal tables for {s}'.format(s=scenario))
     analyze_horizontal(timestamp,scenario,architectures)
     write_package_page(timestamp,scenario,architectures)
-    write_tables(timestamp,scenario,architectures)
+    write_tables(timestamp,day,scenario,
+                 'some',uninstallables,set())
+    write_tables(timestamp,day,scenario,
+                 'each',uninstallables,installables_somewhere)
     write_row(timestamp,scenario,architectures)
-    write_history(day,scenario,'some',uninstallables,set())
-    write_history(day,scenario,'each',uninstallables,installables_somewhere)
