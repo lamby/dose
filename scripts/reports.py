@@ -214,9 +214,9 @@ same explanation all the time).<p>
 <table border=1>
 <tr>
 <th>Package</th>
-<th>Version</th>
 <th>Since</th>
-<th>Short explanation (click for detailed explanation) as of today</th>
+<th>Version today</th>
+<th>Short explanation as of today (click for details)</th>
 '''
 
 
@@ -330,10 +330,10 @@ def build(timestamp,day,scenario,arch):
                         else:
                             count_archall[i] += 1
                         print('<tr><td>',package,'</td>',file=hfiles[i],sep='')
-                        print('<td>',all_mark,version,'</td>',
-                              file=hfiles[i],sep='')
                         print('<td>',date_of_days(firstday),'</td>',
                               file=hfiles[i],sep="")
+                        print('<td>',all_mark,version,'</td>',
+                              file=hfiles[i],sep='')
                         print('<td>',pack_anchor_from_hist(
                                 timestamp,package,reasons_hash),
                               reasons_summary,'</a>',
