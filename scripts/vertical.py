@@ -14,20 +14,20 @@ import os.path
 from common import *
 
 summary_header = '''
-<h1>Summary of packages not installable in scenario {scenario}</h1>
+<h1>Packages not installable in scenario {scenario}</h1>
 
 In a pair <i>n/m</i>,
 <i>n</i> is the number of packages that are build for that architecture,
 <i>m</i> is the number of packages with <kbd>Architecture=all</kbd>.
 <p>
-<h2>Results for the last {numberofslices} days</h2>
+<h2>Summary for the last {numberofslices} days</h2>
 <table border=1>
 <tr>
 <th>Date</th>
 '''
 
 def write_historytable(scenario,architectures,outfile):
-    print('<h2>Summary by duration of non-installability</h2>',file=outfile)
+    print('<h2>Summary by duration</h2>',file=outfile)
     print('<table border=1><tr><th>Since</th>',file=outfile)
     for arch in architectures:
         print('<th>',arch,'</th>',file=outfile,sep='')
