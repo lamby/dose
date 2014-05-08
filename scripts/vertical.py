@@ -27,27 +27,29 @@ In a pair <i>n/m</i>,
 '''
 
 def write_historytable(scenario,architectures,outfile):
+    columns=architectures
+    columns.extend(['some','each'])
     print('<h2>Summary by duration</h2>',file=outfile)
     print('<table border=1><tr><th>Since</th>',file=outfile)
-    for arch in architectures:
-        print('<th>',arch,'</th>',file=outfile,sep='')
+    for col in columns:
+        print('<th>',col,'</th>',file=outfile,sep='')
     t={a:{i:'0/0' for i in hlengths.keys()} for a in architectures}
-    for arch in architectures:
-        if not os.path.isfile(history_verticalfile(scenario,arch)):
+    for col in columns:
+        if not os.path.isfile(history_verticalfile(scenario,col)):
             info('No history statistics for {a} in {s}'.format(
-                    a=arch,
+                    a=col,
                     s=scenario))
         else:
-            infile=open(history_verticalfile(scenario,arch))
+            infile=open(history_verticalfile(scenario,col))
             for entry in infile:
                 key,value=entry.split('=')
-                t[arch][int(key)]=value.rstrip()
+                t[col][int(key)]=value.rstrip()
             infile.close()
     for i in hlengths.keys():
         print('<tr><td>{d} days</td>'.format(d=hlengths[i]),file=outfile)
-        for arch in architectures:
+        for col in columns:
             print('<td><a href=history/{a}/{d}.html>{nn}</a></td>'.format(
-                    a=arch,d=hlengths[i],nn=t[arch][i]),file=outfile)
+                    a=col,d=hlengths[i],nn=t[col][i]),file=outfile)
         print('</tr>',file=outfile)
     print('</table>',file=outfile)
 
