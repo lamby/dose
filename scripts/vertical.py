@@ -27,13 +27,13 @@ In a pair <i>n/m</i>,
 '''
 
 def write_historytable(scenario,architectures,outfile):
-    columns=architectures
+    columns=architectures[:]
     columns.extend(['some','each'])
     print('<h2>Summary by duration</h2>',file=outfile)
     print('<table border=1><tr><th>Since</th>',file=outfile)
     for col in columns:
         print('<th>',col,'</th>',file=outfile,sep='')
-    t={a:{i:'0/0' for i in hlengths.keys()} for a in architectures}
+    t={c:{i:'0/0' for i in hlengths.keys()} for c in columns}
     for col in columns:
         if not os.path.isfile(history_verticalfile(scenario,col)):
             info('No history statistics for {a} in {s}'.format(
