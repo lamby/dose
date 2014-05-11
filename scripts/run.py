@@ -8,7 +8,7 @@
 # License, or (at your option) any later version.
 
 import time, os, argparse, re
-import conf, universes, reports, horizontal, vertical, cleanup, common
+import conf, universes, reports, horizontal, vertical, cleanup, common, diffs
 
 argparser=argparse.ArgumentParser(
     description="Run dose-debcheck and analyze the result.")
@@ -49,6 +49,7 @@ for scenario in conf.scenarios.keys():
 
     for arch in architectures:
         reports.build(timestamp_this,day_now,scenario,arch)
+        diffs.build(timestamp_this,timestamp_last,scenario,arch)
             
     horizontal.build(timestamp_this,day_now,scenario,architectures)
 

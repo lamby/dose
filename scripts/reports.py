@@ -224,7 +224,6 @@ same explanation all the time).<p>
 
 #########################################################################
 # top level 
-
 def build(timestamp,day,scenario,arch):
     '''
     summarize a complete output produced by dose-debcheck to outfilename,
