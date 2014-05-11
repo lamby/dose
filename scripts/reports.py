@@ -238,9 +238,9 @@ def build(timestamp,day,scenario,arch):
 
     # assure existence of output directories:
     histcachedir=history_cachedir(scenario)
-    if not os.path.isdir(histcachedir): os.mkdir(histcachedir)
+    if not os.path.isdir(histcachedir): os.makedirs(histcachedir)
     pooldir = cachedir(timestamp,scenario,'pool')
-    if not os.path.isdir(pooldir): os.mkdir(pooldir)
+    if not os.path.isdir(pooldir): os.makedirs(pooldir)
     histhtmldir=history_htmldir(scenario,arch)
     if not os.path.isdir(histhtmldir): os.makedirs(histhtmldir)
     outdir=htmldir(timestamp,scenario)
