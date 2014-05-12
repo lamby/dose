@@ -90,6 +90,16 @@ def build(t_this,t_prev,scenario,arch):
           file=outfile)
     
     print('<h2>Packages that became not installable</h2>',file=outfile)
+    for package in sorted(summary_this.keys()):
+        if package in foreground_prev:
+            record=summary_this[package]
+            all_mark = '' if record[isnative] else '[all] '
+            print('<tr><td>',package,'</td>', file=outfile,sep='')
+            print('<td>',all_mark,record[version],'</td>', file=outfile,sep='')
+            print('<td>',pack_anchor(timestamp,package,record[hash]),
+                  record[explanation],'</a>',
+                  file=outfile, sep='')
+
     print('<h2>New packages that are not installable</h2>',file=outfile)
     print('<h2>Packages that became installable</h2>',file=outfile)
     print('<h2>Not-installable packages that disappeared</h2>',file=outfile)
