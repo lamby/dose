@@ -20,7 +20,6 @@ table_header='''
 <tr>
 <th>Package</th>
 <th>Version</th>
-<th>Architectures</th>
 <th>Short Explanation (click for details)</th>
 '''
 
@@ -44,7 +43,7 @@ def build(t_this,t_prev,scenario,arch):
             explanation = explanation.rstrip()
             summary_prev[package]={
                 'version': version,
-                'isnative': isnative,
+                'isnative': isnative=='True',
                 'hash': hash,
                 'explanation': explanation
                 }
@@ -62,7 +61,7 @@ def build(t_this,t_prev,scenario,arch):
             explanation = explanation.rstrip()
             summary_this[package]={
                 'version': version,
-                'isnative': isnative,
+                'isnative': isnative=='True',
                 'hash': hash,
                 'explanation': explanation
                 }
@@ -80,6 +79,12 @@ def build(t_this,t_prev,scenario,arch):
     foreground_this = { p.rstrip() for p in infile }
     infile.close()
 
+    uninstallables_this=set(summary_this.keys())
+    uninstallables_prev=set(summary_prev.keys())
+
+    uninstallables_in  = sorted(uninstallables_this - uninstallables_prev)
+    uninstallables_out = sorted(uninstallables_prev - uninstallables_this)
+
     # write html page for differences
     outfile=open(outdir+'/'+arch+'-diff.html','w')
     print(html_header,file=outfile)
@@ -90,19 +95,60 @@ def build(t_this,t_prev,scenario,arch):
           file=outfile)
     
     print('<h2>Packages that became not installable</h2>',file=outfile)
-    for package in sorted(summary_this.keys()):
+    print(table_header,file=outfile)
+    for package in uninstallables_in:
         if package in foreground_prev:
             record=summary_this[package]
-            all_mark = '' if record[isnative] else '[all] '
+            all_mark = '' if record['isnative'] else '[all] '
             print('<tr><td>',package,'</td>', file=outfile,sep='')
-            print('<td>',all_mark,record[version],'</td>', file=outfile,sep='')
-            print('<td>',pack_anchor(timestamp,package,record[hash]),
-                  record[explanation],'</a>',
+            print('<td>',all_mark,record['version'],'</td>',
+                  file=outfile,sep='')
+            print('<td>',pack_anchor(t_this,package,record['hash']),
+                  record['explanation'],'</a>',
                   file=outfile, sep='')
+    print('</table>',file=outfile)
 
     print('<h2>New packages that are not installable</h2>',file=outfile)
+    print(table_header,file=outfile)
+    for package in uninstallables_in:
+        if package not in foreground_prev:
+            record=summary_this[package]
+            all_mark = '' if record['isnative'] else '[all] '
+            print('<tr><td>',package,'</td>', file=outfile,sep='')
+            print('<td>',all_mark,record['version'],'</td>',
+                  file=outfile,sep='')
+            print('<td>',pack_anchor(t_this,package,record['hash']),
+                  record['explanation'],'</a>',
+                  file=outfile, sep='')
+    print('</table>',file=outfile)
+
     print('<h2>Packages that became installable</h2>',file=outfile)
+    print(table_header,file=outfile)
+    for package in uninstallables_out:
+        if package in foreground_this:
+            record=summary_this[package]
+            all_mark = '' if record['isnative'] else '[all] '
+            print('<tr><td>',package,'</td>', file=outfile,sep='')
+            print('<td>',all_mark,record['version'],'</td>',
+                  file=outfile,sep='')
+            print('<td>',pack_anchor(t_prev,package,record['hash']),
+                  record['explanation'],'</a>',
+                  file=outfile, sep='')
+    print('</table>',file=outfile)
+
     print('<h2>Not-installable packages that disappeared</h2>',file=outfile)
+    print(table_header,file=outfile)
+    for package in uninstallables_in:
+        if package in foreground_this:
+            record=summary_this[package]
+            all_mark = '' if record['isnative'] else '[all] '
+            print('<tr><td>',package,'</td>', file=outfile,sep='')
+            print('<td>',all_mark,record['version'],'</td>',
+                  file=outfile,sep='')
+            print('<td>',pack_anchor(t_prev,package,record['hash']),
+                  record['explanation'],'</a>',
+                  file=outfile, sep='')
+    print('</table>',file=outfile)
 
     print(html_footer,file=outfile)
     outfile.close()
