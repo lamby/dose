@@ -26,8 +26,20 @@ table_header='''
 def build(t_this,t_prev,scenario,arch):
     '''build a difference table between two runs'''
 
+    if not (os.path.isfile (cachedir(t_prev,scenario,arch)+'/fg-packages')
+            and os.path.isfile(cachedir(t_prev,scenario,arch)+'/summary')) :
+        warning('skip diff for {s} on {a} from {t1} to {t2}'.format(
+                s=scenario,a=arch,t1=t_prev,t2=t_this))
+        
+        return
+
     info('diff for {s} on {a} from {t1} to {t2}'.format(
             s=scenario,a=arch,t1=t_prev,t2=t_this))
+
+    number_in_native=0
+    number_in_archall=0
+    number_out_native=0
+    number_out_archall=0
 
     # ensure existence of output directory
     outdir=htmldir(t_this,scenario)
@@ -99,7 +111,12 @@ def build(t_this,t_prev,scenario,arch):
     for package in uninstallables_in:
         if package in foreground_prev:
             record=summary_this[package]
-            all_mark = '' if record['isnative'] else '[all] '
+            if record['isnative']:
+                all_mark=''
+                number_in_native += 1
+            else:
+                all_mark='[all] '
+                number_in_archall += 1
             print('<tr><td>',package,'</td>', file=outfile,sep='')
             print('<td>',all_mark,record['version'],'</td>',
                   file=outfile,sep='')
@@ -113,7 +130,12 @@ def build(t_this,t_prev,scenario,arch):
     for package in uninstallables_in:
         if package not in foreground_prev:
             record=summary_this[package]
-            all_mark = '' if record['isnative'] else '[all] '
+            if record['isnative']:
+                all_mark=''
+                number_in_native += 1
+            else:
+                all_mark='[all] '
+                number_in_archall += 1
             print('<tr><td>',package,'</td>', file=outfile,sep='')
             print('<td>',all_mark,record['version'],'</td>',
                   file=outfile,sep='')
@@ -126,8 +148,13 @@ def build(t_this,t_prev,scenario,arch):
     print(table_header,file=outfile)
     for package in uninstallables_out:
         if package in foreground_this:
-            record=summary_this[package]
-            all_mark = '' if record['isnative'] else '[all] '
+            record=summary_prev[package]
+            if record['isnative']:
+                all_mark=''
+                number_out_native += 1
+            else:
+                all_mark='[all] '
+                number_out_archall += 1
             print('<tr><td>',package,'</td>', file=outfile,sep='')
             print('<td>',all_mark,record['version'],'</td>',
                   file=outfile,sep='')
@@ -138,10 +165,15 @@ def build(t_this,t_prev,scenario,arch):
 
     print('<h2>Not-installable packages that disappeared</h2>',file=outfile)
     print(table_header,file=outfile)
-    for package in uninstallables_in:
-        if package in foreground_this:
-            record=summary_this[package]
-            all_mark = '' if record['isnative'] else '[all] '
+    for package in uninstallables_out:
+        if package not in foreground_this:
+            record=summary_prev[package]
+            if record['isnative']:
+                all_mark=''
+                number_out_native += 1
+            else:
+                all_mark='[all] '
+                number_out_archall += 1
             print('<tr><td>',package,'</td>', file=outfile,sep='')
             print('<td>',all_mark,record['version'],'</td>',
                   file=outfile,sep='')
@@ -151,4 +183,21 @@ def build(t_this,t_prev,scenario,arch):
     print('</table>',file=outfile)
 
     print(html_footer,file=outfile)
+    outfile.close()
+
+    # write size of the diff
+    totaldiff=(number_in_native+number_in_archall-
+               number_out_native-number_out_archall)
+    if totaldiff>0:
+        diffcolor='red'
+    elif totaldiff<0:
+        diffcolor='green'
+    else:
+        diffcolor='black'
+    outfile=open(cachedir(t_this,scenario,arch)+'/number-diff', 'w')
+    print('<font color={c}>+{innat}/{inall} -{outnat}/{outall}</font>'.format(
+            innat=number_in_native,inall=number_in_archall,
+            outnat=number_out_native,outall=number_out_archall,
+            c=diffcolor),
+          file=outfile)
     outfile.close()

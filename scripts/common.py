@@ -77,7 +77,8 @@ def pack_anchor(timestamp,package,hash):
     '''
     relative path, from an architecture page, to a package page 
     '''
-    return('<a href="packages/{p}.html#{h}">'.format(
+    return('<a href="../{t}/packages/{p}.html#{h}">'.format(
+            t=timestamp,
             p=package,
             h=hash))
 
