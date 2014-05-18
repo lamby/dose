@@ -159,6 +159,8 @@ def write_tables(timestamp,day,scenario,what,includes,excludes):
     if not os.path.isdir(histhtmldir): os.makedirs(histhtmldir)
     outdir=htmldir(timestamp,scenario)
     if not os.path.isdir(outdir): os.makedirs(outdir)
+    thiscachedir=cachedir(timestamp,scenario,what)
+    if not os.path.isdir(thiscachedir): os.makedirs(thiscachedir)
 
     # fetch the history of packages
     histfile=history_cachefile(scenario,what)
@@ -285,6 +287,20 @@ def write_tables(timestamp,day,scenario,what,includes,excludes):
                 i=i,cn=count_natives[i],ca=count_archall[i]),file=vertical)
     vertical.close()
 
+    # write a summary of the analysis in the cache directory
+    sumfile = open(cachedir(timestamp,scenario,what)+'/summary', 'w')
+    for package in sorted(includes.keys()):
+        if not package in excludes:
+            print(package,file=sumfile,sep='',end='')
+            for hash in uninstallables[package]:
+                record=uninstallables[package][hash]
+                print('',record['version'],record['isnative'],
+                      hash,shortexplanation[hash],'',
+                      file=sumfile, sep='#',end='')
+                for arch in record['archs']:
+                    print(arch,file=sumfile,end=' ')
+                print('',file=sumfile)
+    sumfile.close()
 #############################################################################
 
 def write_row(timestamp,scenario,architectures):
