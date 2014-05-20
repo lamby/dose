@@ -291,10 +291,9 @@ def write_tables(timestamp,day,scenario,what,includes,excludes):
     sumfile = open(cachedir(timestamp,scenario,what)+'/summary', 'w')
     for package in sorted(includes.keys()):
         if not package in excludes:
-            print(package,file=sumfile,sep='',end='')
             for hash in uninstallables[package]:
                 record=uninstallables[package][hash]
-                print('',record['version'],record['isnative'],
+                print(package,record['version'],record['isnative'],
                       hash,shortexplanation[hash],'',
                       file=sumfile, sep='#',end='')
                 for arch in record['archs']:
