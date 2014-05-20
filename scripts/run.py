@@ -52,6 +52,8 @@ for scenario in conf.scenarios.keys():
         diffs.build(timestamp_this,timestamp_last,scenario,arch)
             
     horizontal.build(timestamp_this,day_now,scenario,architectures)
+    for what in ['some','each']:
+        diffs.build_multi(timestamp_this,timestamp_last,scenario,what)
 
     vertical.build(timestamps_keep,scenario,architectures)
 

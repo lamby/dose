@@ -59,9 +59,10 @@ def write_table(timestamps,scenario,architectures):
     print(html_header,file=outfile)
     print(summary_header.format(scenario=scenario,
                                 numberofslices=conf.slices),file=outfile)
-    for arch in architectures:
+    columns=architectures[:]
+    columns.extend(['some','each'])
+    for arch in columns:
         print('<th>',arch,'</th>',file=outfile,sep='')
-    print('<th>some</th><th>each</th></tr>',file=outfile)
     for timestamp in timestamps:
         if not os.path.isfile(cachedir(timestamp,scenario,'summary')+'/row'):
             info('Dropping timestamp {t} from vertical table for {s}'.format(
@@ -86,7 +87,7 @@ def write_table(timestamps,scenario,architectures):
                     a=arch,
                     c=contents.get(arch,'')),file=outfile)
         print('<tr><td>Diff</td>',file=outfile)
-        for arch in architectures:
+        for arch in columns:
             dfn=cachedir(timestamp,scenario,arch)+'/number-diff'
             if os.path.isfile(dfn):
                 with open(dfn) as infile:

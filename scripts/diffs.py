@@ -23,6 +23,15 @@ table_header='''
 <th>Short Explanation (click for details)</th>
 '''
 
+table_header_multi='''
+<table border=1>
+<tr>
+<th>Package</th>
+<th>Version</th>
+<th>Archtectures</th>
+<th>Short Explanation (click for details)</th>
+'''
+
 def build(t_this,t_prev,scenario,arch):
     '''build a difference table between two runs'''
 
@@ -180,6 +189,141 @@ def build(t_this,t_prev,scenario,arch):
             print('<td>',pack_anchor(t_prev,package,record['hash']),
                   record['explanation'],'</a>',
                   file=outfile, sep='')
+    print('</table>',file=outfile)
+
+    print(html_footer,file=outfile)
+    outfile.close()
+
+    # write size of the diff
+    totaldiff=(number_in_native+number_in_archall-
+               number_out_native-number_out_archall)
+    if totaldiff>0:
+        diffcolor='red'
+    elif totaldiff<0:
+        diffcolor='green'
+    else:
+        diffcolor='black'
+    outfile=open(cachedir(t_this,scenario,arch)+'/number-diff', 'w')
+    print('<font color={c}>+{innat}/{inall} -{outnat}/{outall}</font>'.format(
+            innat=number_in_native,inall=number_in_archall,
+            outnat=number_out_native,outall=number_out_archall,
+            c=diffcolor),
+          file=outfile)
+    outfile.close()
+
+##################################################################################
+
+def build_multi(t_this,t_prev,scenario,arch):
+    '''build a difference table between two runs'''
+
+    if not os.path.isfile(cachedir(t_prev,scenario,arch)+'/summary') :
+        warning('skip diff for {s} on {a} from {t1} to {t2}'.format(
+                s=scenario,a=arch,t1=t_prev,t2=t_this))
+        
+        return
+
+    info('diff for {s} on {a} from {t1} to {t2}'.format(
+            s=scenario,a=arch,t1=t_prev,t2=t_this))
+
+    number_in_native=0
+    number_in_archall=0
+    number_out_native=0
+    number_out_archall=0
+
+    # ensure existence of output directory
+    outdir=htmldir(t_this,scenario)
+    if not os.path.isdir(outdir): os.makedirs(outdir)
+
+    # fetch previous summary
+    summary_prev = {}
+    infilename=cachedir(t_prev,scenario,arch)+'/summary'
+    if os.path.isfile(infilename):
+        infile=open(infilename)
+        for entry in infile:
+            package,version,isnative,hash,explanation,archs = entry.split('#')
+            explanation = explanation.rstrip()
+            summary_prev[package]={
+                'version': version,
+                'isnative': isnative=='True',
+                'hash': hash,
+                'explanation': explanation,
+                'archs': archs
+                }
+        infile.close()
+    else:
+        warning('{f} does not exist, skipping'.format(f=infilename))
+                
+    # fetch this summary
+    summary_this = {}
+    infilename=cachedir(t_this,scenario,arch)+'/summary'
+    if os.path.isfile(infilename):
+        infile=open(infilename)
+        for entry in infile:
+            package,version,isnative,hash,explanation,archs = entry.split('#')
+            explanation = explanation.rstrip()
+            summary_this[package]={
+                'version': version,
+                'isnative': isnative=='True',
+                'hash': hash,
+                'explanation': explanation,
+                'archs': archs
+                }
+        infile.close()
+    else:
+        warning('{f} does not exist, skipping'.format(f=infilename))
+    
+    uninstallables_this=set(summary_this.keys())
+    uninstallables_prev=set(summary_prev.keys())
+
+    uninstallables_in  = sorted(uninstallables_this - uninstallables_prev)
+    uninstallables_out = sorted(uninstallables_prev - uninstallables_this)
+
+    # write html page for differences
+    outfile=open(outdir+'/'+arch+'-diff.html','w')
+    print(html_header,file=outfile)
+    print(diff_header.format(
+            tthis=datetime.datetime.utcfromtimestamp(float(t_this)),
+            tprev=datetime.datetime.utcfromtimestamp(float(t_prev)),
+            arch=arch, scenario=scenario),
+          file=outfile)
+    
+    print('<h2>Packages that newly are reported not installable</h2>',file=outfile)
+    print(table_header_multi,file=outfile)
+    for package in uninstallables_in:
+        record=summary_this[package]
+        if record['isnative']:
+            all_mark=''
+            number_in_native += 1
+        else:
+            all_mark='[all] '
+            number_in_archall += 1
+        print('<tr><td>',package,'</td>', file=outfile,sep='')
+        print('<td>',all_mark,record['version'],'</td>',
+              file=outfile,sep='')
+        print('<td>',record['archs'],'</td>',file=outfile,sep='')
+        print('<td>',pack_anchor(t_this,package,record['hash']),
+              record['explanation'],'</a>',
+              file=outfile, sep='')
+    print('</table>',file=outfile)
+
+    print('<h2>Packages that no longer are reported not installable</h2>',
+          file=outfile)
+    print(table_header_multi,file=outfile)
+    for package in uninstallables_out:
+        record=summary_prev[package]
+        if record['isnative']:
+            all_mark=''
+            number_out_native += 1
+        else:
+            all_mark='[all] '
+            number_out_archall += 1
+        print('<tr><td>',package,'</td>', file=outfile,sep='')
+        print('<td>',all_mark,record['version'],'</td>',
+              file=outfile,sep='')
+        print('<td>',record['archs'],'</td>',file=outfile,sep='')
+        print('<td>',pack_anchor(t_prev,package,record['hash']),
+              record['explanation'],'</a>',
+              file=outfile, sep='')
     print('</table>',file=outfile)
 
     print(html_footer,file=outfile)
