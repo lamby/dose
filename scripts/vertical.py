@@ -86,18 +86,20 @@ def write_table(timestamps,scenario,architectures):
                     t=timestamp,
                     a=arch,
                     c=contents.get(arch,'')),file=outfile)
-        print('<tr><td>Diff</td>',file=outfile)
-        for arch in columns:
-            dfn=cachedir(timestamp,scenario,arch)+'/number-diff'
-            if os.path.isfile(dfn):
-                with open(dfn) as infile:
-                    line=infile.readline()
-                line.rstrip()
-                print('<td><a href="{t}/{a}-diff.html">{c}<a/></td>'.format(
-                        t=timestamp,a=arch,c=line),
-                      sep='',file=outfile)
-            else:
-                print('<td>N/A</td>',file=outfile)
+        if timestamp != timestamps[-1]:
+            # dont print a diff for the last line
+            print('<tr><td>Diff</td>',file=outfile)
+            for arch in columns:
+                dfn=cachedir(timestamp,scenario,arch)+'/number-diff'
+                if os.path.isfile(dfn):
+                    with open(dfn) as infile:
+                        line=infile.readline()
+                    line.rstrip()
+                    print('<td><a href="{t}/{a}-diff.html">{c}<a/></td>'.format(
+                            t=timestamp,a=arch,c=line),
+                          sep='',file=outfile)
+                else:
+                    print('<td>N/A</td>',file=outfile)
     print('</table>',file=outfile)
 
     write_historytable(scenario,architectures,outfile)
