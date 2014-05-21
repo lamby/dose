@@ -115,7 +115,7 @@ def build(t_this,t_prev,scenario,arch):
             arch=arch, scenario=scenario),
           file=outfile)
     
-    print('<h2>Packages that became not installable</h2>',file=outfile)
+    print('<h2>Old packages that became not installable</h2>',file=outfile)
     print(table_header,file=outfile)
     for package in uninstallables_in:
         if package in foreground_prev:
@@ -153,7 +153,7 @@ def build(t_this,t_prev,scenario,arch):
                   file=outfile, sep='')
     print('</table>',file=outfile)
 
-    print('<h2>Packages that became installable</h2>',file=outfile)
+    print('<h2>Old packages that became installable</h2>',file=outfile)
     print(table_header,file=outfile)
     for package in uninstallables_out:
         if package in foreground_this:
@@ -287,6 +287,21 @@ def build_multi(t_this,t_prev,scenario,what,architectures):
     else:
         warning('{f} does not exist, skipping'.format(f=infilename))
     
+    # fetch previous foreground
+    foreground_prev=set()
+    for arch in architectures:
+        with open(cachedir(t_prev,scenario,arch)+'/fg-packages') as infile:
+            for line in infile:
+                foreground_prev.add(line.rstrip())
+
+    # fetch current foreground
+    foreground_this=set()
+    for arch in architectures:
+        with open(cachedir(t_this,scenario,arch)+'/fg-packages') as infile:
+            for line in infile:
+                foreground_this.add(line.rstrip())
+
+
     uninstallables_this=set(summary_this.keys())
     uninstallables_prev=set(summary_prev.keys())
 
@@ -302,54 +317,109 @@ def build_multi(t_this,t_prev,scenario,what,architectures):
             arch=what, scenario=scenario),
           file=outfile)
     
-    print('<h2>Newly reported as not installable</h2>',file=outfile)
+    print('<h2>Old packages that became not installable</h2>',file=outfile)
     print(table_header_multi,file=outfile)
     for package in uninstallables_in:
-        print('<tr><td>',package,'</td>',sep='',file=outfile)
-        continuation_line=False
-        for hash in summary_this[package]:
-            record=summary_this[package][hash]
-            if record['isnative']:
-                all_mark=''
-                number_in_native += 1
-            else:
-                all_mark='[all] '
-                number_in_archall += 1
-            if continuation_line:
-                print('<tr><td></td>', file=outfile,sep='')
-            print('<td>',all_mark,record['version'],'</td>',
-                  file=outfile,sep='')
-            print('<td>',record['archs'],'</td>',file=outfile,sep='')
-            print('<td>',pack_anchor(t_this,package,hash),
-                  record['explanation'],'</a>',
-                  file=outfile, sep='')
-            continuation_line=True
+        if package in foreground_prev:
+            print('<tr><td>',package,'</td>',sep='',file=outfile)
+            continuation_line=False
+            for hash in summary_this[package]:
+                record=summary_this[package][hash]
+                if record['isnative']:
+                    all_mark=''
+                    number_in_native += 1
+                else:
+                    all_mark='[all] '
+                    number_in_archall += 1
+                if continuation_line:
+                    print('<tr><td></td>', file=outfile,sep='')
+                print('<td>',all_mark,record['version'],'</td>',
+                      file=outfile,sep='')
+                print('<td>',record['archs'],'</td>',file=outfile,sep='')
+                print('<td>',pack_anchor(t_this,package,hash),
+                      record['explanation'],'</a>',
+                      file=outfile, sep='')
+                continuation_line=True
     print('</table>',file=outfile)
 
-    print('<h2>Packages that no longer are reported not installable</h2>',
-          file=outfile)
+
+    print('<h2>New packages that are not installable</h2>',file=outfile)
+    print(table_header_multi,file=outfile)
+    for package in uninstallables_in:
+        if package not in foreground_prev:
+            print('<tr><td>',package,'</td>',sep='',file=outfile)
+            continuation_line=False
+            for hash in summary_this[package]:
+                record=summary_this[package][hash]
+                if record['isnative']:
+                    all_mark=''
+                    number_in_native += 1
+                else:
+                    all_mark='[all] '
+                    number_in_archall += 1
+                if continuation_line:
+                    print('<tr><td></td>', file=outfile,sep='')
+                print('<td>',all_mark,record['version'],'</td>',
+                      file=outfile,sep='')
+                print('<td>',record['archs'],'</td>',file=outfile,sep='')
+                print('<td>',pack_anchor(t_this,package,hash),
+                      record['explanation'],'</a>',
+                      file=outfile, sep='')
+                continuation_line=True
+    print('</table>',file=outfile)
+
+
+    print('<h2>Old packages that became installable</h2>',file=outfile)
     print(table_header_multi,file=outfile)
     for package in uninstallables_out:
-        print('<tr><td>',package,'</td>',sep='',file=outfile)
-        continuation_line=False
-        for hash in summary_prev[package]:
-            record=summary_prev[package][hash]
-            if record['isnative']:
-                all_mark=''
-                number_out_native += 1
-            else:
-                all_mark='[all] '
-                number_out_archall += 1
-            if continuation_line:
-                print('<tr><td></td>',file=outfile)
-            print('<td>',all_mark,record['version'],'</td>',
-                  file=outfile,sep='')
-            print('<td>',record['archs'],'</td>',file=outfile,sep='')
-            print('<td>',pack_anchor(t_prev,package,hash),
-                  record['explanation'],'</a>',
-                  file=outfile, sep='')
-            continuation_line=True
+        if package in foreground_this:
+            print('<tr><td>',package,'</td>',sep='',file=outfile)
+            continuation_line=False
+            for hash in summary_prev[package]:
+                record=summary_prev[package][hash]
+                if record['isnative']:
+                    all_mark=''
+                    number_out_native += 1
+                else:
+                    all_mark='[all] '
+                    number_out_archall += 1
+                if continuation_line:
+                    print('<tr><td></td>',file=outfile)
+                print('<td>',all_mark,record['version'],'</td>',
+                      file=outfile,sep='')
+                print('<td>',record['archs'],'</td>',file=outfile,sep='')
+                print('<td>',pack_anchor(t_prev,package,hash),
+                      record['explanation'],'</a>',
+                      file=outfile, sep='')
+                continuation_line=True
     print('</table>',file=outfile)
+
+
+    print('<h2>Not-installable packages that disappeared</h2>',file=outfile)
+    print(table_header_multi,file=outfile)
+    for package in uninstallables_out:
+        if package not in foreground_this:
+            print('<tr><td>',package,'</td>',sep='',file=outfile)
+            continuation_line=False
+            for hash in summary_prev[package]:
+                record=summary_prev[package][hash]
+                if record['isnative']:
+                    all_mark=''
+                    number_out_native += 1
+                else:
+                    all_mark='[all] '
+                    number_out_archall += 1
+                if continuation_line:
+                    print('<tr><td></td>',file=outfile)
+                print('<td>',all_mark,record['version'],'</td>',
+                      file=outfile,sep='')
+                print('<td>',record['archs'],'</td>',file=outfile,sep='')
+                print('<td>',pack_anchor(t_prev,package,hash),
+                      record['explanation'],'</a>',
+                      file=outfile, sep='')
+                continuation_line=True
+    print('</table>',file=outfile)
+
 
     print(html_footer,file=outfile)
     outfile.close()
