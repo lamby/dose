@@ -9,7 +9,7 @@ import yaml,os, hashlib, datetime
 from common import *
 
 diff_header='''
-<h1>Difference for {arch} in scenario {scenario}<h1>
+<h1>Difference for {arch} in scenario {scenario}</h1>
 <b>From {tprev} UTC<br>To {tthis} UTC</b>
 <p>
 <kbd>[all]</kbd> indicates a package with <kbd>Architecture=all</kbd>.
