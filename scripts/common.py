@@ -5,6 +5,7 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
+import os
 import conf
 from datetime import date
 
@@ -72,6 +73,18 @@ def htmldir_scenario(scenario):
     return('{r}/{s}'.format(
             r=conf.locations['htmlroot'],
             s=scenario))
+
+def open_weatherfile(scenario,architecture,flags):
+    '''
+    open the xml file where the "weather data" is stored
+    '''
+    weatherdir='{r}/{s}/weather/'.format(
+            r=conf.locations['htmlroot'],
+            s=scenario)
+    weatherfile=weatherdir+architecture+'.xml'
+    os.makedirs(weatherdir,exist_ok=True)
+    print(weatherdir)
+    return(open(weatherfile, flags))
 
 def pack_anchor(timestamp,package,hash):
     '''
@@ -180,3 +193,7 @@ def date_of_days(days):
     return (date.fromordinal(days+proleptic_of_epoch)).isoformat()
 
 hlengths={0:2,1:4,2:8,3:16,4:32,5:64}
+
+# number of lines in a file
+def lines_in_file(filename):
+    return(sum(1 for line in open(filename)))

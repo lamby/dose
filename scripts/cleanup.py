@@ -44,6 +44,7 @@ def cleanup(timestamps_keep,timestamps_known,timestamp_this,scenarios):
             else:
                 for directory2 in os.listdir(path1):
                     if directory2 == 'history': continue
+                    if directory2 == 'weather': continue
                     path2=path1+'/'+directory2
                     if directory2 not in timestamps_keep and os.path.isdir(path2):
                         shutil.rmtree(path2)

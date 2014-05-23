@@ -8,7 +8,7 @@
 # License, or (at your option) any later version.
 
 import time, os, argparse, re
-import conf, universes, reports, horizontal, vertical, cleanup, common, diffs
+import conf, universes, reports, horizontal, vertical, cleanup, common, diffs, weather
 
 argparser=argparse.ArgumentParser(
     description="Run dose-debcheck and analyze the result.")
@@ -58,6 +58,10 @@ for scenario in conf.scenarios.keys():
 
     vertical.build(timestamps_keep,scenario,architectures)
 
+    for arch in architectures:
+        weather.weather_report(timestamp_this,scenario,arch)
+
+    
 cleanup.cleanup(timestamps_keep, timestamps_known, timestamp_this, 
                 conf.scenarios.keys())
 
