@@ -6,6 +6,7 @@
 # License, or (at your option) any later version.
 
 import os, datetime
+import conf
 from common import *
 
 xml_template='''<weather>
@@ -68,7 +69,7 @@ def build(timestamp,scenario,architectures):
         with open_weatherfile(scenario,arch,'w') as outfile:
             print(xml_template.format(
                     scenario=scenario,
-                    description=scenario,
+                    description=conf.scenarios[scenario]['description'],
                     architecture=arch,
                     date=datetime.date.fromtimestamp(float(timestamp)),
                     number_total=total_packages,

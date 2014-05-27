@@ -25,24 +25,28 @@ scenarios = {
     'unstable_main': {
         'archs' : architectures['unstable'],
         'fgs'   : [ '{m}/unstable/main/binary-{a}/Packages.gz' ],
-        'bgs'   : []
+        'bgs'   : [],
+        'description' : 'Debian unstable (main only)'
         },
     'unstable_contrib+nonfree': {
         'archs' : architectures['unstable'],
         'fgs'   : [ '{m}/unstable/contrib/binary-{a}/Packages.gz',
                     '{m}/unstable/non-free/binary-{a}/Packages.gz' ],
-        'bgs'   : [ '{m}/unstable/main/binary-{a}/Packages.gz' ]
+        'bgs'   : [ '{m}/unstable/main/binary-{a}/Packages.gz' ],
+        'description' : 'Debian unstable (contrib and non-free only)'
         },
     'testing_main': {
         'archs' : architectures['testing'],
         'fgs'   : [ '{m}/testing/main/binary-{a}/Packages.gz' ],
-        'bgs'   : []
+        'bgs'   : [],
+        'description' : 'Debian testing (main only)'
         },
     'testing_contrib+nonfree': {
         'archs' : architectures['testing'],
         'fgs'   : [ '{m}/testing/contrib/binary-{a}/Packages.gz',
                     '{m}/testing/non-free/binary-{a}/Packages.gz' ],
-        'bgs'   : [ '{m}/testing/main/binary-{a}/Packages.gz' ]
+        'bgs'   : [ '{m}/testing/main/binary-{a}/Packages.gz' ],
+        'description' : 'Debian testing (contrib and non-free only)'
         }
 
 }
