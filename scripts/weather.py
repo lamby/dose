@@ -24,7 +24,10 @@ def build(timestamp,scenario,architectures):
         total_packages=lines_in_file(fg_filename)
         broken_packages=lines_in_file(rep_filename)
 
-        percentage=100*broken_packages/total_packages
+        if total_packages==0:
+            percentage=0
+        else:
+            percentage=100*broken_packages/total_packages
 
         with open_weatherfile(scenario,arch,'w') as outfile:
             print(percentage,file=outfile)
