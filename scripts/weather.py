@@ -45,6 +45,25 @@ def weather_index(percentage):
     else:
         return(5)
 
+def icon(index):
+    '''
+    associate an icon to a weather index (as returned by weather_index)
+    '''
+    icon={1: 'weather-clear_sml.png',
+          2: 'weather-few-clouds_sml.png',
+          3: 'weather-overcast_sml.png',
+          4: 'weather-showers-scattered_sml.png',
+          5: 'weather-storm_sml.png'
+          }
+    text={1: 'sunny',
+          2: 'clouds',
+          3: 'overcast',
+          4: 'rain',
+          5: 'storm'
+          }
+    return('<img src="../../weathericons/{i}" alt={t}>'.format(
+            i=icon[index],t=text[index]))
+
 def build(timestamp,scenario,architectures):
 
     for arch in architectures:
@@ -78,6 +97,8 @@ def build(timestamp,scenario,architectures):
                     weather=weather_index(percentage),
                     summary_url=url_summary(timestamp,scenario,arch)),
                   file=outfile)
+        with open(cachedir(timestamp,scenario,arch)+'/weather', 'w') as outfile:
+            print(weather_index(percentage),file=outfile)
 
 def write_available():
     info('Describing available weather reports')

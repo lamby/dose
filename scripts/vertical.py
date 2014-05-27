@@ -11,6 +11,7 @@ different timestamps.
 - constructing a summary page for the last timestamps
 '''
 import os.path
+import weather
 from common import *
 
 summary_header = '''
@@ -63,6 +64,18 @@ def write_table(timestamps,scenario,architectures):
     columns.extend(['some','each'])
     for arch in columns:
         print('<th>',arch,'</th>',file=outfile,sep='')
+    print('<tr><td>Today\'s Weather:</td>',file=outfile)
+    for arch in columns:
+        weatherfile=cachedir(timestamps[0],scenario,arch)+'/weather'
+        if os.path.isfile(weatherfile):
+            with open(weatherfile) as infile:
+                weatherindex=int(infile.readline())
+            print('<td align=center>',weather.icon(weatherindex),'</td>',
+                  file=outfile,sep='')
+        else:
+            print('<td></td>',file=outfile)
+
+
     for timestamp in timestamps:
         if not os.path.isfile(cachedir(timestamp,scenario,'summary')+'/row'):
             info('Dropping timestamp {t} from vertical table for {s}'.format(
