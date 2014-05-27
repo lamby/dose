@@ -103,6 +103,15 @@ def pack_anchor_from_hist(timestamp,package,hash):
             t=timestamp,p=package,
             h=hash))
 
+def url_summary(timestamp,scenario,architecture):
+    '''
+    url of the summary page for given scenario, time, and architecture.
+    '''
+    return('http://qa.debian.org/dose/debcheck/{s}/{t}/{a}.html'.format(
+            s=scenario,
+            t=timestamp,
+            a=architecture))
+
 def str_of_list(liste):
     if not liste: return ''
     result, *rest = liste
