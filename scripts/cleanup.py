@@ -40,11 +40,11 @@ def cleanup(timestamps_keep,timestamps_known,timestamp_this,scenarios):
         path1=htmlroot+'/'+directory1
         if os.path.isdir(path1):
             if directory1 not in scenarios:
+                if directory1 == 'results': continue
                 shutil.rmtree(path1)
             else:
                 for directory2 in os.listdir(path1):
                     if directory2 == 'history': continue
-                    if directory2 == 'weather': continue
                     path2=path1+'/'+directory2
                     if directory2 not in timestamps_keep and os.path.isdir(path2):
                         shutil.rmtree(path2)

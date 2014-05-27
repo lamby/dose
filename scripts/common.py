@@ -78,12 +78,23 @@ def open_weatherfile(scenario,architecture,flags):
     '''
     open the xml file where the "weather data" is stored
     '''
-    weatherdir='{r}/{s}/weather/'.format(
+    weatherdir='{r}/results/{s}/latest/{a}'.format(
             r=conf.locations['htmlroot'],
-            s=scenario)
-    weatherfile=weatherdir+architecture+'.xml'
+            s=scenario,
+            a=architecture)
+    weatherfile=weatherdir+'/weather.xml'
     os.makedirs(weatherdir,exist_ok=True)
-    print(weatherdir)
+    return(open(weatherfile, flags))
+
+def open_weather_available_file(flags):
+    '''
+    open the xml file where available scenarios and archs are announced.
+    '''
+    weatherdir='{r}/results'.format(
+            r=conf.locations['htmlroot'])
+    os.makedirs(weatherdir,exist_ok=True)
+    weatherfile=weatherdir+'/available.xml'
+    print(weatherfile)
     return(open(weatherfile, flags))
 
 def pack_anchor(timestamp,package,hash):

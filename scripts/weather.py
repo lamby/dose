@@ -46,6 +46,7 @@ def weather_index(percentage):
         return(5)
 
 def build(timestamp,scenario,architectures):
+
     for arch in architectures:
         fg_filename=cachedir(timestamp,scenario,arch)+'/fg-packages'
         rep_filename=cachedir(timestamp,scenario,arch)+'/summary'
@@ -78,4 +79,18 @@ def build(timestamp,scenario,architectures):
                     summary_url=url_summary(timestamp,scenario,arch)),
                   file=outfile)
 
-    
+def write_available():
+    info('Describing available weather reports')
+    with open_weather_available_file('w') as outfile:
+        print('<weathers>',file=outfile)
+        for scenario in conf.scenarios.keys():
+            print('  <weather>',file=outfile)
+            print('    <name>',scenario,'</name>',file=outfile,sep='')
+            print('    <title>',conf.scenarios[scenario]['description'],
+                  '</title>',file=outfile,sep='')
+            print('    <archs>',file=outfile)
+            for arch in conf.scenarios[scenario]['archs']:
+                print('      <arch>',arch,'</arch>',file=outfile,sep='')
+            print('    </archs>',file=outfile)
+            print('  </weather>',file=outfile)
+        print('</weathers>',file=outfile)
