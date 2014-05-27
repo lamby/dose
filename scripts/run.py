@@ -57,10 +57,7 @@ for scenario in conf.scenarios.keys():
                           architectures)
 
     vertical.build(timestamps_keep,scenario,architectures)
-
-    for arch in architectures:
-        weather.weather_report(timestamp_this,scenario,arch)
-
+    weather.build(timestamp_this,scenario,architectures)
     
 cleanup.cleanup(timestamps_keep, timestamps_known, timestamp_this, 
                 conf.scenarios.keys())

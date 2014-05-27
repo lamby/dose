@@ -8,24 +8,25 @@
 import os
 from common import *
 
-def weather_report(timestamp,scenario,architecture):
-    fg_filename=cachedir(timestamp,scenario,architecture)+'/fg-packages'
-    rep_filename=cachedir(timestamp,scenario,architecture)+'/summary'
+def build(timestamp,scenario,architectures):
+    for arch in architectures:
+        fg_filename=cachedir(timestamp,scenario,arch)+'/fg-packages'
+        rep_filename=cachedir(timestamp,scenario,arch)+'/summary'
 
-    if not os.path.isfile(fg_filename):
-        warning('no such file: '+fg_filename)
-        return
+        if not os.path.isfile(fg_filename):
+            warning('no such file: '+fg_filename)
+            return
 
-    if not os.path.isfile(rep_filename):
-        warning('no such file: '+fg_filename)
-        return
+        if not os.path.isfile(rep_filename):
+            warning('no such file: '+fg_filename)
+            return
 
-    total_packages=lines_in_file(fg_filename)
-    broken_packages=lines_in_file(rep_filename)
+        total_packages=lines_in_file(fg_filename)
+        broken_packages=lines_in_file(rep_filename)
 
-    percentage=100*broken_packages/total_packages
+        percentage=100*broken_packages/total_packages
 
-    with open_weatherfile(scenario,architecture,'w') as outfile:
-        print(percentage,file=outfile)
+        with open_weatherfile(scenario,arch,'w') as outfile:
+            print(percentage,file=outfile)
 
     
