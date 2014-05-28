@@ -94,7 +94,6 @@ def open_weather_available_file(flags):
             r=conf.locations['htmlroot'])
     os.makedirs(weatherdir,exist_ok=True)
     weatherfile=weatherdir+'/available.xml'
-    print(weatherfile)
     return(open(weatherfile, flags))
 
 def pack_anchor(timestamp,package,hash):
