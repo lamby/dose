@@ -61,7 +61,7 @@ def icon(index):
           4: 'rain',
           5: 'storm'
           }
-    return('<img src="../../weathericons/{i}" alt={t}>'.format(
+    return('<img src="../../weathericons/{i}" alt="{t}">'.format(
             i=icon[index],t=text[index]))
 
 def build(timestamp,scenario,architectures):
