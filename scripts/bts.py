@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2.7
 
 # Copyright (C) 2014 Ralf Treinen <treinen@debian.org>
 #
@@ -17,7 +17,10 @@ buglist=(debianbts.get_usertag(umail,utag))[utag]
 statuslist=debianbts.get_status(buglist)
 for status in statuslist:
     if not status.done:
-        package=status.package
+        if status.package:
+            package=status.package
+        else:
+            package='src:'+status.source
         affects=status.affects
         number=status.bug_num
         if package in openbugs:
@@ -30,5 +33,6 @@ for status in statuslist:
             else:
                 openbugs[p]=[number]
 
-print(openbugs)
+for p in openbugs.keys():
+    print(p,':',openbugs[p])
 
