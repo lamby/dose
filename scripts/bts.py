@@ -8,31 +8,42 @@
 # License, or (at your option) any later version.
 
 import debianbts
+import itertools
 
+# get the numbers of all bugs with usertag edos-*
 umail='treinen@debian.org'
-utag='edos-outdated'
+utags=['edos-outdated', 'edos-uninstallable']
+bugnrs=itertools.chain.from_iterable(
+    debianbts.get_usertag(umail,*utags).values())
 
-openbugs=dict()
-buglist=(debianbts.get_usertag(umail,utag))[utag]
-statuslist=debianbts.get_status(buglist)
+binbugs=dict()
+srcbugs=dict()
+statuslist=debianbts.get_status(list(bugnrs))
+
 for status in statuslist:
     if not status.done:
-        if status.package:
-            package=status.package
-        else:
-            package='src:'+status.source
-        affects=status.affects
         number=status.bug_num
-        if package in openbugs:
-            openbugs[package] =+ number
-        else:
-            openbugs[package]=[number]
-        for p in affects:
-            if p in openbugs:
-                openbugs[p] =+ number
+        package=status.package
+        if package[0:4] == 'src:':
+            # bug against a source package
+            source=package[4:]
+            if source in srcbugs:
+                srcbugs[source] =+ number
             else:
-                openbugs[p]=[number]
+                srcbugs[source]=[number]
+        else:
+            # bug against a binary package
+            if package in binbugs:
+                binbugs[package] =+ number
+            else:
+                binbugs[package]=[number]
 
-for p in openbugs.keys():
-    print(p,':',openbugs[p])
+        for p in status.affects:
+            if p in binbugs:
+                binbugs[p] =+ number
+            else:
+                binbugs[p]=[number]
+
+print('Bin:',binbugs)
+print('Src:',srcbugs)
 
