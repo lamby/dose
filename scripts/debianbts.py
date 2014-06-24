@@ -255,7 +255,10 @@ def _parse_status(status):
     bug.blockedby = [int(i) for i in str(tmp['blockedby']).split()]
     bug.unarchived = bool(tmp["unarchived"])
     bug.summary = _uc(tmp['summary'])
-    bug.affects = [_uc(i) for i in tmp['affects'].split(',')]
+    if tmp['affects']:
+        bug.affects = [_uc(p) for p in tmp['affects'].split(',')]
+    else:
+        bug.affects = []
     bug.log_modified = datetime.utcfromtimestamp(tmp['log_modified'])
     bug.location = _uc(tmp['location'])
     bug.archived = bool(tmp["archived"])
