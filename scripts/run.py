@@ -8,7 +8,7 @@
 # License, or (at your option) any later version.
 
 import time, os, argparse, re
-import conf, universes, reports, horizontal, vertical, cleanup, common, diffs, weather
+import conf, universes, reports, horizontal, vertical, cleanup, common, diffs, weather, bts
 
 argparser=argparse.ArgumentParser(
     description="Run dose-debcheck and analyze the result.")
@@ -39,7 +39,9 @@ else:
     timestamp_this = timestamp_now
     timestamps_keep = timestamps_known[0:conf.slices-1]
     timestamps_keep[0:0] = [timestamp_now]
-            
+
+(binbugs,srcbugs)=bts.init()
+
 for scenario in conf.scenarios.keys():
     architectures = conf.scenarios[scenario]['archs']
 
@@ -48,7 +50,7 @@ for scenario in conf.scenarios.keys():
             universes.build(timestamp_this,scenario,arch)
 
     for arch in architectures:
-        reports.build(timestamp_this,day_now,scenario,arch)
+        reports.build(timestamp_this,day_now,scenario,arch,binbugs,srcbugs)
         diffs.build(timestamp_this,timestamp_last,scenario,arch)
             
     horizontal.build(timestamp_this,day_now,scenario,architectures)
