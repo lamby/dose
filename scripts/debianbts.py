@@ -28,6 +28,7 @@ which represents a bugreport from the BTS.
 
 
 from datetime import datetime
+from string import strip
 
 import SOAPpy
 
@@ -256,7 +257,7 @@ def _parse_status(status):
     bug.unarchived = bool(tmp["unarchived"])
     bug.summary = _uc(tmp['summary'])
     if tmp['affects']:
-        bug.affects = [_uc(p) for p in tmp['affects'].split(',')]
+        bug.affects = [strip(_uc(p)) for p in tmp['affects'].split(',')]
     else:
         bug.affects = []
     bug.log_modified = datetime.utcfromtimestamp(tmp['log_modified'])
