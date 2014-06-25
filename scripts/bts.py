@@ -16,34 +16,11 @@ utags=['edos-outdated', 'edos-uninstallable']
 bugnrs=itertools.chain.from_iterable(
     debianbts.get_usertag(umail,*utags).values())
 
-binbugs=dict()
-srcbugs=dict()
-statuslist=debianbts.get_status(list(bugnrs))
-
-for status in statuslist:
+# print each bug number with its package name, and all affected packages
+for status in debianbts.get_status(list(bugnrs)):
     if not status.done:
-        number=status.bug_num
-        package=status.package
-        if package[0:4] == 'src:':
-            # bug against a source package
-            source=package[4:]
-            if source in srcbugs:
-                srcbugs[source] =+ number
-            else:
-                srcbugs[source]=[number]
-        else:
-            # bug against a binary package
-            if package in binbugs:
-                binbugs[package] =+ number
-            else:
-                binbugs[package]=[number]
-
+        print status.bug_num, status.package,
         for p in status.affects:
-            if p in binbugs:
-                binbugs[p] =+ number
-            else:
-                binbugs[p]=[number]
-
-print('Bin:',binbugs)
-print('Src:',srcbugs)
+            print p,
+        print ''
 
