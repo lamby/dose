@@ -8,14 +8,14 @@
 # License, or (at your option) any later version.
 
 import os, subprocess
-import common
-pwd=os.getcwd()
+import common, conf
 
 def init():
     common.info('Initialising bug table')
     binbugs=dict()
     srcbugs=dict()
-    with subprocess.Popen(pwd+'/query-bts.py',stdout=subprocess.PIPE) as bts_answer:
+    script=conf.locations['scriptdir']+'/query-bts.py'
+    with subprocess.Popen(script,stdout=subprocess.PIPE) as bts_answer:
         for rawline in bts_answer.stdout:
             line=rawline.split()
             bugnr=str(line[0],'utf-8')
