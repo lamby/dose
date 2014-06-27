@@ -10,30 +10,37 @@
 import os, subprocess
 import common, conf
 
-def init():
-    common.info('Initialising bug table')
-    binbugs=dict()
-    srcbugs=dict()
-    script=conf.locations['scriptdir']+'/query-bts.py'
-    with subprocess.Popen(script,stdout=subprocess.PIPE) as bts_answer:
-        for rawline in bts_answer.stdout:
-            line=rawline.split()
-            bugnr=str(line[0],'utf-8')
-            for word in line[1:]:
-                package=str(word,'utf-8')
-                if package[0:4] == 'src:':
-                    # bug against a source package
-                    source=package[4:]
-                    if source in srcbugs:
-                        srcbugs[source] =+ bugnr
+class Bugtable(object):
+    """
+    represents a collection of bugs obtained from the Debian BTS, together
+    with the information which binary or source packages are concnerned.
+    """
+
+    def __init__(self):
+        common.info('Initialising bug table')
+        self.binbugs=dict()
+        self.srcbugs=dict()
+        script=conf.locations['scriptdir']+'/query-bts.py'
+        with subprocess.Popen(script,stdout=subprocess.PIPE) as bts_answer:
+            for rawline in bts_answer.stdout:
+                line=rawline.split()
+                bugnr=str(line[0],'utf-8')
+                for word in line[1:]:
+                    package=str(word,'utf-8')
+                    if package[0:4] == 'src:':
+                        # bug against a source package
+                        source=package[4:]
+                        if source in self.srcbugs:
+                            self.srcbugs[source] =+ bugnr
+                        else:
+                            self.srcbugs[source]=[bugnr]
                     else:
-                        srcbugs[source]=[bugnr]
-                else:
-                    # bug against a binary package
-                    if package in binbugs:
-                        binbugs[package] =+ bugnr
-                    else:
-                        binbugs[package]=[bugnr]
+                        # bug against a binary package
+                        if package in self.binbugs:
+                            self.binbugs[package] =+ bugnr
+                        else:
+                            self.binbugs[package]=[bugnr]
     
-    return(binbugs,srcbugs)
+    def get(self):
+        return self.binbugs,self.srcbugs
 

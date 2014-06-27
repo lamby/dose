@@ -95,10 +95,12 @@ def print_bug(bugs,outfile):
             n=nr),
               file=outfile,end='')
 
-def print_reason (package,version,reason,outfile,binbugs,srcbugs):
+def print_reason (package,version,reason,outfile,bugtable):
     '''
     detailed printing of one reason in html to a file
     '''
+
+    binbugs,srcbugs = bugtable.get()
 
     if 'missing' in reason:
         lastpkg=reason['missing']['pkg']['package']
@@ -115,7 +117,7 @@ def print_reason (package,version,reason,outfile,binbugs,srcbugs):
                             reason['missing']['pkg']['package'],
                             reason['missing']['pkg']['version'],
                             reason['missing']['depchains'],
-                            outfile,binbugs,srcbugs)
+                            outfile,bugtable)
     elif 'conflict' in reason:
         print(format_long_con.format(
                 c1=reason['conflict']['pkg1']['package'],
@@ -131,21 +133,23 @@ def print_reason (package,version,reason,outfile,binbugs,srcbugs):
                             reason['conflict']['pkg1']['package'],
                             reason['conflict']['pkg1']['version'],
                             reason['conflict']['depchain1'],
-                            outfile,binbugs,srcbugs)
+                            outfile,bugtable)
         if 'depchain2' in reason['conflict']:
             print_depchains(package,version,
                             reason['conflict']['pkg2']['package'],
                             reason['conflict']['pkg2']['version'],
                             reason['conflict']['depchain2'],
-                            outfile,binbugs,srcbugs)
+                            outfile,bugtable)
     else:
         raise Exception('Unknown reason')
 
-def print_depchain(depchain, outfile, binbugs, srcbugs):
+def print_depchain(depchain, outfile, bugtable):
     '''
     print a single dependency chain to a file
     '''
     
+    binbugs,srcbugs = bugtable.get()
+
     print('<ol>',file=outfile)
     for member in depchain['depchain']:
         package=member['package']
@@ -158,7 +162,7 @@ def print_depchain(depchain, outfile, binbugs, srcbugs):
 
 def print_depchains(source_package,source_version,
                     target_package,target_version,
-                    depchains,outfile,binbugs,srcbugs):
+                    depchains,outfile,bugtable):
     '''
     print one or several dependency chains between two given packages
     '''
@@ -172,7 +176,7 @@ def print_depchains(source_package,source_version,
                 sp=source_package,sv=source_version,
                 tp=target_package,tv=target_version),
               file=outfile)
-        print_depchain(depchains[0],outfile,binbugs,srcbugs)
+        print_depchain(depchains[0],outfile,bugtable)
     else:
         print(format_depchains.format(
                 sp=source_package,sv=source_version,
@@ -181,11 +185,11 @@ def print_depchains(source_package,source_version,
         print('<ol>',file=outfile)
         for depchain in depchains:
             print('<li>',file=outfile)
-            print_depchain(depchain,outfile,binbugs,srcbugs)
+            print_depchain(depchain,outfile,bugtable)
         print('</ol>',file=outfile)
 
 
-def create_reasons_file(package,version,reasons,outfile_name,binbugs,srcbugs):
+def create_reasons_file(package,version,reasons,outfile_name,bugtable):
     '''
     print to outfile_name the detailed explanation why (package,version) is
     not installable, according to reason.
@@ -196,7 +200,7 @@ def create_reasons_file(package,version,reasons,outfile_name,binbugs,srcbugs):
     print('<b>Version: {v}</b>'.format(v=version), file=outfile)
     print('<ol>',file=outfile)
     for reason in reasons:
-        print_reason(package,version,reason,outfile,binbugs,srcbugs)
+        print_reason(package,version,reason,outfile,bugtable)
     print('</ol>',file=outfile)
 
     outfile.close ()
@@ -240,7 +244,7 @@ same explanation all the time).<p>
 
 #########################################################################
 # top level 
-def build(timestamp,day,scenario,arch,binbugs,srcbugs):
+def build(timestamp,day,scenario,arch,bugtable):
     '''
     summarize a complete output produced by dose-debcheck to outfilename,
     and prettyprint chunks of detailed explanations that do not yet exist in 
@@ -325,7 +329,7 @@ def build(timestamp,day,scenario,arch,binbugs,srcbugs):
             reasons_filename = pooldir + '/' + str(reasons_hash)
             if not os.path.isfile(reasons_filename):
                 create_reasons_file(package,version,reasons,reasons_filename,
-                                    binbugs,srcbugs)
+                                    bugtable)
 
             # write to html summary for that day
             print('<tr><td>',package,'</td>', file=outfile,sep='')

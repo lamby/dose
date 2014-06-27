@@ -40,7 +40,7 @@ else:
     timestamps_keep = timestamps_known[0:conf.slices-1]
     timestamps_keep[0:0] = [timestamp_now]
 
-(binbugs,srcbugs)=bts.init()
+bugtable=bts.Bugtable()
 
 for scenario in conf.scenarios.keys():
     architectures = conf.scenarios[scenario]['archs']
@@ -50,7 +50,7 @@ for scenario in conf.scenarios.keys():
             universes.build(timestamp_this,scenario,arch)
 
     for arch in architectures:
-        reports.build(timestamp_this,day_now,scenario,arch,binbugs,srcbugs)
+        reports.build(timestamp_this,day_now,scenario,arch,bugtable)
         diffs.build(timestamp_this,timestamp_last,scenario,arch)
             
     horizontal.build(timestamp_this,day_now,scenario,architectures)
