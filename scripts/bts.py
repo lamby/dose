@@ -7,7 +7,7 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-import os, subprocess
+import os, subprocess, collections
 import common, conf
 
 class Bugtable(object):
@@ -18,8 +18,8 @@ class Bugtable(object):
 
     def __init__(self):
         common.info('Initialising bug table')
-        self.binbugs=dict()
-        self.srcbugs=dict()
+        self.binbugs=collections.defaultdict(list)
+        self.srcbugs=collections.defaultdict(list)
         script=conf.locations['scriptdir']+'/query-bts.py'
         with subprocess.Popen(script,stdout=subprocess.PIPE) as bts_answer:
             for rawline in bts_answer.stdout:
@@ -30,17 +30,14 @@ class Bugtable(object):
                     if package[0:4] == 'src:':
                         # bug against a source package
                         source=package[4:]
-                        if source in self.srcbugs:
-                            self.srcbugs[source] =+ bugnr
-                        else:
-                            self.srcbugs[source]=[bugnr]
+                        self.srcbugs[source].append(bugnr)
                     else:
                         # bug against a binary package
-                        if package in self.binbugs:
-                            self.binbugs[package] =+ bugnr
-                        else:
-                            self.binbugs[package]=[bugnr]
+                        self.binbugs[package].append(bugnr)
     
     def get(self):
         return self.binbugs,self.srcbugs
 
+    def get_direct(self,package_name):
+        return self.binbugs[package_name]
+    
