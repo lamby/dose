@@ -89,18 +89,10 @@ def summary_of_reasons (reasons):
 #######################################################################
 # detailed printing of reasons
 
-def print_bug(bugs,outfile):
-    for nr in bugs:
-        print('[<a href="http://bugs.debian.org/{n}">Bug #{n}</a>]'.format(
-            n=nr),
-              file=outfile,end='')
-
 def print_reason (package,version,reason,outfile,bugtable):
     '''
     detailed printing of one reason in html to a file
     '''
-
-    binbugs,srcbugs = bugtable.get()
 
     if 'missing' in reason:
         lastpkg=reason['missing']['pkg']['package']
@@ -109,8 +101,7 @@ def print_reason (package,version,reason,outfile,bugtable):
                 p=lastpkg,
                 v=reason['missing']['pkg']['version']),
               file=outfile)
-        if lastpkg in binbugs:
-            print_bug(binbugs[lastpkg],outfile)
+        bugtable.print_direct(lastpkg,outfile)
         print('<br>',file=outfile)
         if 'depchains' in reason['missing']:
             print_depchains(package,version,
@@ -125,8 +116,7 @@ def print_reason (package,version,reason,outfile,bugtable):
                 c2=reason['conflict']['pkg2']['package'],
                 v2=reason['conflict']['pkg2']['version']),
               file=outfile)
-        if package in binbugs:
-            print_bug(binbugs[package],outfile)
+        bugtable.print_direct(package,outfile)
         print('<br>',file=outfile)
         if 'depchain1' in reason['conflict']:
             print_depchains(package,version,
@@ -148,16 +138,13 @@ def print_depchain(depchain, outfile, bugtable):
     print a single dependency chain to a file
     '''
     
-    binbugs,srcbugs = bugtable.get()
-
     print('<ol>',file=outfile)
     for member in depchain['depchain']:
         package=member['package']
         print('<li>Package {p} (={v}) depends on {d}'.format(
                 p=package,v=member['version'],d=member['depends']),
               file=outfile)
-        if package in binbugs:
-             print_bug(binbugs[package],outfile)
+        bugtable.print_direct(package,outfile)
     print('</ol>',file=outfile)
 
 def print_depchains(source_package,source_version,

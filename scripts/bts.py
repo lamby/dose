@@ -12,8 +12,10 @@ import common, conf
 
 class Bugtable(object):
     """
-    represents a collection of bugs obtained from the Debian BTS, together
-    with the information which binary or source packages are concnerned.
+    represents a collection of relevant bugs obtained from the Debian
+    BTS, together with the information which binary or source packages
+    are directly (when mentionend in the bug attributes) or
+    indirectly (via a dependency chain) concerned.
     """
 
     def __init__(self):
@@ -35,9 +37,14 @@ class Bugtable(object):
                         # bug against a binary package
                         self.binbugs[package].append(bugnr)
     
-    def get(self):
-        return self.binbugs,self.srcbugs
+    def print_direct(self,package_name,outfile):
+        """
+        print in html to outfile all direct bugs for package_name, with
+        links to the Debian BTS.
+        """
+        for bugnr in self.binbugs[package_name]:
+            print('[<a href="http://bugs.debian.org/{n}">Bug #{n}</a>]'.format(
+                    n=bugnr),
+                  file=outfile,end=' ')
 
-    def get_direct(self,package_name):
-        return self.binbugs[package_name]
-    
+
