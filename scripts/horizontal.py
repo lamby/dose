@@ -209,11 +209,16 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
         if not package in excludes:
 
             # write to html file for that day
-            print('<tr><td>',package,'</td>',file=outfile,sep='')
+            number_of_hashes=len(uninstallables[package])
+            if number_of_hashes > 1:
+                multitd='<td rowspan="'+str(number_of_hashes)+'">'
+            else:
+                multitd='<td>'
+            print('<tr>',multitd,package,'</td>',file=outfile,sep='')
             continuation_line=False
             for hash in uninstallables[package]:
                 if continuation_line:
-                    print('<tr><td></td>',file=outfile)
+                    print('<tr>',file=outfile)
                 if uninstallables[package][hash]['isnative'] == 'True':
                     all_mark = '' 
                 else:
@@ -232,7 +237,7 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
                       '</a></td>',
                       file=outfile,sep='')
                 if not continuation_line:
-                    print('<td>',file=outfile,end='')
+                    print(multitd,file=outfile,end='')
                     bugtable.print_indirect(package,outfile)
                     print('</td>',file=outfile,end='')
                 continuation_line=True
@@ -248,13 +253,18 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
                             count_natives[i] += 1
                         else:
                             count_archall[i] += 1
-                        print('<tr><td>',package,'</td>',file=hfiles[i],sep='')
-                        print('<td>',date_of_days(firstday),'</td>',
+                        number_of_hashes=len(uninstallables[package])
+                        if number_of_hashes > 1:
+                            multitd='<td rowspan="'+str(number_of_hashes)+'">'
+                        else:
+                            multitd='<td>'
+                        print('<tr>',multitd,package,'</td>',file=hfiles[i],sep='')
+                        print(multitd,date_of_days(firstday),'</td>',
                               file=hfiles[i],sep="")
                         continuation_line=False
                         for hash in uninstallables[package]:
                             if continuation_line==True:
-                                 print('<tr><td></td><td></td>',file=hfiles[i])
+                                 print('<tr>',file=hfiles[i])
                             if uninstallables[package][hash]['isnative'] == 'True':
                                 all_mark = '' 
                             else:
@@ -273,7 +283,7 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
                                   shortexplanation[hash],'</a></td>',
                                   file=hfiles[i], sep='')
                             if not continuation_line:
-                                print('<td>',file=hfiles[i],end='')
+                                print(multitd,file=hfiles[i],end='')
                                 bugtable.print_indirect(package,hfiles[i])
                                 print('</td>',file=hfiles[i],end='')
                             continuation_line=True
