@@ -101,7 +101,7 @@ def print_reason (package,version,reason,outfile,bugtable):
                 p=lastpkg,
                 v=reason['missing']['pkg']['version']),
               file=outfile)
-        bugtable.print_direct(lastpkg,outfile)
+        bugtable.print_direct(lastpkg,package,outfile)
         print('<br>',file=outfile)
         if 'depchains' in reason['missing']:
             print_depchains(package,version,
@@ -110,23 +110,26 @@ def print_reason (package,version,reason,outfile,bugtable):
                             reason['missing']['depchains'],
                             outfile,bugtable)
     elif 'conflict' in reason:
+        lastpkg1=reason['conflict']['pkg1']['package']
+        lastpkg2=reason['conflict']['pkg2']['package']
         print(format_long_con.format(
-                c1=reason['conflict']['pkg1']['package'],
+                c1=lastpkg1,
                 v1=reason['conflict']['pkg1']['version'],
-                c2=reason['conflict']['pkg2']['package'],
+                c2=lastpkg2,
                 v2=reason['conflict']['pkg2']['version']),
               file=outfile)
-        bugtable.print_direct(package,outfile)
+        bugtable.print_direct(lastpkg1,package,outfile)
+        bugtable.print_direct(lastpkg2,package,outfile)
         print('<br>',file=outfile)
         if 'depchain1' in reason['conflict']:
             print_depchains(package,version,
-                            reason['conflict']['pkg1']['package'],
+                            lastpkg1,
                             reason['conflict']['pkg1']['version'],
                             reason['conflict']['depchain1'],
                             outfile,bugtable)
         if 'depchain2' in reason['conflict']:
             print_depchains(package,version,
-                            reason['conflict']['pkg2']['package'],
+                            lastpkg2,
                             reason['conflict']['pkg2']['version'],
                             reason['conflict']['depchain2'],
                             outfile,bugtable)
@@ -139,12 +142,13 @@ def print_depchain(depchain, outfile, bugtable):
     '''
     
     print('<ol>',file=outfile)
+    root_package=depchain['depchain'][0]['package']
     for member in depchain['depchain']:
         package=member['package']
         print('<li>Package {p} (={v}) depends on {d}'.format(
                 p=package,v=member['version'],d=member['depends']),
               file=outfile)
-        bugtable.print_direct(package,outfile)
+        bugtable.print_direct(package,root_package,outfile)
     print('</ol>',file=outfile)
 
 def print_depchains(source_package,source_version,
@@ -205,6 +209,7 @@ summary_header = '''
 <th>Package</th>
 <th>Version</th>
 <th>Short explanation (click for detailed explanation)</th>
+<th>Tracking</th>
 '''
 
 summary_history_header = '''
@@ -224,6 +229,7 @@ same explanation all the time).<p>
 <th>Since</th>
 <th>Version today</th>
 <th>Short explanation as of today (click for details)</th>
+<th>Tracking</th>
 '''
 
 
@@ -322,8 +328,10 @@ def build(timestamp,day,scenario,arch,bugtable):
             print('<tr><td>',package,'</td>', file=outfile,sep='')
             print('<td>',all_mark,version,'</td>', file=outfile,sep='')
             print('<td>',pack_anchor(timestamp,package,reasons_hash),
-                  reasons_summary,'</a>',
+                  reasons_summary,'</a></td><td>',
                   file=outfile, sep='')
+            bugtable.print_indirect(package,outfile)
+            print('</td></tr>',file=outfile)
 
             # write to the corresponding historic html page
             # and count archall/native uninstallable packages per slice
@@ -343,8 +351,10 @@ def build(timestamp,day,scenario,arch,bugtable):
                               file=hfiles[i],sep='')
                         print('<td>',pack_anchor_from_hist(
                                 timestamp,package,reasons_hash),
-                              reasons_summary,'</a>',
+                              reasons_summary,'</a></td><td>',
                               file=hfiles[i], sep='')
+                        bugtable.print_indirect(package,hfiles[i])
+                        print('</td></tr>',file=hfiles[i])
                         break
 
             # write into the summary file in the cache

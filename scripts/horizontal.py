@@ -43,6 +43,7 @@ summary_header='''
 <th>Version</th>
 <th>Architectures</th>
 <th>Short Explanation (click for details)</th>
+<th>Tracking</th>
 '''
 
 summary_history_header = '''
@@ -64,6 +65,7 @@ Packages that have been continuously found to be not installable
 <th>Version today</th>
 <th>Architectures</th>
 <th>Short explanation as of today (click for details)</th>
+<th>Tracking</th>
 '''
 
 def analyze_horizontal(timestamp,scenario,architectures):
@@ -142,7 +144,7 @@ def write_package_page(timestamp,scenario,architectures):
         outfile.close ()
 
 #############################################################################
-def write_tables(timestamp,day,scenario,what,includes,excludes):
+def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
     '''
     Create a summary table of packages that are not installable a certain
     set of architectures. 
@@ -224,11 +226,16 @@ def write_tables(timestamp,day,scenario,what,includes,excludes):
                 for arch in uninstallables[package][hash]['archs']:
                     print(arch, file=outfile, end=' ')
                 print('</td>',file=outfile,end='')
-                print('<td>',pack_anchor(timestamp,package,hash),
-                      file=outfile,sep='',end='')
-                print(shortexplanation[hash],'</a><td>',file=outfile,sep='')
+                print('<td>',
+                      pack_anchor(timestamp,package,hash),
+                      shortexplanation[hash],
+                      '</a></td>',
+                      file=outfile,sep='')
+                if not continuation_line:
+                    print('<td>',file=outfile,end='')
+                    bugtable.print_indirect(package,outfile)
+                    print('</td>',file=outfile,end='')
                 continuation_line=True
-
 
             # write to the corresponding historic html page
             # and count archall/native uninstallable packages per slice
@@ -263,8 +270,12 @@ def write_tables(timestamp,day,scenario,what,includes,excludes):
                             print('</td>',file=hfiles[i],end='')
                             print('<td>',pack_anchor_from_hist(
                                     timestamp,package,hash),
-                                  shortexplanation[hash],'</a>',
+                                  shortexplanation[hash],'</a></td>',
                                   file=hfiles[i], sep='')
+                            if not continuation_line:
+                                print('<td>',file=hfiles[i],end='')
+                                bugtable.print_indirect(package,hfiles[i])
+                                print('</td>',file=hfiles[i],end='')
                             continuation_line=True
                         break
 
@@ -367,12 +378,12 @@ def write_row(timestamp,scenario,architectures):
 
 ########################################################################
 # top level
-def build(timestamp,day,scenario,architectures):
+def build(timestamp,day,scenario,architectures,bugtable):
     info('build horizontal tables for {s}'.format(s=scenario))
     analyze_horizontal(timestamp,scenario,architectures)
     write_package_page(timestamp,scenario,architectures)
     write_tables(timestamp,day,scenario,
-                 'some',uninstallables,set())
+                 'some',uninstallables,set(),bugtable)
     write_tables(timestamp,day,scenario,
-                 'each',uninstallables,installables_somewhere)
+                 'each',uninstallables,installables_somewhere,bugtable)
     write_row(timestamp,scenario,architectures)

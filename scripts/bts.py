@@ -35,7 +35,7 @@ class Bugtable(object):
                               stdout=subprocess.PIPE) as bts_query:
             for rawline in bts_query.stdout:
                 line=rawline.split()
-                bugnr=str(line[0],'utf-8')
+                bugnr=int(line[0])
                 for word in line[1:]:
                     package=str(word,'utf-8')
                     if package[0:4] == 'src:':
@@ -47,7 +47,9 @@ class Bugtable(object):
                         self.binbugs[package].add(bugnr)
 
     def dump(self):
-        print(self.binbugs,self.srcbugs)
+        print('Direct Binary:', self.binbugs,
+              'Direct Source:', self.srcbugs,
+              'Indirect:', self.indbugs, sep='\n')
 
     def print_direct(self,package_name,root_package,outfile):
         """
@@ -66,6 +68,6 @@ class Bugtable(object):
         links to the Debian BTS.
         """
         for bugnr in self.indbugs[package_name]:
-            print('[<a href="http://bugs.debian.org/{n}">Bug #{n}</a>]'.format(
+            print('[<a href="http://bugs.debian.org/{n}">#{n}</a>]'.format(
                     n=bugnr),
                   file=outfile,end=' ')

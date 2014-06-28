@@ -53,7 +53,7 @@ for scenario in conf.scenarios.keys():
         reports.build(timestamp_this,day_now,scenario,arch,bugtable)
         diffs.build(timestamp_this,timestamp_last,scenario,arch)
             
-    horizontal.build(timestamp_this,day_now,scenario,architectures)
+    horizontal.build(timestamp_this,day_now,scenario,architectures,bugtable)
     for what in ['some','each']:
         diffs.build_multi(timestamp_this,timestamp_last,scenario,what,
                           architectures)
