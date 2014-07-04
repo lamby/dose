@@ -47,9 +47,21 @@ class Bugtable(object):
                         self.binbugs[package].add(bugnr)
 
     def dump(self):
-        print('Direct Binary:', self.binbugs,
-              'Direct Source:', self.srcbugs,
-              'Indirect:', self.indbugs, sep='\n')
+        print('Direct Binary:')
+        print('==============')
+        for  p in sorted(self.binbugs.keys()):
+            if self.binbugs[p]:
+                print(p,self.binbugs[p])
+        print('Direct Source:')
+        print('==============')
+        for p in sorted(self.srcbugs.keys()):
+            if self.srcbugs[p]:
+                print(p,self.srcbugs[p])
+        print('Indirect:')
+        print('=========')
+        for p in sorted(self.indbugs.keys()):
+            if self.indbugs[p]:
+                print(p,self.indbugs[p])
 
     def print_direct(self,package_name,root_package,outfile):
         """
