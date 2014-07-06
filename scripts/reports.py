@@ -197,21 +197,6 @@ def create_reasons_file(package,version,reasons,outfile_name,bugtable):
     outfile.close ()
 
 
-summary_header = '''
-<h1>Packages not installable on {arch} in scenario {scenario}</h1>
-<b>Date: {utctime} UTC</b>
-<p>
-
-<kbd>[all]</kbd> indicates a package with <kbd>Architecture=all</kbd>.
-<p>
-<table border=1>
-<tr>
-<th>Package</th>
-<th>Version</th>
-<th>Short explanation (click for detailed explanation)</th>
-<th>Tracking</th>
-'''
-
 summary_history_header = '''
 <h1>Packages not installable on {arch} in scenario {scenario}
 for {d} days</h1>
@@ -232,6 +217,57 @@ same explanation all the time).<p>
 <th>Tracking</th>
 '''
 
+
+########################################################################
+
+class Summary_HTML:
+    """
+    A file object containg an html table of packages that are not
+    installable in a certain scenario, architecture, on a certain
+    date.
+    """
+
+    summary_header = '''
+<h1>Packages not installable on {architecture} in scenario {scenario}</h1>
+<b>Date: {utctime} UTC</b>
+<p>
+
+<kbd>[all]</kbd> indicates a package with <kbd>Architecture=all</kbd>.
+<p>
+<table border=1>
+<tr>
+<th>Package</th>
+<th>Version</th>
+<th>Short explanation (click for detailed explanation)</th>
+<th>Tracking</th>
+'''
+    
+    def __init__(self,timestamp,scenario,architecture,bugtable):
+
+        outdir=htmldir(timestamp,scenario)
+        if not os.path.isdir(outdir): os.makedirs(outdir)
+        self.filedesc = open(outdir+'/'+architecture+'.html', 'w')
+        print(html_header,file=self.filedesc)
+        print(self.summary_header.format(
+            timestamp=str(timestamp),
+            scenario=scenario,
+            architecture=architecture,
+            utctime=datetime.datetime.utcfromtimestamp(float(timestamp))),
+        file=self.filedesc)
+
+    def __del__(self):
+        print(html_footer,file=self.filedesc)
+        self.filedesc.close()
+
+    def write(self,package,isnative,version,reasons_hash,reasons_summary):
+        all_mark = '' if isnative else '[all] '  
+        print('<tr><td>',package,'</td>',
+              '<td>',all_mark,version,'</td>',
+              '<td>',pack_anchor(timestamp,package,reasons_hash),
+              reasons_summary,'</a></td><td>',
+              file=filedesc, sep='')
+        bugtable.print_indirect(package,self.filedesc)
+        print('</td></tr>',file=self.filedesc)
 
 
 
@@ -255,8 +291,7 @@ def build(timestamp,day,scenario,arch,bugtable):
     if not os.path.isdir(pooldir): os.makedirs(pooldir)
     histhtmldir=history_htmldir(scenario,arch)
     if not os.path.isdir(histhtmldir): os.makedirs(histhtmldir)
-    outdir=htmldir(timestamp,scenario)
-    if not os.path.isdir(outdir): os.makedirs(outdir)
+
 
     # fetch the report obtained from dose-debcheck
     reportfile = open(cachedir(timestamp,scenario,arch)+'/debcheck.out')
@@ -273,15 +308,7 @@ def build(timestamp,day,scenario,arch,bugtable):
             history[package] = date.rstrip()
         h.close()
 
-    # html output: a summary for this architecture
-    outfile = open(outdir+'/'+arch+'.html', 'w')
-    print(html_header,file=outfile)
-    print(summary_header.format(
-            timestamp=str(timestamp),
-            scenario=scenario,
-            arch=arch,
-            utctime=datetime.datetime.utcfromtimestamp(float(timestamp))),
-          file=outfile)
+    summary_file=Summary_HTML(timestamp,scenario,arch,bugtable)
 
     # historic html files for different time slices
     hfiles={i:open(history_htmlfile(scenario,arch,d),'w')
@@ -325,13 +352,8 @@ def build(timestamp,day,scenario,arch,bugtable):
                                     bugtable)
 
             # write to html summary for that day
-            print('<tr><td>',package,'</td>', file=outfile,sep='')
-            print('<td>',all_mark,version,'</td>', file=outfile,sep='')
-            print('<td>',pack_anchor(timestamp,package,reasons_hash),
-                  reasons_summary,'</a></td><td>',
-                  file=outfile, sep='')
-            bugtable.print_indirect(package,outfile)
-            print('</td></tr>',file=outfile)
+            summary_file.write(package,isnative,version,
+                               reasons_hash,reasons_summary)
 
             # write to the corresponding historic html page
             # and count archall/native uninstallable packages per slice
@@ -371,8 +393,7 @@ def build(timestamp,day,scenario,arch,bugtable):
         print("</table>", file=outfile)
         for f in hfiles.values():  print("</table>", file=f)
 
-    print(html_footer,file=outfile)
-    outfile.close ()
+    del summary_file
     sumfile.close ()
     historyfile.close ()
     for f in hfiles.values():
