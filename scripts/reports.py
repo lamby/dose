@@ -243,9 +243,13 @@ class Summary_HTML:
 '''
     
     def __init__(self,timestamp,scenario,architecture,bugtable):
-
+        """
+        open the html file and print the header
+        """
         outdir=htmldir(timestamp,scenario)
         if not os.path.isdir(outdir): os.makedirs(outdir)
+        self.bugtable=bugtable
+        self.timestamp=timestamp
         self.filedesc = open(outdir+'/'+architecture+'.html', 'w')
         print(html_header,file=self.filedesc)
         print(self.summary_header.format(
@@ -256,20 +260,24 @@ class Summary_HTML:
         file=self.filedesc)
 
     def __del__(self):
-        print(html_footer,file=self.filedesc)
+        """
+        print the html footer stuff and close the html file
+        """
+        print('</table>',html_footer,file=self.filedesc)
         self.filedesc.close()
 
     def write(self,package,isnative,version,reasons_hash,reasons_summary):
+        """
+        write one line of a summary table
+        """
         all_mark = '' if isnative else '[all] '  
         print('<tr><td>',package,'</td>',
               '<td>',all_mark,version,'</td>',
-              '<td>',pack_anchor(timestamp,package,reasons_hash),
+              '<td>',pack_anchor(self.timestamp,package,reasons_hash),
               reasons_summary,'</a></td><td>',
-              file=filedesc, sep='')
-        bugtable.print_indirect(package,self.filedesc)
+              file=self.filedesc, sep='')
+        self.bugtable.print_indirect(package,self.filedesc)
         print('</td></tr>',file=self.filedesc)
-
-
 
 #########################################################################
 # top level 
@@ -390,7 +398,6 @@ def build(timestamp,day,scenario,arch,bugtable):
                   sep='#',
                   file=historyfile)
 
-        print("</table>", file=outfile)
         for f in hfiles.values():  print("</table>", file=f)
 
     del summary_file
