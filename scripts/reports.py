@@ -263,7 +263,7 @@ class Summary_HTML:
         """
         print the html footer stuff and close the html file
         """
-        print('</table>',html_footer,file=self.filedesc)
+        print('</table>',html_footer,file=self.filedesc,sep='\n')
         self.filedesc.close()
 
     def write(self,package,isnative,version,reasons_hash,reasons_summary):
