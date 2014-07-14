@@ -32,6 +32,7 @@ for scenario in conf.scenarios.keys():
 
     for arch in architectures:
         universes.build(timestamp_now,scenario,arch)
+        universe=universes.Universe(timestamp_now,scenario,arch)
         reports.build(timestamp_now,day_now,scenario,arch,bugtable)
         diffs.build(timestamp_now,timestamp_last,scenario,arch)
             

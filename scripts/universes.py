@@ -35,32 +35,46 @@ def run_debcheck(scenario,arch,outdir):
     outfile.close ()
                 
 
-def get_fg_packages(scenario,arch,outdir):
+class Universe:
+    """
+    A universe object contains information about the packages that exist
+    in a certain scenario and for a certain architecture. The list
+    of foreground packages is written to a file.
+    """
 
-    """
-    create a list of foreground packages
-    """
-    
-    info('extracting foreground for {s} on {a}'.format(a=arch,s=scenario))
-    packages=set()
-    for fg in conf.scenarios[scenario]['fgs']:
-        fg_expanded = fg.format(m=conf.locations['debmirror'],a=arch)
-        if not os.path.exists(fg_expanded):
-            warning('No such file: {p}, dropping from foregrounds'.format(
-                    p=fg_expanded,))
-            continue
-        elif fg[-3:]=='.gz':
-            infile = codecs.getreader('utf-8')(gzip.open(fg_expanded,'r'))   
-        else:
-            infile = open(fg_expanded)
-        for line in infile:
-            if line.startswith('Package:'):
-                packages.add(line.split()[1])
-        infile.close ()
-                
-    outfile = open(outdir + '/fg-packages', 'w')
-    for f in packages: print(f,file=outfile)
-    outfile.close ()
+    def __init__(self,timestamp,scenario,architecture):
+        info('extracting foreground for {s} on {a}'.format(
+                a=architecture,s=scenario))
+
+        self.fg_packages=set()
+        self.source_packages=dict()
+
+        for fg in conf.scenarios[scenario]['fgs']:
+            fg_filename = fg.format(
+                m=conf.locations['debmirror'],a=architecture)
+            if not os.path.exists(fg_filename):
+                warning('No such file: {p}, dropping from foregrounds'.format(
+                        p=fg_filename,))
+                continue
+            elif fg[-3:]=='.gz':
+                infile = codecs.getreader('utf-8')(gzip.open(fg_filename,'r'))
+            else:
+                infile = open(fg_filename)
+            for line in infile:
+                if line.startswith('Package:'):
+                    current_package=line.split()[1]
+                    self.fg_packages.add(current_package)
+                if line.startswith('source:'):
+                    current_source=line.split()[1]
+                    self.source_packages[current_package]=current_source
+            infile.close ()
+
+        outdir=cachedir(timestamp,scenario,architecture)
+        if not os.path.isdir(outdir): os.makedirs(outdir)
+        outfile = open(outdir + '/fg-packages', 'w')
+        for f in self.fg_packages: print(f,file=outfile)
+        outfile.close ()
+        
 
 ##########################################################################
 # top level
@@ -68,6 +82,4 @@ def get_fg_packages(scenario,arch,outdir):
 def build(timestamp,scenario,architecture):
     outdir=cachedir(timestamp,scenario,architecture)
     if not os.path.isdir(outdir): os.makedirs(outdir)
-    
     run_debcheck(scenario,architecture,outdir)
-    get_fg_packages(scenario,architecture,outdir)
