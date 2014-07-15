@@ -74,7 +74,12 @@ class Universe:
         outfile = open(outdir + '/fg-packages', 'w')
         for f in self.fg_packages: print(f,file=outfile)
         outfile.close ()
-        
+     
+    def is_in_foreground(self,package):
+        '''
+        tell whether a package is in the foregounf
+        '''
+        return(package in self.fg_packages)
 
 ##########################################################################
 # top level

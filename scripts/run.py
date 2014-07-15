@@ -34,7 +34,7 @@ for scenario in conf.scenarios.keys():
         universes.build(timestamp_now,scenario,arch)
         universe=universes.Universe(timestamp_now,scenario,arch)
         reports.build(timestamp_now,day_now,scenario,arch,bugtable)
-        diffs.build(timestamp_now,timestamp_last,scenario,arch)
+        diffs.build(timestamp_now,timestamp_last,universe,scenario,arch)
             
     horizontal.build(timestamp_now,day_now,scenario,architectures,bugtable)
     for what in ['some','each']:

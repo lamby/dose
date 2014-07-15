@@ -32,7 +32,7 @@ table_header_multi='''
 <th>Short Explanation (click for details)</th>
 '''
 
-def build(t_this,t_prev,scenario,arch):
+def build(t_this,t_prev,universe_this,scenario,arch):
     '''build a difference table between two runs'''
 
     if not (os.path.isfile (cachedir(t_prev,scenario,arch)+'/fg-packages')
@@ -95,15 +95,16 @@ def build(t_this,t_prev,scenario,arch):
     foreground_prev = { p.rstrip() for p in infile }
     infile.close()
 
-    # fetch current foreground
-    infile=open(cachedir(t_this,scenario,arch)+'/fg-packages')
-    foreground_this = { p.rstrip() for p in infile }
-    infile.close()
-
+    # reported uninstallable now
     uninstallables_this=set(summary_this.keys())
-    uninstallables_prev=set(summary_prev.keys())
 
+    # reported uninstallable previously
+    uninstallables_prev=set(summary_prev.keys())
+    
+    # reported uninstallable now, but not previously
     uninstallables_in  = sorted(uninstallables_this - uninstallables_prev)
+
+    # reported uninstallable previously, but not now
     uninstallables_out = sorted(uninstallables_prev - uninstallables_this)
 
     # write html page for differences
@@ -116,6 +117,7 @@ def build(t_this,t_prev,scenario,arch):
           file=outfile)
     
     print('<h2>Old packages that became not installable</h2>',file=outfile)
+    # in uninstallable in, and in previous foreground
     print(table_header,file=outfile)
     for package in uninstallables_in:
         if package in foreground_prev:
@@ -135,6 +137,7 @@ def build(t_this,t_prev,scenario,arch):
     print('</table>',file=outfile)
 
     print('<h2>New packages that are not installable</h2>',file=outfile)
+    # in uninstallable in, but not in previous foreground
     print(table_header,file=outfile)
     for package in uninstallables_in:
         if package not in foreground_prev:
@@ -154,9 +157,10 @@ def build(t_this,t_prev,scenario,arch):
     print('</table>',file=outfile)
 
     print('<h2>Old packages that became installable</h2>',file=outfile)
+    # in uninstallable out, and in current foreground
     print(table_header,file=outfile)
     for package in uninstallables_out:
-        if package in foreground_this:
+        if universe_this.is_in_foreground(package):
             record=summary_prev[package]
             if record['isnative']:
                 all_mark=''
@@ -173,9 +177,10 @@ def build(t_this,t_prev,scenario,arch):
     print('</table>',file=outfile)
 
     print('<h2>Not-installable packages that disappeared</h2>',file=outfile)
+    # in uninstallable out, but not in current foreground
     print(table_header,file=outfile)
     for package in uninstallables_out:
-        if package not in foreground_this:
+        if not universe_this.is_in_foreground(package):
             record=summary_prev[package]
             if record['isnative']:
                 all_mark=''
