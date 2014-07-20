@@ -221,10 +221,9 @@ def build(t_this,t_prev,universe_this,scenario,arch):
 def build_multi(t_this,t_prev,scenario,what,architectures):
     '''build a difference table between two runs'''
 
-    if not os.path.isfile(cachedir(t_prev,scenario,what)+'/summary') :
+    if not os.path.isfile(cachedir(t_prev,scenario,what)+'/summary'):
         warning('skip diff for {s} on {a} from {t1} to {t2}'.format(
                 s=scenario,a=what,t1=t_prev,t2=t_this))
-        
         return
 
     info('diff for {s} on {a} from {t1} to {t2}'.format(
@@ -295,9 +294,11 @@ def build_multi(t_this,t_prev,scenario,what,architectures):
     # fetch previous foreground
     foreground_prev=set()
     for arch in architectures:
-        with open(cachedir(t_prev,scenario,arch)+'/fg-packages') as infile:
-            for line in infile:
-                foreground_prev.add(line.rstrip())
+        fg_file=cachedir(t_prev,scenario,arch)+'/fg-packages'
+        if os.path.isfile(fg_file):
+            with open(fg_file) as infile:
+                for line in infile:
+                    foreground_prev.add(line.rstrip())
 
     # fetch current foreground
     foreground_this=set()
