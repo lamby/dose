@@ -96,12 +96,13 @@ def print_reason(package,version,reason,outfile,universe,bugtable):
 
     if 'missing' in reason:
         lastpkg=reason['missing']['pkg']['package']
+        lastsrc=universe.source(lastpkg)
         print(format_long_dep.format(
                 d=reason['missing']['pkg']['unsat-dependency'],
                 p=lastpkg,
                 v=reason['missing']['pkg']['version']),
               file=outfile)
-        bugtable.print_direct(lastpkg,package,outfile)
+        bugtable.print_direct(lastpkg,lastsrc,package,outfile)
         print('<br>',file=outfile)
         if 'depchains' in reason['missing']:
             print_depchains(package,version,
@@ -112,14 +113,16 @@ def print_reason(package,version,reason,outfile,universe,bugtable):
     elif 'conflict' in reason:
         lastpkg1=reason['conflict']['pkg1']['package']
         lastpkg2=reason['conflict']['pkg2']['package']
+        lastsrc1=universe.source(lastpkg1)
+        lastsrc2=universe.source(lastpkg2)
         print(format_long_con.format(
                 c1=lastpkg1,
                 v1=reason['conflict']['pkg1']['version'],
                 c2=lastpkg2,
                 v2=reason['conflict']['pkg2']['version']),
               file=outfile)
-        bugtable.print_direct(lastpkg1,package,outfile)
-        bugtable.print_direct(lastpkg2,package,outfile)
+        bugtable.print_direct(lastpkg1,lastsrc1,package,outfile)
+        bugtable.print_direct(lastpkg2,lastsrc2,package,outfile)
         print('<br>',file=outfile)
         if 'depchain1' in reason['conflict']:
             print_depchains(package,version,
@@ -148,7 +151,8 @@ def print_depchain(depchain,outfile,universe,bugtable):
         print('<li>Package {p} (={v}) depends on {d}'.format(
                 p=package,v=member['version'],d=member['depends']),
               file=outfile)
-        bugtable.print_direct(package,root_package,outfile)
+        bugtable.print_direct(package,universe.source(package),root_package,
+                              outfile)
     print('</ol>',file=outfile)
 
 def print_depchains(source_package,source_version,
