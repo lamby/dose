@@ -81,6 +81,12 @@ class Universe:
         '''
         return(package in self.fg_packages)
 
+    def source(self,package):
+        '''
+        return the source package name pertaining to a binary package
+        '''
+        return self.source_packages.get(package,package)
+
 ##########################################################################
 # top level
 
