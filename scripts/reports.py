@@ -113,6 +113,7 @@ def print_reason(root_package,root_version,
 
     root_source=universe.source(root_package)
 
+    print('<table>',file=outfile)
     if 'missing' in reason:
         last_package=reason['missing']['pkg']['package']
         last_version=reason['missing']['pkg']['version']
@@ -121,30 +122,34 @@ def print_reason(root_package,root_version,
 
         if root_package == last_package :
             # no dependency chain - the root package itself has an unsatisfied dependency
+            print('<tr><td>',file=outfile)
             print_p(root_package,root_version,root_source,root_package,bugtable,outfile)
             print_d(last_dependency,outfile)
             print('<font color=red>MISSING</font>',file=outfile)
+            print('</tr></td>',file=outfile)
         else:
             depchains=reason['missing']['depchains']
             if len(depchains)==1 :
                 # only one dependency chain
+                print('<tr><td>',file=outfile)
                 print_p(root_package,root_version,root_source,root_package,bugtable,outfile)
                 print_depchains(depchains,outfile,universe,bugtable)
                 print_p(last_package,last_version,last_source,root_package,bugtable,outfile)
                 print_d(last_dependency,outfile)
                 print('<font color=red>MISSING</font>',file=outfile)
+                print('</tr></td>',file=outfile)
             else :
                 # multiple dependency chains
-                print('<table><tr><td align=center>',file=outfile)
-                print('<tr><td>',file=outfile)
+                print('<tr><td align=center>',file=outfile)
                 print_p(root_package,root_version,root_source,root_package,bugtable,outfile)
                 print('</td></tr><tr><td>',file=outfile)
                 print_depchains(depchains,outfile,universe,bugtable)
                 print('</td></tr><tr><td align=center><table><tr><td>',file=outfile)
                 print(last_package, '(',last_version,') ',file=outfile)
                 bugtable.print_direct(last_package,last_source,root_package,outfile)
-                print('<tr><td><font color=red>MISSING</font></td></tr></table>',
-                      '</table>',file=outfile)
+                print('<br>',file=outfile)
+                print_d(last_dependency,outfile)
+                print('<font color=red>MISSING</font></td></tr></table>',file=outfile)
     elif 'conflict' in reason:
         lastpkg1=reason['conflict']['pkg1']['package']
         lastpkg2=reason['conflict']['pkg2']['package']
@@ -169,6 +174,7 @@ def print_reason(root_package,root_version,
                             outfile,universe,bugtable)
     else:
         raise Exception('Unknown reason')
+    print('</table>',file=outfile)
 
 def print_depchain(depchain,outfile,universe,bugtable):
     '''
@@ -180,7 +186,7 @@ def print_depchain(depchain,outfile,universe,bugtable):
     for member in depchain['depchain']:
         package=member['package']
         if not firstiteration:
-            print(package,' (',member['version'],')',file=outfile)
+            print(package,' (',member['version'],') ',file=outfile,sep='')
             bugtable.print_direct(package,universe.source(package),root_package,
                                   outfile)
             print('<br>',file=outfile)
@@ -199,10 +205,12 @@ def print_depchains(depchains,outfile,universe,bugtable):
     elif len(depchains) == 1:
         print_depchain(depchains[0],outfile,universe,bugtable)
     else:
-        print('<table><tr><td>',file=outfile)
+        print('<table><tr>',file=outfile)
         for depchain in depchains:
+            print('<td>',file=outfile)
             print_depchain(depchain,outfile,universe,bugtable)
-        print('</td></tr></table>',file=outfile)
+            print('</td>',file=outfile)
+        print('</tr></table>',file=outfile)
 
 
 def create_reasons_file(package,version,reasons,outfile_name,
@@ -214,11 +222,14 @@ def create_reasons_file(package,version,reasons,outfile_name,
     
     outfile=open(outfile_name, 'w')
 
-    print('<b>Version: {v}</b>'.format(v=version), file=outfile)
-    print('<ol>',file=outfile)
-    for reason in reasons:
-        print_reason(package,version,reason,outfile,universe,bugtable)
-    print('</ol>',file=outfile)
+    if len(reasons)==1:
+        print_reason(package,version,reasons[0],outfile,universe,bugtable)
+    else:
+        print('<ol>',file=outfile)
+        for reason in reasons:
+            print('<li>',file=outfile)
+            print_reason(package,version,reason,outfile,universe,bugtable)
+        print('</ol>',file=outfile)
 
     outfile.close ()
 
