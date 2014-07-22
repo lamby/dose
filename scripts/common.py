@@ -141,10 +141,7 @@ html_header='''<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
   <style>
     td, th {
       padding: 6px;
-      border-left: 1pt solid black;
-      border-right: 1pt solid black;
-      border-bottom: 1pt solid black;
-      border-top: 1pt solid black;
+      border: 1pt solid black;
     }
   </style>
 </head>
