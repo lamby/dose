@@ -8,16 +8,8 @@
 import yaml,os, hashlib, datetime, re
 from common import *
 
-
-
 format_short_dep="unsatisfied dependency on {d}"
 format_short_con="conflict between {c1} and {c2}"
-
-format_long_con='<li>Conflict between package {c1} (={v1}) and package {c2} (={v2})'
-
-format_depchain='Dependency chain from {sp} (={sv}) to {tp} (={tv}):'
-format_depchains='Multiple dependency chains from {sp} (={sv}) to {tp} (={tv}):'
-
 
 ##########################################################################
 # hashing reasons
