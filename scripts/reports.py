@@ -5,7 +5,7 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-import yaml,os, hashlib, datetime
+import yaml,os, hashlib, datetime, re
 from common import *
 
 
@@ -108,9 +108,14 @@ def print_reason(root_package,root_version,
         bugtable.print_direct(package,source,root_package,outfile)
         print('<br>',file=outfile)
 
+    virtualdep_re=re.compile('\| --virtual-\S+\s*')
+    def sanitize_d(dependency):
+        '''drop --virtual-* packages, see upstream bug report #17736'''
+        return(virtualdep_re.sub('',dependency))
+
     def print_d(dependency,outfile):
         '''print a dependency as part of a detailed explanation'''
-        print('&nbsp;&nbsp;&nbsp;&darr;&nbsp;',dependency,'<br>',file=outfile,sep='')
+        print('&nbsp;&nbsp;&nbsp;&darr;&nbsp;',sanitize_d(dependency),'<br>',file=outfile,sep='')
 
     def print_depchain(depchain,outfile,universe,bugtable):
         '''print a single dependency chain'''
@@ -186,7 +191,7 @@ def print_reason(root_package,root_version,
         last_version2=reason['conflict']['pkg2']['version']
         last_source1=universe.source(last_package1)
         last_source2=universe.source(last_package2)
-
+        
         print('<tr><td align=center colspan=2>',file=outfile)
         print_p(root_package,root_version,root_source,root_package,bugtable,outfile)
         print('</td></tr>',file=outfile)
