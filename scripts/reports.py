@@ -218,7 +218,7 @@ def create_reasons_file(package,version,reasons,outfile_name,
     if len(reasons)==1:
         print_reason(package,version,reasons[0],outfile,universe,bugtable)
     else:
-        print('<ol>',file=outfile)
+        print('Conjunction of multiple reasons:','<ol>',file=outfile)
         for reason in reasons:
             print('<li>',file=outfile)
             print_reason(package,version,reason,outfile,universe,bugtable)
