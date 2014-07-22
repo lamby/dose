@@ -110,7 +110,7 @@ def print_reason(root_package,root_version,
 
     def print_d(dependency,outfile):
         '''print a dependency as part of a detailed explanation'''
-        print('&nbsp;&nbsp;&nbsp;&darr;',dependency,'<br>',file=outfile)
+        print('&nbsp;&nbsp;&nbsp;&darr;&nbsp;',dependency,'<br>',file=outfile,sep='')
 
     def print_depchain(depchain,outfile,universe,bugtable):
         '''print a single dependency chain'''
@@ -180,27 +180,29 @@ def print_reason(root_package,root_version,
                 print_d(last_dependency,outfile)
                 print('<font color=red>MISSING</font></td></tr></table>',file=outfile)
     elif 'conflict' in reason:
-        lastpkg1=reason['conflict']['pkg1']['package']
-        lastpkg2=reason['conflict']['pkg2']['package']
-        lastsrc1=universe.source(lastpkg1)
-        lastsrc2=universe.source(lastpkg2)
-        print(format_long_con.format(
-                c1=lastpkg1,
-                v1=reason['conflict']['pkg1']['version'],
-                c2=lastpkg2,
-                v2=reason['conflict']['pkg2']['version']),
-              file=outfile)
-        bugtable.print_direct(lastpkg1,lastsrc1,root_package,outfile)
-        bugtable.print_direct(lastpkg2,lastsrc2,root_package,outfile)
-        print('<br>',file=outfile)
+        last_package1=reason['conflict']['pkg1']['package']
+        last_package2=reason['conflict']['pkg2']['package']
+        last_version1=reason['conflict']['pkg1']['version']
+        last_version2=reason['conflict']['pkg2']['version']
+        last_source1=universe.source(last_package1)
+        last_source2=universe.source(last_package2)
+
+        print('<tr><td align=center colspan=2>',file=outfile)
+        print_p(root_package,root_version,root_source,root_package,bugtable,outfile)
+        print('</td></tr>',file=outfile)
+        print('<tr><td><table><tr><td>',file=outfile)
         if 'depchain1' in reason['conflict']:
-            print_depchains(
-                            reason['conflict']['depchain1'],
-                            outfile,universe,bugtable)
+            print_depchains(reason['conflict']['depchain1'],outfile,universe,bugtable)
+        print('</td></tr></table><td><table><tr><td>',file=outfile)
         if 'depchain2' in reason['conflict']:
-            print_depchains(
-                            reason['conflict']['depchain2'],
-                            outfile,universe,bugtable)
+            print_depchains(reason['conflict']['depchain2'],outfile,universe,bugtable)
+        print('</td></tr></table></td></tr>',file=outfile)
+        print('<tr><td align=center>',file=outfile)
+        print_p(last_package1,last_version1,last_source1,root_package,bugtable,outfile)
+        print('</td><td align=center>',file=outfile)
+        print_p(last_package2,last_version2,last_source2,root_package,bugtable,outfile)
+        print('</td></tr><tr><td align=center colspan=2>',file=outfile)
+        print('<font color=red>CONFLICT</font></td></tr></table>',file=outfile)
     else:
         raise Exception('Unknown reason')
     print('</table>',file=outfile)
