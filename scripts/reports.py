@@ -176,11 +176,11 @@ def print_reason(root_package,root_version,
                 print('</tr></td>',file=outfile)
             else :
                 # multiple dependency chains
-                print('<tr><td align=center>',file=outfile)
+                print('<tr><td style="text-align:center">',file=outfile)
                 print_p(root_package,root_version,root_source,root_package,bugtable,outfile)
                 print('</td></tr><tr><td>',file=outfile)
                 print_depchains(depchains,outfile,universe,bugtable)
-                print('</td></tr><tr><td align=center><table><tr><td>',file=outfile)
+                print('</td></tr><tr><td style="text-align:center"><table><tr><td>',file=outfile)
                 print_p(last_package,last_version,last_source,root_package,bugtable,outfile)
                 print_d(last_dependency,outfile)
                 print('<font color=red>MISSING</font></td></tr></table>',file=outfile)
@@ -192,7 +192,7 @@ def print_reason(root_package,root_version,
         last_source1=universe.source(last_package1)
         last_source2=universe.source(last_package2)
         
-        print('<tr><td align=center colspan=2>',file=outfile)
+        print('<tr><td style="text-align:center" colspan=2>',file=outfile)
         print_p(root_package,root_version,root_source,root_package,bugtable,outfile)
         print('</td></tr>',file=outfile)
         print('<tr><td><table><tr><td>',file=outfile)
@@ -202,11 +202,11 @@ def print_reason(root_package,root_version,
         if 'depchain2' in reason['conflict']:
             print_depchains(reason['conflict']['depchain2'],outfile,universe,bugtable)
         print('</td></tr></table></td></tr>',file=outfile)
-        print('<tr><td align=center>',file=outfile)
+        print('<tr><td style="text-align:center">',file=outfile)
         print_p(last_package1,last_version1,last_source1,root_package,bugtable,outfile)
-        print('</td><td align=center>',file=outfile)
+        print('</td><td style="text-align:center">',file=outfile)
         print_p(last_package2,last_version2,last_source2,root_package,bugtable,outfile)
-        print('</td></tr><tr><td align=center colspan=2>',file=outfile)
+        print('</td></tr><tr><td style="text-align:center" colspan=2>',file=outfile)
         print('<font color=red>CONFLICT</font></td></tr></table>',file=outfile)
     else:
         raise Exception('Unknown reason')
