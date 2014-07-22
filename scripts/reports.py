@@ -195,13 +195,13 @@ def print_reason(root_package,root_version,
         print('<tr><td style="text-align:center" colspan=2>',file=outfile)
         print_p(root_package,root_version,root_source,root_package,bugtable,outfile)
         print('</td></tr>',file=outfile)
-        print('<tr><td><table><tr><td>',file=outfile)
+        print('<tr><td>',file=outfile)
         if 'depchain1' in reason['conflict']:
             print_depchains(reason['conflict']['depchain1'],outfile,universe,bugtable)
-        print('</td></tr></table><td><table><tr><td>',file=outfile)
+        print('</td><td>',file=outfile)
         if 'depchain2' in reason['conflict']:
             print_depchains(reason['conflict']['depchain2'],outfile,universe,bugtable)
-        print('</td></tr></table></td></tr>',file=outfile)
+        print('</td></tr>',file=outfile)
         print('<tr><td style="text-align:center">',file=outfile)
         print_p(last_package1,last_version1,last_source1,root_package,bugtable,outfile)
         print('</td><td style="text-align:center">',file=outfile)
