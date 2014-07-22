@@ -13,7 +13,6 @@ from common import *
 format_short_dep="unsatisfied dependency on {d}"
 format_short_con="conflict between {c1} and {c2}"
 
-format_long_dep='<li>No package matches the dependency <i>{d}</i> of package {p} (={v})'
 format_long_con='<li>Conflict between package {c1} (={v1}) and package {c2} (={v2})'
 
 format_depchain='Dependency chain from {sp} (={sv}) to {tp} (={tv}):'
@@ -104,11 +103,13 @@ def print_reason(root_package,root_version,
     '''
 
     def print_p(package,version,source,root_package,bugtable,outfile):
+        '''print a single package as part of a detailed explanation'''
         print(package,' (',version,') ',file=outfile,sep='')
         bugtable.print_direct(package,source,root_package,outfile)
         print('<br>',file=outfile)
 
     def print_d(dependency,outfile):
+        '''print a dependency as part of a detailed explanation'''
         print('&nbsp;&nbsp;&nbsp;&darr;',dependency,'<br>',file=outfile)
 
     root_source=universe.source(root_package)
@@ -145,9 +146,7 @@ def print_reason(root_package,root_version,
                 print('</td></tr><tr><td>',file=outfile)
                 print_depchains(depchains,outfile,universe,bugtable)
                 print('</td></tr><tr><td align=center><table><tr><td>',file=outfile)
-                print(last_package, '(',last_version,') ',file=outfile)
-                bugtable.print_direct(last_package,last_source,root_package,outfile)
-                print('<br>',file=outfile)
+                print_p(last_package,last_version,last_source,root_package,bugtable,outfile)
                 print_d(last_dependency,outfile)
                 print('<font color=red>MISSING</font></td></tr></table>',file=outfile)
     elif 'conflict' in reason:
