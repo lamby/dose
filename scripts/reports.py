@@ -162,7 +162,7 @@ def print_reason(root_package,root_version,
             print_p(root_package,root_version,root_source,root_package,bugtable,outfile)
             print_d(last_dependency,outfile)
             print('<font color=red>MISSING</font>',file=outfile)
-            print('</tr></td>',file=outfile)
+            print('</td></tr>',file=outfile)
         else:
             depchains=reason['missing']['depchains']
             if len(depchains)==1 :
@@ -173,7 +173,7 @@ def print_reason(root_package,root_version,
                 print_p(last_package,last_version,last_source,root_package,bugtable,outfile)
                 print_d(last_dependency,outfile)
                 print('<font color=red>MISSING</font>',file=outfile)
-                print('</tr></td>',file=outfile)
+                print('</td></tr>',file=outfile)
             else :
                 # multiple dependency chains
                 print('<tr><td style="text-align:center">',file=outfile)
@@ -207,7 +207,7 @@ def print_reason(root_package,root_version,
         print('</td><td style="text-align:center">',file=outfile)
         print_p(last_package2,last_version2,last_source2,root_package,bugtable,outfile)
         print('</td></tr><tr><td style="text-align:center" colspan=2>',file=outfile)
-        print('<font color=red>CONFLICT</font></td></tr></table>',file=outfile)
+        print('<font color=red>CONFLICT</font></td></tr>',file=outfile)
     else:
         raise Exception('Unknown reason')
     print('</table>',file=outfile)
