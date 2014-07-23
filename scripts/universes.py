@@ -64,7 +64,7 @@ class Universe:
                 if line.startswith('Package:'):
                     current_package=line.split()[1]
                     self.fg_packages.add(current_package)
-                if line.startswith('source:'):
+                if line.startswith('Source:'):
                     current_source=line.split()[1]
                     self.source_packages[current_package]=current_source
             infile.close ()
@@ -77,7 +77,7 @@ class Universe:
      
     def is_in_foreground(self,package):
         '''
-        tell whether a package is in the foregounf
+        tell whether a package is in the foregound
         '''
         return(package in self.fg_packages)
 
