@@ -116,6 +116,7 @@ def write_table(timestamps,scenario,architectures):
     print('</table>',file=outfile)
 
     write_historytable(scenario,architectures,outfile)
+    print('<p>',file=outfile)
 
     print(html_footer,file=outfile)
     outfile.close ()
