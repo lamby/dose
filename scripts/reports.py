@@ -126,9 +126,7 @@ def print_reason(root_package,root_version,
         '''print multiple dependency chains'''
 
         if not depchains:
-            info('no depchains for package {p}, version {v}'.format(
-                    p=source_package,
-                    v=source_version))
+            return
         elif len(depchains) == 1:
             print_depchain(depchains[0],outfile,universe,bugtable)
         else:
