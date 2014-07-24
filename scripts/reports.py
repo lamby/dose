@@ -81,7 +81,7 @@ def summary_of_reasons (reasons):
 # detailed printing of reasons
 
 def print_reason(root_package,root_version,
-                 reason,outfile,universe,bugtable):
+                 reason,outfile,universe,bugtable,uninstallables):
     '''
     Detailed printing of reason why root_package (root_version) is
     not installable, in HTML to outfile.
@@ -96,7 +96,12 @@ def print_reason(root_package,root_version,
 
     def print_p(package,version,source,root_package):
         '''print a single package as part of a detailed explanation'''
-        print(package,' (',version,') [<a href=https://packages.qa.debian.org/',
+        if package in uninstallables and package != root_package:
+            print('<a href={p}.html>{p}</a>'.format(p=package),
+                  file=outfile,end=' ')
+        else:
+            print(package,file=outfile,end=' ')
+        print('(',version,') [<a href=https://packages.qa.debian.org/',
               source,'>PTS</a>]',file=outfile,sep='')
         bugtable.print_direct(package,source,root_package,outfile)
         print('<br>',file=outfile)
@@ -210,7 +215,7 @@ def print_reason(root_package,root_version,
 
 
 def create_reasons_file(package,version,reasons,outfile_name,
-                        universe,bugtable):
+                        universe,bugtable,uninstallables):
     '''
     print to outfile_name the detailed explanation why (package,version) is
     not installable, according to reason.
@@ -219,12 +224,14 @@ def create_reasons_file(package,version,reasons,outfile_name,
     outfile=open(outfile_name, 'w')
 
     if len(reasons)==1:
-        print_reason(package,version,reasons[0],outfile,universe,bugtable)
+        print_reason(package,version,reasons[0],outfile,
+                     universe,bugtable,uninstallables)
     else:
         print('Conjunction of multiple reasons:','<ol>',file=outfile)
         for reason in reasons:
             print('<li>',file=outfile)
-            print_reason(package,version,reason,outfile,universe,bugtable)
+            print_reason(package,version,reason,outfile,
+                         universe,bugtable,uninstallables)
         print('</ol>',file=outfile)
 
     outfile.close ()
@@ -338,6 +345,10 @@ def build(timestamp,day,universe,scenario,arch,bugtable):
     reportfile = open(cachedir(timestamp,scenario,arch)+'/debcheck.out')
     report = yaml.load(reportfile)
     reportfile.close()
+    if report and report['report']:
+        uninstallables={stanza['package'] for stanza in report['report']}
+    else:
+        uninstallables=set()
 
     # fetch the history of packages
     histfile=history_cachefile(scenario,arch)
@@ -390,7 +401,7 @@ def build(timestamp,day,universe,scenario,arch,bugtable):
             reasons_filename = pooldir + '/' + str(reasons_hash)
             if not os.path.isfile(reasons_filename):
                 create_reasons_file(package,version,reasons,reasons_filename,
-                                    universe,bugtable)
+                                    universe,bugtable,uninstallables)
 
             # write to html summary for that day
             summary_file.write(package,isnative,version,
