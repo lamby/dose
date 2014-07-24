@@ -96,7 +96,8 @@ def print_reason(root_package,root_version,
 
     def print_p(package,version,source,root_package):
         '''print a single package as part of a detailed explanation'''
-        print(package,' (',version,') ',file=outfile,sep='')
+        print(package,' (',version,') [<a href=https://packages.qa.debian.org/',
+              source,'>PTS</a>]',file=outfile,sep='')
         bugtable.print_direct(package,source,root_package,outfile)
         print('<br>',file=outfile)
 
