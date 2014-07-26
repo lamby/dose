@@ -48,6 +48,7 @@ class Universe:
 
         self.fg_packages=set()
         self.source_packages=dict()
+        self.source_version_table=dict()
 
         for fg in conf.scenarios[scenario]['fgs']:
             fg_filename = fg.format(
@@ -65,8 +66,12 @@ class Universe:
                     current_package=line.split()[1]
                     self.fg_packages.add(current_package)
                 if line.startswith('Source:'):
-                    current_source=line.split()[1]
-                    self.source_packages[current_package]=current_source
+                    l=line.split()
+                    self.source_packages[current_package]=l[1]
+                    if len(l) == 3:
+                        # the first and last character are parantheses ()
+                        self.source_version_table[current_package]=l[2][1:-1]
+
             infile.close ()
 
         outdir=cachedir(timestamp,scenario,architecture)
@@ -86,6 +91,14 @@ class Universe:
         return the source package name pertaining to a binary package
         '''
         return self.source_packages.get(package,package)
+
+    def source_version(self,package):
+        '''
+        return the source version of package if one was specified in the
+        Packages file, or None othewise (in that case the source version
+        is equal to the package version)
+        '''
+        return self.source_version_table.get(package)
 
 ##########################################################################
 # top level

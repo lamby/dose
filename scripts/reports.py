@@ -96,6 +96,10 @@ def print_reason(root_package,root_version,
 
     def print_p(package,version,source,root_package):
         '''print a single package as part of a detailed explanation'''
+
+        source_version=universe.source_version(package)
+        if not source_version: source_version = version
+
         if package in uninstallables and package != root_package:
             print('<a href={p}.html>{p}</a>'.format(p=package),
                   file=outfile,end=' ')
@@ -104,7 +108,7 @@ def print_reason(root_package,root_version,
         print('(',version,')',file=outfile,sep='')
         print('[<a href=https://packages.qa.debian.org/',source,'>PTS</a>]',
               file=outfile,sep='')
-        print('[<a href=http://sources.debian.net/src/{s}/{v}/debian/control>ctrl</a>]'.format(s=source,v=version),file=outfile)
+        print('[<a href=http://sources.debian.net/src/{s}/{v}/debian/control>ctrl</a>]'.format(s=source,v=source_version),file=outfile)
         bugtable.print_direct(package,source,root_package,outfile)
         print('<br>',file=outfile)
 
