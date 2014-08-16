@@ -5,8 +5,15 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-import yaml,os, hashlib, datetime, re
+import os, hashlib, datetime, re
 from common import *
+
+from yaml import load
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
+    warning('YAML C-library not available, falling back to python')
 
 format_short_dep="unsatisfied dependency on {d}"
 format_short_con="conflict between {c1} and {c2}"
@@ -346,10 +353,9 @@ def build(timestamp,day,universe,scenario,arch,bugtable):
     histhtmldir=history_htmldir(scenario,arch)
     if not os.path.isdir(histhtmldir): os.makedirs(histhtmldir)
 
-
     # fetch the report obtained from dose-debcheck
     reportfile = open(cachedir(timestamp,scenario,arch)+'/debcheck.out')
-    report = yaml.load(reportfile)
+    report = load(reportfile, Loader=Loader)
     reportfile.close()
     if report and report['report']:
         uninstallables={stanza['package'] for stanza in report['report']}
