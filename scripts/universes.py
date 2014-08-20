@@ -31,7 +31,11 @@ def run_debcheck(scenario,arch,outdir):
             bg.format(m=conf.locations['debmirror'],a=arch))
 
     outfile=open(outdir + "/debcheck.out", 'w')
-    subprocess.call(invocation,stdout=outfile)
+    try:
+        subprocess.call(invocation,stdout=outfile)
+    except OSError as exc:
+        warning('debcheck for {s} on {a} raised {e}'.format(
+            a=arch,s=scenario,e=exc.strerror))
     outfile.close ()
                 
 
