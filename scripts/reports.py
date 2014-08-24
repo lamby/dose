@@ -250,9 +250,42 @@ def create_reasons_file(package,version,reasons,outfile_name,
     outfile.close ()
 
 
-summary_history_header = '''
-<h1>Packages not installable on {arch} in scenario {scenario}
-for {d} days</h1>
+
+
+########################################################################
+
+class Summary_HTML:
+    """
+    A file object containg an html table of packages that are not
+    installable in a certain scenario, architecture, on a certain
+    date.
+    """
+
+
+    def __init__(self,timestamp,scenario,architecture,bugtable,
+                 since_days=None):
+        """
+        open the html file and print the header
+        """
+
+        summary_header_no_history = '''
+<h1>Packages not installable on {architecture} in scenario {scenario}</h1>
+<b>Date: {utctime} UTC</b>
+<p>
+
+<kbd>[all]</kbd> indicates a package with <kbd>Architecture=all</kbd>.
+<p>
+<table border=1>
+<tr>
+<th>Package</th>
+<th>Version</th>
+<th>Short explanation (click for detailed explanation)</th>
+<th>Tracking</th>
+'''
+
+        summary_header_with_history = '''
+<h1>Packages not installable on {architecture} in scenario {scenario}
+for {days} days</h1>
 <b>Date: {utctime} UTC</b>
 <p>
 
@@ -270,45 +303,26 @@ same explanation all the time).<p>
 <th>Tracking</th>
 '''
 
-
-########################################################################
-
-class Summary_HTML:
-    """
-    A file object containg an html table of packages that are not
-    installable in a certain scenario, architecture, on a certain
-    date.
-    """
-
-    summary_header = '''
-<h1>Packages not installable on {architecture} in scenario {scenario}</h1>
-<b>Date: {utctime} UTC</b>
-<p>
-
-<kbd>[all]</kbd> indicates a package with <kbd>Architecture=all</kbd>.
-<p>
-<table border=1>
-<tr>
-<th>Package</th>
-<th>Version</th>
-<th>Short explanation (click for detailed explanation)</th>
-<th>Tracking</th>
-'''
-    
-    def __init__(self,timestamp,scenario,architecture,bugtable):
-        """
-        open the html file and print the header
-        """
         outdir=htmldir(timestamp,scenario)
         if not os.path.isdir(outdir): os.makedirs(outdir)
+        histhtmldir=history_htmldir(scenario,architecture)
+        if not os.path.isdir(histhtmldir): os.makedirs(histhtmldir)
+
         self.bugtable=bugtable
         self.timestamp=timestamp
-        self.filedesc = open(outdir+'/'+architecture+'.html', 'w')
+        self.since_days=since_days
+        if since_days:
+            summary_header = summary_header_with_history
+            self.filedesc = open(histhtmldir+'/'+str(since_days)+'.html', 'w')
+        else:
+            summary_header = summary_header_no_history
+            self.filedesc = open(outdir+'/'+architecture+'.html', 'w')
         print(html_header,file=self.filedesc)
-        print(self.summary_header.format(
+        print(summary_header.format(
             timestamp=str(timestamp),
             scenario=scenario,
             architecture=architecture,
+            days=since_days,
             utctime=datetime.datetime.utcfromtimestamp(float(timestamp))),
         file=self.filedesc)
 
@@ -319,13 +333,16 @@ class Summary_HTML:
         print('</table>',html_footer,file=self.filedesc,sep='\n')
         self.filedesc.close()
 
-    def write(self,package,isnative,version,reasons_hash,reasons_summary):
+    def write(self,package,isnative,version,reasons_hash,reasons_summary,
+              since=None):
         """
         write one line of a summary table
         """
         all_mark = '' if isnative else '[all] '  
-        print('<tr><td>',package,'</td>',
-              '<td>',all_mark,version,'</td>',
+        print('<tr><td>',package,'</td>',file=self.filedesc,end='')
+        if self.since_days:
+            print('<td>',since,'</td>',file=self.filedesc,end='')
+        print('<td>',all_mark,version,'</td>',
               '<td>',pack_anchor(self.timestamp,package,reasons_hash),
               reasons_summary,'</a></td><td>',
               file=self.filedesc, sep='')
@@ -350,8 +367,6 @@ def build(timestamp,day,universe,scenario,arch,bugtable):
     if not os.path.isdir(histcachedir): os.makedirs(histcachedir)
     pooldir = cachedir(timestamp,scenario,'pool')
     if not os.path.isdir(pooldir): os.makedirs(pooldir)
-    histhtmldir=history_htmldir(scenario,arch)
-    if not os.path.isdir(histhtmldir): os.makedirs(histhtmldir)
 
     # fetch the report obtained from dose-debcheck
     reportfile = open(cachedir(timestamp,scenario,arch)+'/debcheck.out')
@@ -372,20 +387,10 @@ def build(timestamp,day,universe,scenario,arch,bugtable):
             history[package] = date.rstrip()
         h.close()
 
-    summary_file=Summary_HTML(timestamp,scenario,arch,bugtable)
-
-    # historic html files for different time slices
-    hfiles={i:open(history_htmlfile(scenario,arch,d),'w')
-            for i,d in hlengths.items()}
-    for i in hfiles.keys():
-        print(html_header,file=hfiles[i])
-        print(summary_history_header.format(
-                timestamp=str(timestamp),
-                scenario=scenario,
-                arch=arch,
-                d=hlengths[i],
-                utctime=datetime.datetime.utcfromtimestamp(float(timestamp))),
-              file=hfiles[i])
+    # HTML file object for the day and historical summaries
+    html_today=Summary_HTML(timestamp,scenario,arch,bugtable)
+    html_history={i:Summary_HTML(timestamp,scenario,arch,bugtable,since_days=d)
+                  for i,d in hlengths.items()}
 
     # a summary of the analysis in the cache directory
     sumfile = open(cachedir(timestamp,scenario,arch)+'/summary', 'w')
@@ -416,7 +421,7 @@ def build(timestamp,day,universe,scenario,arch,bugtable):
                                     universe,bugtable,uninstallables)
 
             # write to html summary for that day
-            summary_file.write(package,isnative,version,
+            html_today.write(package,isnative,version,
                                reasons_hash,reasons_summary)
 
             # write to the corresponding historic html page
@@ -426,21 +431,9 @@ def build(timestamp,day,universe,scenario,arch,bugtable):
                 duration=day-firstday
                 for i in sorted(hlengths.keys(),reverse=True):
                     if duration >= hlengths[i]:
-                        if isnative:
-                            count_natives[i] += 1
-                        else:
-                            count_archall[i] += 1
-                        print('<tr><td>',package,'</td>',file=hfiles[i],sep='')
-                        print('<td>',date_of_days(firstday),'</td>',
-                              file=hfiles[i],sep="")
-                        print('<td>',all_mark,version,'</td>',
-                              file=hfiles[i],sep='')
-                        print('<td>',pack_anchor_from_hist(
-                                timestamp,package,reasons_hash),
-                              reasons_summary,'</a></td><td>',
-                              file=hfiles[i], sep='')
-                        bugtable.print_indirect(package,hfiles[i])
-                        print('</td></tr>',file=hfiles[i])
+                        html_history[i].write(package,isnative,version,
+                                        reasons_hash,reasons_summary,
+                                        since=date_of_days(firstday))
                         break
 
             # write into the summary file in the cache
@@ -454,14 +447,10 @@ def build(timestamp,day,universe,scenario,arch,bugtable):
                   sep='#',
                   file=historyfile)
 
-        for f in hfiles.values():  print("</table>", file=f)
-
-    del summary_file
+    del html_today
+    for f in html_history.values(): del f
     sumfile.close ()
     historyfile.close ()
-    for f in hfiles.values():
-        print(html_footer,file=f)
-        f.close()
     vertical=open(history_verticalfile(scenario,arch),'w')
     for i in hlengths.keys():
         print('{i}={cn}/{ca}'.format(
