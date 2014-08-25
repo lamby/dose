@@ -17,9 +17,6 @@ architectures:
 import os, datetime
 from common import *
 
-# map a hash of explanation to a short explanation
-shortexplanation = {}
-
 # map a package p that is not installable on at least one architecture
 # to a function that maps a hash h to the list of architectures where
 # h is the hash of the explanation for package p.
@@ -70,12 +67,11 @@ Packages that have been continuously found to be not installable
 
 def analyze_horizontal(timestamp,scenario,architectures):
     '''
-    fill shortexplanation, uninstallables, and installables_somewhere
+    fill uninstallables, and installables_somewhere
     '''
 
-    global shortexplanation, uninstallables, installables_somewhere
+    global uninstallables, installables_somewhere
 
-    shortexplanation = {}
     uninstallables = {}
     installables_somewhere = set() 
 
@@ -88,7 +84,7 @@ def analyze_horizontal(timestamp,scenario,architectures):
         arch_packages.close()
 
         # iterate over the uninstallability reports for this arch, fill in
-        # uninstallables and shortexplanation, and construct the set of
+        # uninstallables, and construct the set of
         # packages uninstallable on this arch
         uninstallables_here = set()
         arch_summary=open(cachedir(timestamp,scenario,arch)+'/summary')
@@ -99,13 +95,13 @@ def analyze_horizontal(timestamp,scenario,architectures):
             if not package in uninstallables:
                 uninstallables[package] = { hash: {'archs'   : [arch],
                                                    'version' : version,
-                                                   'isnative': isnative}}
-                shortexplanation[hash] = explanation
+                                                   'isnative': isnative,
+                                                   'short'   : explanation}}
             elif not hash in uninstallables[package]:
                 uninstallables[package][hash] = {'archs'   : [arch],
                                                  'version' : version,
-                                                 'isnative': isnative}
-                shortexplanation[hash] = explanation
+                                                 'isnative': isnative,
+                                                 'short'   : explanation}
             else:
                 (uninstallables[package][hash]['archs']).append(arch)
         arch_summary.close()
@@ -234,7 +230,7 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
                 print('</td>',file=outfile,end='')
                 print('<td>',
                       pack_anchor(timestamp,package,hash),
-                      shortexplanation[hash],
+                      uninstallables[package][hash]['short'],
                       '</a></td>',
                       file=outfile,sep='')
                 if not continuation_line:
@@ -281,7 +277,8 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
                             print('</td>',file=hfiles[i],end='')
                             print('<td>',pack_anchor_from_hist(
                                     timestamp,package,hash),
-                                  shortexplanation[hash],'</a></td>',
+                                  uninstallables[package][hash]['short'],
+                                  '</a></td>',
                                   file=hfiles[i], sep='')
                             if not continuation_line:
                                 print(multitd,file=hfiles[i],end='')
@@ -316,7 +313,7 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
             for hash in uninstallables[package]:
                 record=uninstallables[package][hash]
                 print(package,record['version'],record['isnative'],
-                      hash,shortexplanation[hash],'',
+                      hash,record['short'],'',
                       file=sumfile, sep='#',end='')
                 for arch in record['archs']:
                     print(arch,file=sumfile,end=' ')
