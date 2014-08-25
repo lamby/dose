@@ -16,6 +16,7 @@ architectures:
 
 import os, datetime
 from common import *
+import html
 
 # map a package p that is not installable on at least one architecture
 # to a function that maps a hash h to the list of architectures where
@@ -27,43 +28,6 @@ uninstallables = {}
 installables_somewhere = set()
 
 # number of packages not installables somewhere / everywhere
-
-summary_header='''
-<h1>Packages not installable on {what} architecture in scenario {scenario}</h1>
-<b>Date: {utctime} UTC</b>
-<p>
-<kbd>[all]</kbd> indicates a package with <kbd>Architecture=all</kbd>.
-<p>
-<table border=1>
-<tr>
-<th>Package</th>
-<th>Version</th>
-<th>Architectures</th>
-<th>Short Explanation (click for details)</th>
-<th>Tracking</th>
-'''
-
-summary_history_header = '''
-<h1>Packages not installable on {what} architecture in scenario {scenario}
-for {d} days</h1>
-<b>Date: {utctime} UTC</b>
-<p>
-
-Packages that have been continuously found to be not installable
-(not necessarily in the same version,
- not necessarily on the same architectures,
- and not necessarily with the same explanation all the time).<p>
-<kbd>[all]</kbd> indicates a package with <kbd>Architecture=all</kbd>.
-<p>
-<table border=1>
-<tr>
-<th>Package</th>
-<th>Since</th>
-<th>Version today</th>
-<th>Architectures</th>
-<th>Short explanation as of today (click for details)</th>
-<th>Tracking</th>
-'''
 
 def analyze_horizontal(timestamp,scenario,architectures):
     '''
@@ -172,27 +136,12 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
         h.close()
 
     # html output: a summary for this accumulator
-    outfile = open('{d}/{w}.html'.format(d=outdir,w=what), 'w')
-    print(html_header,file=outfile)
-    print(summary_header.format(
-            timestamp=str(timestamp),
-            scenario=scenario,
-            what=what,
-            utctime=datetime.datetime.utcfromtimestamp(float(timestamp))),
-          file=outfile)
+    html_today=html.summary_multi(timestamp,scenario,what,bugtable)
 
     # historic html files for different time slices
-    hfiles={i:open(history_htmlfile(scenario,what,d),'w')
-            for i,d in hlengths.items()}
-    for i in hfiles.keys():
-        print(html_header,file=hfiles[i])
-        print(summary_history_header.format(
-                timestamp=str(timestamp),
-                scenario=scenario,
-                what=what,
-                d=hlengths[i],
-                utctime=datetime.datetime.utcfromtimestamp(float(timestamp))),
-              file=hfiles[i])
+    html_history={i:html.summary_multi(timestamp,scenario,what,bugtable,
+                                       since_days=d)
+                  for i,d in hlengths.items()}
 
     # file recording the first day of observed non-installability per package
     historyfile=open(histfile,'w')
@@ -204,88 +153,27 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
 
     for package in sorted(includes.keys()):
         if not package in excludes:
-
-            # write to html file for that day
-            number_of_hashes=len(uninstallables[package])
-            if number_of_hashes > 1:
-                multitd='<td rowspan="'+str(number_of_hashes)+'">'
-            else:
-                multitd='<td>'
-            print('<tr>',multitd,package,'</td>',file=outfile,sep='')
-            continuation_line=False
-            for hash in uninstallables[package]:
-                if continuation_line:
-                    print('<tr>',file=outfile)
-                if uninstallables[package][hash]['isnative'] == 'True':
-                    all_mark = '' 
-                else:
-                    all_mark='[all]'
-                print('<td>',
-                      all_mark,uninstallables[package][hash]['version'],
-                      '</td>',
-                      file=outfile,sep='')
-                print('<td>',file=outfile,end='')
-                for arch in uninstallables[package][hash]['archs']:
-                    print(arch, file=outfile, end=' ')
-                print('</td>',file=outfile,end='')
-                print('<td>',
-                      pack_anchor(timestamp,package,hash),
-                      uninstallables[package][hash]['short'],
-                      '</a></td>',
-                      file=outfile,sep='')
-                if not continuation_line:
-                    print(multitd,file=outfile,end='')
-                    bugtable.print_indirect(package,outfile)
-                    print('</td>',file=outfile,end='')
-                continuation_line=True
-
+            html_today.write(package,uninstallables[package])
+            
             # write to the corresponding historic html page
             # and count archall/native uninstallable packages per slice
             if package in history:
                 firstday=int(history[package])
                 duration=day-firstday
+                hslice=-1
                 for i in sorted(hlengths.keys(),reverse=True):
                     if duration >= hlengths[i]:
-                        if uninstallables[package][hash]['isnative'] == 'True':
-                            count_natives[i] += 1
-                        else:
-                            count_archall[i] += 1
-                        number_of_hashes=len(uninstallables[package])
-                        if number_of_hashes > 1:
-                            multitd='<td rowspan="'+str(number_of_hashes)+'">'
-                        else:
-                            multitd='<td>'
-                        print('<tr>',multitd,package,'</td>',file=hfiles[i],sep='')
-                        print(multitd,date_of_days(firstday),'</td>',
-                              file=hfiles[i],sep="")
-                        continuation_line=False
-                        for hash in uninstallables[package]:
-                            if continuation_line==True:
-                                 print('<tr>',file=hfiles[i])
-                            if uninstallables[package][hash]['isnative'] == 'True':
-                                all_mark = '' 
-                            else:
-                                all_mark='[all]'
-                            print('<td>',
-                                  all_mark,
-                                  uninstallables[package][hash]['version'],
-                                  '</td>',
-                                  file=hfiles[i],sep='')
-                            print('<td>',file=hfiles[i],end='')
-                            for arch in uninstallables[package][hash]['archs']:
-                                print(arch, file=hfiles[i], end=' ')
-                            print('</td>',file=hfiles[i],end='')
-                            print('<td>',pack_anchor_from_hist(
-                                    timestamp,package,hash),
-                                  uninstallables[package][hash]['short'],
-                                  '</a></td>',
-                                  file=hfiles[i], sep='')
-                            if not continuation_line:
-                                print(multitd,file=hfiles[i],end='')
-                                bugtable.print_indirect(package,hfiles[i])
-                                print('</td>',file=hfiles[i],end='')
-                            continuation_line=True
+                        hslice=i
                         break
+                if hslice >= 0:
+                    firsthash=list(uninstallables[package].keys())[0]
+                    if uninstallables[package][firsthash]['isnative'] == 'True':
+                        count_natives[hslice] += 1
+                    else:
+                        count_archall[hslice] += 1
+                    html_history[hslice].write(package,
+                                               uninstallables[package],
+                                               since=date_of_days(firstday))
 
             # rewrite the history file: for each file that is now not
             # installable, write the date found in the old history_cachefile
@@ -294,11 +182,9 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
                   sep='#',
                   file=historyfile)
 
-    print('</table>',html_footer,file=outfile)
-    outfile.close ()
-    for f in hfiles.values():
-        print('</table>',html_footer,file=f)
-        f.close()
+    del html_today
+    for f in html_history.values(): del f
+
     historyfile.close ()
     vertical=open(history_verticalfile(scenario,what),'w')
     for i in hlengths.keys():
