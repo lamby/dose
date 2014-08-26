@@ -81,11 +81,11 @@ same explanation all the time).<p>
         self.in_table=False
         if since_days:
             summary_header = self.summary_header_with_history
-            table_header = self.table_header_with_history
+            self.table_header = self.table_header_with_history
             self.filedesc = open(histhtmldir+'/'+str(since_days)+'.html', 'w')
         else:
             summary_header = self.summary_header_no_history
-            table_header = self.table_header_no_history
+            self.table_header = self.table_header_no_history
             self.filedesc = open(outdir+'/'+architecture+'.html', 'w')
         print(common.html_header,file=self.filedesc)
         print(summary_header.format(
@@ -95,7 +95,7 @@ same explanation all the time).<p>
             days=since_days,
             utctime=datetime.datetime.utcfromtimestamp(float(timestamp))),
         file=self.filedesc)
-        print(table_header,file=self.filedesc)
+        print(self.table_header,file=self.filedesc)
         self.in_table=True
 
     def __del__(self):
@@ -123,6 +123,18 @@ same explanation all the time).<p>
               file=self.filedesc, sep='')
         self.bugtable.print_indirect(package,self.filedesc)
         print('</td></tr>',file=self.filedesc)
+
+    def section(self,text):
+        '''
+        write a <h2> header into the HTMl file. Close and Re-open a table
+        when necessary.
+        '''
+
+        if self.in_table:
+            print('</table>',file=self.filedesc)
+        print('<h2>',text,'</h2>',file=self.filedesc,sep='')
+        if self.in_table:
+            print(self.table_header,file=self.filedesc)
 
 ###########################################################################
 
