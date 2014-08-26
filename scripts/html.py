@@ -46,6 +46,7 @@ same explanation all the time).<p>
 <th>Version</th>
 <th>Short explanation (click for detailed explanation)</th>
 <th>Tracking</th>
+</tr>
 '''
 
     table_header_with_history = '''
@@ -56,6 +57,7 @@ same explanation all the time).<p>
 <th>Version today</th>
 <th>Short explanation as of today (click for details)</th>
 <th>Tracking</th>
+</tr>
 '''
 
     def __init__(self,timestamp,scenario,architecture,bugtable,
@@ -112,7 +114,7 @@ same explanation all the time).<p>
         """
 
         all_mark = '' if isnative else '[all] '  
-        print('<tr><td>',package,'</td>',file=self.filedesc,end='')
+        print('<tr><td>',package,'</td>',file=self.filedesc,sep='',end='')
         if self.since_days:
             print('<td>',since,'</td>',file=self.filedesc,end='')
         print('<td>',all_mark,version,'</td>',
@@ -156,6 +158,7 @@ Packages that have been continuously found to be not installable
 <th>Architectures</th>
 <th>Short explanation (click for detailed explanation)</th>
 <th>Tracking</th>
+</tr>
 '''
 
     table_header_with_history = '''
@@ -167,6 +170,7 @@ Packages that have been continuously found to be not installable
 <th>Architectures</th>
 <th>Short explanation as of today (click for details)</th>
 <th>Tracking</th>
+</tr>
 '''
 
     def write(self,package,reasons,since=None):
@@ -205,7 +209,8 @@ Packages that have been continuously found to be not installable
             if not continuation_line:
                 print(multitd,file=self.filedesc,end='')
                 self.bugtable.print_indirect(package,self.filedesc)
-                print('</td>',file=self.filedesc,end='')
+                print('</td>',file=self.filedesc)
+            print('</tr>',file=self.filedesc)
             continuation_line=True
 
 
