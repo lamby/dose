@@ -76,6 +76,7 @@ same explanation all the time).<p>
         self.bugtable=bugtable
         self.timestamp=timestamp
         self.since_days=since_days
+        self.in_table=False
         if since_days:
             summary_header = self.summary_header_with_history
             table_header = self.table_header_with_history
@@ -93,13 +94,15 @@ same explanation all the time).<p>
             utctime=datetime.datetime.utcfromtimestamp(float(timestamp))),
         file=self.filedesc)
         print(table_header,file=self.filedesc)
+        self.in_table=True
 
     def __del__(self):
         """
         Print the html footer stuff and close the html file
         """
         
-        print('</table>',common.html_footer,file=self.filedesc,sep='\n')
+        if self.in_table:
+            print('</table>',common.html_footer,file=self.filedesc,sep='\n')
         self.filedesc.close()
 
     def write(self,package,isnative,version,reasons_hash,reasons_summary,
