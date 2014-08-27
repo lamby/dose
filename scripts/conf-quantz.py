@@ -8,9 +8,9 @@
 # License, or (at your option) any later version.
 
 architectures = {
-    'unstable' : [ 'amd64', 'armel', 'armhf', 'hurd-i386', 'i386',
+    'unstable' : [ 'amd64', 'arm64', 'armel', 'armhf', 'hurd-i386', 'i386',
                    'kfreebsd-amd64', 'kfreebsd-i386', 'mips', 'mipsel',
-                   'powerpc', 's390x' ],
+                   'powerpc', 'ppc64el', 's390x' ],
     'testing' :  [ 'amd64', 'armel', 'armhf', 'i386', 'kfreebsd-amd64',
                    'kfreebsd-i386', 'mips', 'mipsel', 'powerpc', 's390x' ]
 }
