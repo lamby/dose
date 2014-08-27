@@ -11,7 +11,7 @@ different timestamps.
 - constructing a summary page for the last timestamps
 '''
 import os.path
-import weather
+import weather, html
 from common import *
 
 summary_header = '''
@@ -57,7 +57,7 @@ def write_historytable(scenario,architectures,outfile):
 
 def write_table(timestamps,scenario,architectures):
     outfile=open(htmldir_scenario(scenario)+'/index.html', 'w')
-    print(html_header,file=outfile)
+    print(html.html_header,file=outfile)
     print(summary_header.format(scenario=scenario,
                                 numberofslices=conf.slices),file=outfile)
     columns=architectures[:]
@@ -118,7 +118,7 @@ def write_table(timestamps,scenario,architectures):
     write_historytable(scenario,architectures,outfile)
     print('<p>',file=outfile)
 
-    print(html_footer,file=outfile)
+    print(html.html_footer,file=outfile)
     outfile.close ()
 
 ###########################################################################

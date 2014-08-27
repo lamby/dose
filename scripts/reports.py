@@ -294,7 +294,7 @@ def build(timestamp,day,universe,scenario,arch,bugtable):
 
     # HTML file object for the day and historical summaries
     html_today=html.summary(timestamp,scenario,arch,bugtable)
-    html_history={i:html.summary(timestamp,scenario,arch,bugtable,since_days=d)
+    html_history={i:html.history(timestamp,scenario,arch,bugtable,d)
                   for i,d in hlengths.items()}
 
     # a summary of the analysis in the cache directory

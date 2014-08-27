@@ -85,7 +85,7 @@ def write_package_page(timestamp,scenario,architectures):
     for package in uninstallables:
         
         outfile = open('{d}/{p}.html'.format(d=htmlpooldir,p=package), 'w')
-        print(html_header,file=outfile)
+        print(html.html_header,file=outfile)
         print('<h1>Package: {p}</h1>\n<b>Scenario: {s}<br>Date: {d}</b><p>'.format(
                 p=package,
                 s=scenario,
@@ -101,7 +101,7 @@ def write_package_page(timestamp,scenario,architectures):
             blob.close()
             print('<p>',file=outfile)
                   
-        print(html_footer,file=outfile)
+        print(html.html_footer,file=outfile)
         outfile.close ()
 
 #############################################################################
@@ -139,7 +139,7 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
     html_today=html.summary_multi(timestamp,scenario,what,bugtable)
 
     # historic html files for different time slices
-    html_history={i:html.summary_multi(timestamp,scenario,what,bugtable,
+    html_history={i:html.history_multi(timestamp,scenario,what,bugtable,
                                        since_days=d)
                   for i,d in hlengths.items()}
 

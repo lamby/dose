@@ -6,6 +6,7 @@
 # License, or (at your option) any later version.
 
 import yaml,os, hashlib, datetime
+import html
 from common import *
 
 diff_header='''
@@ -109,7 +110,7 @@ def build(t_this,t_prev,universe_this,scenario,arch):
 
     # write html page for differences
     outfile=open(outdir+'/'+arch+'-diff.html','w')
-    print(html_header,file=outfile)
+    print(html.html_header,file=outfile)
     print(diff_header.format(
             tthis=datetime.datetime.utcfromtimestamp(float(t_this)),
             tprev=datetime.datetime.utcfromtimestamp(float(t_prev)),
@@ -196,7 +197,7 @@ def build(t_this,t_prev,universe_this,scenario,arch):
                   file=outfile, sep='')
     print('</table>',file=outfile)
 
-    print(html_footer,file=outfile)
+    print(html.html_footer,file=outfile)
     outfile.close()
 
     # write size of the diff
@@ -316,7 +317,7 @@ def build_multi(t_this,t_prev,scenario,what,architectures):
 
     # write html page for differences
     outfile=open(outdir+'/'+what+'-diff.html','w')
-    print(html_header,file=outfile)
+    print(html.html_header,file=outfile)
     print(diff_header.format(
             tthis=datetime.datetime.utcfromtimestamp(float(t_this)),
             tprev=datetime.datetime.utcfromtimestamp(float(t_prev)),
@@ -427,7 +428,7 @@ def build_multi(t_this,t_prev,scenario,what,architectures):
     print('</table>',file=outfile)
 
 
-    print(html_footer,file=outfile)
+    print(html.html_footer,file=outfile)
     outfile.close()
 
     # write size of the diff
