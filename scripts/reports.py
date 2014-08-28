@@ -339,6 +339,10 @@ def build(timestamp,day,universe,scenario,arch,bugtable):
                         html_history[i].write(package,isnative,version,
                                         reasons_hash,reasons_summary,
                                         since=date_of_days(firstday))
+                        if isnative:
+                            count_natives[i] += 1
+                        else:
+                            count_archall[i] += 1
                         break
 
             # write into the summary file in the cache
