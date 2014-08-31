@@ -250,10 +250,6 @@ def create_reasons_file(package,version,reasons,outfile_name,
 
     outfile.close ()
 
-
-
-
-
 #########################################################################
 # top level 
 def build(timestamp,day,universe,scenario,arch,bugtable):
