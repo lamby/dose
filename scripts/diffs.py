@@ -9,21 +9,6 @@ import yaml,os, hashlib, datetime
 import html
 from common import *
 
-diff_header='''
-<h1>Difference for {arch} in scenario {scenario}</h1>
-<b>From {tprev} UTC<br>To {tthis} UTC</b>
-<p>
-<kbd>[all]</kbd> indicates a package with <kbd>Architecture=all</kbd>.
-'''
-
-table_header='''
-<table border=1>
-<tr>
-<th>Package</th>
-<th>Version</th>
-<th>Short Explanation (click for details)</th>
-'''
-
 table_header_multi='''
 <table border=1>
 <tr>
@@ -109,96 +94,60 @@ def build(t_this,t_prev,universe_this,scenario,arch):
     uninstallables_out = sorted(uninstallables_prev - uninstallables_this)
 
     # write html page for differences
-    outfile=open(outdir+'/'+arch+'-diff.html','w')
-    print(html.html_header,file=outfile)
-    print(diff_header.format(
-            tthis=datetime.datetime.utcfromtimestamp(float(t_this)),
-            tprev=datetime.datetime.utcfromtimestamp(float(t_prev)),
-            arch=arch, scenario=scenario),
-          file=outfile)
+    html_diff=html.diff(t_this,t_prev,scenario,arch)
     
-    print('<h2>Old packages that became not installable</h2>',file=outfile)
+    html_diff.section('Old packages that became not installable')
     # in uninstallable in, and in previous foreground
-    print(table_header,file=outfile)
     for package in uninstallables_in:
         if package in foreground_prev:
             record=summary_this[package]
+            html_diff.write(package,record['isnative'],record['version'],
+                            record['hash'],record['explanation'])
             if record['isnative']:
-                all_mark=''
                 number_in_native += 1
             else:
-                all_mark='[all] '
                 number_in_archall += 1
-            print('<tr><td>',package,'</td>', file=outfile,sep='')
-            print('<td>',all_mark,record['version'],'</td>',
-                  file=outfile,sep='')
-            print('<td>',pack_anchor(t_this,package,record['hash']),
-                  record['explanation'],'</a>',
-                  file=outfile, sep='')
-    print('</table>',file=outfile)
 
-    print('<h2>New packages that are not installable</h2>',file=outfile)
+    html_diff.section('New packages that are not installable')
     # in uninstallable in, but not in previous foreground
-    print(table_header,file=outfile)
     for package in uninstallables_in:
         if package not in foreground_prev:
             record=summary_this[package]
+            html_diff.write(package,record['isnative'],record['version'],
+                            record['hash'],record['explanation'])
             if record['isnative']:
-                all_mark=''
                 number_in_native += 1
             else:
-                all_mark='[all] '
                 number_in_archall += 1
-            print('<tr><td>',package,'</td>', file=outfile,sep='')
-            print('<td>',all_mark,record['version'],'</td>',
-                  file=outfile,sep='')
-            print('<td>',pack_anchor(t_this,package,record['hash']),
-                  record['explanation'],'</a>',
-                  file=outfile, sep='')
-    print('</table>',file=outfile)
 
-    print('<h2>Old packages that became installable</h2>',file=outfile)
+    # from here on, explanations are to be found in the previous run
+    html_diff.set_path_to_packages('../'+t_prev+'/packages/')
+
+    html_diff.section('Old packages that became installable')
     # in uninstallable out, and in current foreground
-    print(table_header,file=outfile)
     for package in uninstallables_out:
         if universe_this.is_in_foreground(package):
             record=summary_prev[package]
+            html_diff.write(package,record['isnative'],record['version'],
+                            record['hash'],record['explanation'])
             if record['isnative']:
-                all_mark=''
                 number_out_native += 1
             else:
-                all_mark='[all] '
                 number_out_archall += 1
-            print('<tr><td>',package,'</td>', file=outfile,sep='')
-            print('<td>',all_mark,record['version'],'</td>',
-                  file=outfile,sep='')
-            print('<td>',pack_anchor(t_prev,package,record['hash']),
-                  record['explanation'],'</a>',
-                  file=outfile, sep='')
-    print('</table>',file=outfile)
 
-    print('<h2>Not-installable packages that disappeared</h2>',file=outfile)
+    html_diff.section('Not-installable packages that disappeared')
     # in uninstallable out, but not in current foreground
-    print(table_header,file=outfile)
     for package in uninstallables_out:
         if not universe_this.is_in_foreground(package):
             record=summary_prev[package]
+            html_diff.write(package,record['isnative'],record['version'],
+                            record['hash'],record['explanation'])
             if record['isnative']:
-                all_mark=''
                 number_out_native += 1
             else:
-                all_mark='[all] '
                 number_out_archall += 1
-            print('<tr><td>',package,'</td>', file=outfile,sep='')
-            print('<td>',all_mark,record['version'],'</td>',
-                  file=outfile,sep='')
-            print('<td>',pack_anchor(t_prev,package,record['hash']),
-                  record['explanation'],'</a>',
-                  file=outfile, sep='')
-    print('</table>',file=outfile)
 
-    print(html.html_footer,file=outfile)
-    outfile.close()
+    del html_diff
 
     # write size of the diff
     totaldiff=(number_in_native+number_in_archall-
@@ -315,13 +264,29 @@ def build_multi(t_this,t_prev,scenario,what,architectures):
     uninstallables_in  = sorted(uninstallables_this - uninstallables_prev)
     uninstallables_out = sorted(uninstallables_prev - uninstallables_this)
 
+    diff_header='''
+<h1>Difference for {architecture} in scenario {scenario}</h1>
+<b>From {tprev} UTC<br>To {tnow} UTC</b>
+<p>
+<kbd>[all]</kbd> indicates a package with <kbd>Architecture=all</kbd>.
+'''
+
+    table_header='''
+<table border=1>
+<tr>
+<th>Package</th>
+<th>Version</th>
+<th>Short Explanation (click for details)</th>
+'''
+
+
     # write html page for differences
     outfile=open(outdir+'/'+what+'-diff.html','w')
     print(html.html_header,file=outfile)
     print(diff_header.format(
-            tthis=datetime.datetime.utcfromtimestamp(float(t_this)),
+            tnow=datetime.datetime.utcfromtimestamp(float(t_this)),
             tprev=datetime.datetime.utcfromtimestamp(float(t_prev)),
-            arch=what, scenario=scenario),
+            architecture=what, scenario=scenario),
           file=outfile)
     
     print('<h2>Old packages that became not installable</h2>',file=outfile)

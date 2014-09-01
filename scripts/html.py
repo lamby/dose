@@ -94,6 +94,7 @@ class html_file:
             os.makedirs(output_path)
         self.filedesc = open(output_path+'/'+output_name, 'w')
         print(html_header,file=self.filedesc)
+        self.in_table=False
 
     def __del__(self):
         '''
@@ -107,7 +108,8 @@ class html_file:
 
 class html_table(html_file):
     """
-    One or several HTML tables.
+    An HTML file with one or several tables that a user can fill in
+    line by line.
     """
 
     path_to_packages=None # relative path of the dir containing package pages
@@ -115,6 +117,15 @@ class html_table(html_file):
     def __init__(self,output_path,output_name,
                  page_header,table_header,
                  display_since=False,bugtable=None):
+
+        '''
+        Open the file and print the page header. 
+
+        Display_since: control presence of a "since" column
+
+        Bugtable: used to obtain information on relevant bugs. Don't print
+          a Tracking column when set to None.
+        '''
 
         html_file.__init__(self,output_path,output_name)
 
@@ -153,12 +164,12 @@ class html_table(html_file):
 
     def section(self,text):
         '''
-        write a <h2> header into the HTMl file and open a table.
+        write a <h2> header into the HTML file and open a table.
         '''
 
         if self.in_table:
             print('</table>',file=self.filedesc)
-        print('<h2>',self.text,'</h2>',file=self.filedesc,sep='')
+        print('<h2>',text,'</h2>',file=self.filedesc,sep='')
         self.start_table()
 
     def start_table(self):
@@ -168,9 +179,17 @@ class html_table(html_file):
         print(self.table_header,file=self.filedesc)
         self.in_table=True
 
+    def set_path_to_packages(self,path):
+        self.path_to_packages = path
+
 ###########################################################################
 
 class html_table_multi(html_table):
+
+    '''
+    As html_table, but allows for printing multiple-line entries for
+    the same package.
+    '''
 
     def write(self,package,reasons,since=None):
         """
@@ -263,7 +282,7 @@ in scenario {scenario}</h1>
 <b>Date: {utctime} UTC</b>
 <p>
 <kbd>[all]</kbd> indicates a package with <kbd>Architecture=all</kbd>.
-<p>
+o<p>
 '''
 
         table_header = '''
@@ -382,18 +401,36 @@ same explanation all the time).<p>
 
 ###########################################################################
 
+class diff(html_table):
 
+    path_to_packages = 'packages/'
 
-class diff(summary):
+    def __init__(self,timestamp_now,timestamp_prev,scenario,architecture):
 
-    summary_header_no_history = '''
-<h1>Difference for {arch} in scenario {scenario}</h1>
-<b>From {tprev} UTC<br>To {tthis} UTC</b>
+        summary_header='''
+<h1>Difference for {architecture} in scenario {scenario}</h1>
+<b>From {tprev} UTC<br>To {tnow} UTC</b>
 <p>
 <kbd>[all]</kbd> indicates a package with <kbd>Architecture=all</kbd>.
 '''
 
-    def __init__(self,timestamp,scenario,architecture,bugtable):
-        self.filename=architecture+'-diff.html'
-        summary.__init__(timestamp,scenario,architecture,bugtable,
-                         since_days=None,table=False)
+        table_header='''
+<table border=1>
+<tr>
+<th>Package</th>
+<th>Version</th>
+<th>Short Explanation (click for details)</th>
+'''
+
+        output_path=common.htmldir(timestamp_now,scenario)
+        output_name=architecture+'-diff.html'
+
+        header=summary_header.format(
+            scenario=scenario,
+            architecture=architecture,
+            tprev=datetime.datetime.utcfromtimestamp(float(timestamp_prev)),
+            tnow=datetime.datetime.utcfromtimestamp(float(timestamp_now)))
+
+        html_table.__init__(self,output_path,output_name,
+                            header,table_header)
+
