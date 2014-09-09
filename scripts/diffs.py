@@ -9,15 +9,6 @@ import yaml,os, hashlib, datetime
 import html
 from common import *
 
-table_header_multi='''
-<table border=1>
-<tr>
-<th>Package</th>
-<th>Version</th>
-<th>Archtectures</th>
-<th>Short Explanation (click for details)</th>
-'''
-
 def build(t_this,t_prev,universe_this,scenario,arch):
     '''build a difference table between two runs'''
 
@@ -35,10 +26,6 @@ def build(t_this,t_prev,universe_this,scenario,arch):
     number_in_archall=0
     number_out_native=0
     number_out_archall=0
-
-    # ensure existence of output directory
-    outdir=htmldir(t_this,scenario)
-    if not os.path.isdir(outdir): os.makedirs(outdir)
 
     # fetch previous summary
     summary_prev = {}
@@ -184,10 +171,6 @@ def build_multi(t_this,t_prev,scenario,what,architectures):
     number_out_native=0
     number_out_archall=0
 
-    # ensure existence of output directory
-    outdir=htmldir(t_this,scenario)
-    if not os.path.isdir(outdir): os.makedirs(outdir)
-
     # fetch previous summary
     summary_prev = {}
     infilename=cachedir(t_prev,scenario,what)+'/summary'
@@ -226,14 +209,14 @@ def build_multi(t_this,t_prev,scenario,what,architectures):
                 summary_this[package][hash]={
                     'version': version,
                     'isnative': isnative=='True',
-                    'explanation': explanation,
+                    'short': explanation,
                     'archs': archs
                     }
             else:
                 summary_this[package]={hash:
                                            {'version': version,
                                             'isnative': isnative=='True',
-                                            'explanation': explanation,
+                                            'short': explanation,
                                             'archs': archs
                                             }
                                        }
@@ -264,137 +247,57 @@ def build_multi(t_this,t_prev,scenario,what,architectures):
     uninstallables_in  = sorted(uninstallables_this - uninstallables_prev)
     uninstallables_out = sorted(uninstallables_prev - uninstallables_this)
 
-    diff_header='''
-<h1>Difference for {architecture} in scenario {scenario}</h1>
-<b>From {tprev} UTC<br>To {tnow} UTC</b>
-<p>
-<kbd>[all]</kbd> indicates a package with <kbd>Architecture=all</kbd>.
-'''
-
-    table_header='''
-<table border=1>
-<tr>
-<th>Package</th>
-<th>Version</th>
-<th>Short Explanation (click for details)</th>
-'''
-
-
     # write html page for differences
-    outfile=open(outdir+'/'+what+'-diff.html','w')
-    print(html.html_header,file=outfile)
-    print(diff_header.format(
-            tnow=datetime.datetime.utcfromtimestamp(float(t_this)),
-            tprev=datetime.datetime.utcfromtimestamp(float(t_prev)),
-            architecture=what, scenario=scenario),
-          file=outfile)
+    html_diff=html.diff_multi(t_this,t_prev,scenario,arch)
     
-    print('<h2>Old packages that became not installable</h2>',file=outfile)
-    print(table_header_multi,file=outfile)
+    html_diff.section('Old packages that became not installable')
+    # in uninstallable in, and in previous foreground
     for package in uninstallables_in:
         if package in foreground_prev:
-            print('<tr><td>',package,'</td>',sep='',file=outfile)
-            continuation_line=False
-            for hash in summary_this[package]:
-                record=summary_this[package][hash]
-                if record['isnative']:
-                    all_mark=''
-                    number_in_native += 1
-                else:
-                    all_mark='[all] '
-                    number_in_archall += 1
-                if continuation_line:
-                    print('<tr><td></td>', file=outfile,sep='')
-                print('<td>',all_mark,record['version'],'</td>',
-                      file=outfile,sep='')
-                print('<td>',record['archs'],'</td>',file=outfile,sep='')
-                print('<td>',pack_anchor(t_this,package,hash),
-                      record['explanation'],'</a>',
-                      file=outfile, sep='')
-                continuation_line=True
-    print('</table>',file=outfile)
+            record=summary_this[package]
+            html_diff.write(package,record)
+            if record['isnative']:
+                number_in_native += 1
+            else:
+                number_in_archall += 1
 
-
-    print('<h2>New packages that are not installable</h2>',file=outfile)
-    print(table_header_multi,file=outfile)
+    html_diff.section('New packages that are not installable')
+    # in uninstallable in, but not in previous foreground
     for package in uninstallables_in:
         if package not in foreground_prev:
-            print('<tr><td>',package,'</td>',sep='',file=outfile)
-            continuation_line=False
-            for hash in summary_this[package]:
-                record=summary_this[package][hash]
-                if record['isnative']:
-                    all_mark=''
-                    number_in_native += 1
-                else:
-                    all_mark='[all] '
-                    number_in_archall += 1
-                if continuation_line:
-                    print('<tr><td></td>', file=outfile,sep='')
-                print('<td>',all_mark,record['version'],'</td>',
-                      file=outfile,sep='')
-                print('<td>',record['archs'],'</td>',file=outfile,sep='')
-                print('<td>',pack_anchor(t_this,package,hash),
-                      record['explanation'],'</a>',
-                      file=outfile, sep='')
-                continuation_line=True
-    print('</table>',file=outfile)
+            record=summary_this[package]
+            html_diff.write(package,record)
+            if record['isnative']:
+                number_in_native += 1
+            else:
+                number_in_archall += 1
 
+    # from here on, explanations are to be found in the previous run
+    html_diff.set_path_to_packages('../'+t_prev+'/packages/')
 
-    print('<h2>Old packages that became installable</h2>',file=outfile)
-    print(table_header_multi,file=outfile)
+    html_diff.section('Old packages that became installable')
+    # in uninstallable out, and in current foreground
     for package in uninstallables_out:
-        if package in foreground_this:
-            print('<tr><td>',package,'</td>',sep='',file=outfile)
-            continuation_line=False
-            for hash in summary_prev[package]:
-                record=summary_prev[package][hash]
-                if record['isnative']:
-                    all_mark=''
-                    number_out_native += 1
-                else:
-                    all_mark='[all] '
-                    number_out_archall += 1
-                if continuation_line:
-                    print('<tr><td></td>',file=outfile)
-                print('<td>',all_mark,record['version'],'</td>',
-                      file=outfile,sep='')
-                print('<td>',record['archs'],'</td>',file=outfile,sep='')
-                print('<td>',pack_anchor(t_prev,package,hash),
-                      record['explanation'],'</a>',
-                      file=outfile, sep='')
-                continuation_line=True
-    print('</table>',file=outfile)
+        if universe_this.is_in_foreground(package):
+            record=summary_prev[package]
+            html_diff.write(package,record)
+            if record['isnative']:
+                number_out_native += 1
+            else:
+                number_out_archall += 1
 
-
-    print('<h2>Not-installable packages that disappeared</h2>',file=outfile)
-    print(table_header_multi,file=outfile)
+    html_diff.section('Not-installable packages that disappeared')
+    # in uninstallable out, but not in current foreground
     for package in uninstallables_out:
-        if package not in foreground_this:
-            print('<tr><td>',package,'</td>',sep='',file=outfile)
-            continuation_line=False
-            for hash in summary_prev[package]:
-                record=summary_prev[package][hash]
-                if record['isnative']:
-                    all_mark=''
-                    number_out_native += 1
-                else:
-                    all_mark='[all] '
-                    number_out_archall += 1
-                if continuation_line:
-                    print('<tr><td></td>',file=outfile)
-                print('<td>',all_mark,record['version'],'</td>',
-                      file=outfile,sep='')
-                print('<td>',record['archs'],'</td>',file=outfile,sep='')
-                print('<td>',pack_anchor(t_prev,package,hash),
-                      record['explanation'],'</a>',
-                      file=outfile, sep='')
-                continuation_line=True
-    print('</table>',file=outfile)
+        if not universe_this.is_in_foreground(package):
+            record=summary_prev[package]
+            html_diff.write(package,record)
+            if record['isnative']:
+                number_out_native += 1
+            else:
+                number_out_archall += 1
 
-
-    print(html.html_footer,file=outfile)
-    outfile.close()
+    del html_diff
 
     # write size of the diff
     totaldiff=(number_in_native+number_in_archall-

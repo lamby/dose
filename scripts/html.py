@@ -434,3 +434,39 @@ class diff(html_table):
         html_table.__init__(self,output_path,output_name,
                             header,table_header)
 
+###########################################################################
+
+class diff_multi(html_table_multi):
+
+    path_to_packages = 'packages/'
+
+    def __init__(self,timestamp_now,timestamp_prev,scenario,where):
+
+        summary_header='''
+<h1>Difference for {where} architecture in scenario {scenario}</h1>
+<b>From {tprev} UTC<br>To {tnow} UTC</b>
+<p>
+<kbd>[all]</kbd> indicates a package with <kbd>Architecture=all</kbd>.
+'''
+
+        table_header='''
+<table border=1>
+<tr>
+<th>Package</th>
+<th>Version</th>
+<th>Architectures</th>
+<th>Short Explanation (click for details)</th>
+'''
+
+        output_path=common.htmldir(timestamp_now,scenario)
+        output_name=where+'-diff.html'
+
+        header=summary_header.format(
+            scenario=scenario,
+            where=where,
+            tprev=datetime.datetime.utcfromtimestamp(float(timestamp_prev)),
+            tnow=datetime.datetime.utcfromtimestamp(float(timestamp_now)))
+
+        html_table_multi.__init__(self,output_path,output_name,
+                                  header,table_header)
+
