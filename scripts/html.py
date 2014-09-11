@@ -224,7 +224,8 @@ class html_table_multi(html_table):
                   file=self.filedesc,sep='')
             if not continuation_line:
                 print(multitd,file=self.filedesc,end='')
-                self.bugtable.print_indirect(package,self.filedesc)
+                if self.bugtable:
+                    self.bugtable.print_indirect(package,self.filedesc)
                 print('</td>',file=self.filedesc)
             print('</tr>',file=self.filedesc)
             continuation_line=True

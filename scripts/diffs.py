@@ -179,24 +179,25 @@ def build_multi(t_this,t_prev,scenario,what,architectures):
         for entry in infile:
             package,version,isnative,hash,explanation,archs = entry.split('#')
             explanation = explanation.rstrip()
+            archs = archs.split()
             if package in summary_prev:
                 summary_prev[package][hash]={'version': version,
                                              'isnative': isnative=='True',
-                                             'explanation': explanation,
+                                             'short': explanation,
                                              'archs': archs
                                              }
             else:
                 summary_prev[package]={hash:
                                            {'version': version,
                                             'isnative': isnative=='True',
-                                            'explanation': explanation,
+                                            'short': explanation,
                                             'archs': archs
                                             }
                                        }
         infile.close()
     else:
         warning('{f} does not exist, skipping'.format(f=infilename))
-                
+
     # fetch this summary
     summary_this = {}
     infilename=cachedir(t_this,scenario,what)+'/summary'
@@ -205,6 +206,7 @@ def build_multi(t_this,t_prev,scenario,what,architectures):
         for entry in infile:
             package,version,isnative,hash,explanation,archs = entry.split('#')
             explanation = explanation.rstrip()
+            archs = archs.split()
             if package in summary_this:
                 summary_this[package][hash]={
                     'version': version,
@@ -248,15 +250,16 @@ def build_multi(t_this,t_prev,scenario,what,architectures):
     uninstallables_out = sorted(uninstallables_prev - uninstallables_this)
 
     # write html page for differences
-    html_diff=html.diff_multi(t_this,t_prev,scenario,arch)
+    html_diff=html.diff_multi(t_this,t_prev,scenario,what)
     
     html_diff.section('Old packages that became not installable')
     # in uninstallable in, and in previous foreground
     for package in uninstallables_in:
         if package in foreground_prev:
             record=summary_this[package]
+            firsthash=list(record.keys())[0]
             html_diff.write(package,record)
-            if record['isnative']:
+            if record[firsthash]['isnative']:
                 number_in_native += 1
             else:
                 number_in_archall += 1
@@ -266,8 +269,9 @@ def build_multi(t_this,t_prev,scenario,what,architectures):
     for package in uninstallables_in:
         if package not in foreground_prev:
             record=summary_this[package]
+            firsthash=list(record.keys())[0]
             html_diff.write(package,record)
-            if record['isnative']:
+            if record[firsthash]['isnative']:
                 number_in_native += 1
             else:
                 number_in_archall += 1
@@ -278,10 +282,11 @@ def build_multi(t_this,t_prev,scenario,what,architectures):
     html_diff.section('Old packages that became installable')
     # in uninstallable out, and in current foreground
     for package in uninstallables_out:
-        if universe_this.is_in_foreground(package):
+        if package in foreground_this:
             record=summary_prev[package]
+            firsthash=list(record.keys())[0]
             html_diff.write(package,record)
-            if record['isnative']:
+            if record[firsthash]['isnative']:
                 number_out_native += 1
             else:
                 number_out_archall += 1
@@ -289,10 +294,11 @@ def build_multi(t_this,t_prev,scenario,what,architectures):
     html_diff.section('Not-installable packages that disappeared')
     # in uninstallable out, but not in current foreground
     for package in uninstallables_out:
-        if not universe_this.is_in_foreground(package):
+        if package not in foreground_this:
             record=summary_prev[package]
+            firsthash=list(record.keys())[0]
             html_diff.write(package,record)
-            if record['isnative']:
+            if record[firsthash]['isnative']:
                 number_out_native += 1
             else:
                 number_out_archall += 1
