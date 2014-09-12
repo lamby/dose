@@ -220,20 +220,11 @@ def write_row(timestamp,scenario,architectures):
           datetime.datetime.utcfromtimestamp(float(timestamp)),
           file=row,sep='')
     for arch in architectures:
-        count_natives=0
-        count_archall=0
-        summary=open(cachedir(timestamp,scenario,arch)+'/summary')
-        for entry in summary:
-            if (entry.split('#'))[2] == "True":
-                count_natives += 1
-            else:
-                count_archall += 1
-        summary.close()
-        print('{a}={cn}/{ca}'.format(
-                cn=count_natives,
-                ca=count_archall,
-                a=arch),
-              file=row,sep='')
+        counter = bicounter()
+        with open(cachedir(timestamp,scenario,arch)+'/summary') as summary:
+            for entry in summary:
+                counter.incr((entry.split('#'))[2] == "True")
+        print('{a}={c}'.format(a=arch,c=str(counter)),file=row)
 
     # count packages notinstallable somewhere or everywhere
     countsome_natives=0

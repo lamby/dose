@@ -147,3 +147,28 @@ hlengths={0:2,1:4,2:8,3:16,4:32,5:64}
 # number of lines in a file
 def lines_in_file(filename):
     return(sum(1 for line in open(filename)))
+
+
+class bicounter:
+    'pair of integer-valued counters'
+
+    c_true = 0
+    c_false = 0
+
+    def incr(self,flag):
+        'increment the counter indicated by the boolean flag.'
+
+        if flag:
+            self.c_true += 1
+        else:
+            self.c_false += 1
+
+    def __str__(self):
+        'return string representation'
+
+        return(str(self.c_true)+'/'+str(self.c_false))
+
+    def total(self):
+        'return sum of both counters'
+
+        return(self.c_true + self.c_false)
