@@ -19,7 +19,7 @@ locations = {
     'debmirror' : '/srv/mirrors/debian/dists',
     'cacheroot' : '/srv/qa.debian.org/data/dose-debcheck',
     'htmlroot'  : '/srv/qa.debian.org/web/dose/debcheck',
-    'scriptdir' : '/home/treinen/dose/scripts'
+    'scriptdir' : '/srv/qa.debian.org/dose'
 }
 
 scenarios = {
