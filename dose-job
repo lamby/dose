@@ -4,4 +4,4 @@
 # MAILTO=treinen@free.fr
 
 umask 2
-/home/treinen/dose/scripts/run.py
+/srv/qa.debian.org/dose/run.py
