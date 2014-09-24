@@ -7,20 +7,30 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-architectures = {
-    'unstable' : [ 'amd64', 'arm64', 'armel', 'armhf', 'hurd-i386', 'i386',
-                   'kfreebsd-amd64', 'kfreebsd-i386', 'mips', 'mipsel',
-                   'powerpc', 'ppc64el', 's390x' ],
-    'testing' :  [ 'amd64', 'arm64', 'armel', 'armhf', 'i386', 'kfreebsd-amd64',
-		   'kfreebsd-i386', 'mips', 'mipsel', 'powerpc', 'ppc64el',
-		   's390x' ] }
-
 locations = {
     'debmirror' : '/srv/mirrors/debian/dists',
     'cacheroot' : '/srv/qa.debian.org/data/dose-debcheck',
     'htmlroot'  : '/srv/qa.debian.org/web/dose/debcheck',
     'scriptdir' : '/srv/qa.debian.org/dose'
 }
+
+def _get_architectures(archs):
+    import os.path as osp
+    from debian import deb822
+
+    for dist in archs:
+        path = osp.join(locations['debmirror'], dist, 'Release')
+        with open(path) as fp:
+            release = deb822.Release(fp)
+        archs[dist] = [arch for arch in release['Architectures'].split()
+                       if arch not in excluded_archs]
+
+excluded_archs = ()
+architectures = {
+    'testing': None,
+    'unstable': None,
+}
+_get_architectures(architectures)
 
 scenarios = {
     'unstable_main': {
