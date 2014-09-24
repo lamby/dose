@@ -3,3 +3,4 @@ __pycache__/*.pyc
 *~
 conf.py
 conf-test.py
+.upload.stamp
