@@ -25,7 +25,7 @@ def _get_architectures(archs):
         archs[dist] = [arch for arch in release['Architectures'].split()
                        if arch not in excluded_archs]
 
-excluded_archs = ()
+excluded_archs = ('sparc')
 architectures = {
     'testing': None,
     'unstable': None,
