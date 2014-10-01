@@ -299,10 +299,8 @@ def build(timestamp,day,universe,scenario,arch,bugtable):
     # file recording the first day of observed non-installability per package
     historyfile=open(histfile,'w')
 
-    # number of uninstallable arch=all packages per slice
-    count_archall={i:0 for i in hlengths.keys()}
-    # number of uninstallable native packages per slice
-    count_natives={i:0 for i in hlengths.keys()}
+    # number of uninstallable arch=native/all packages per slice
+    counter={i: bicounter() for i in hlengths.keys()}
 
     if report and report['report']:
         for stanza in report['report']:
@@ -335,10 +333,7 @@ def build(timestamp,day,universe,scenario,arch,bugtable):
                         html_history[i].write(package,isnative,version,
                                         reasons_hash,reasons_summary,
                                         since=date_of_days(firstday))
-                        if isnative:
-                            count_natives[i] += 1
-                        else:
-                            count_archall[i] += 1
+                        counter[i].incr(isnative)
                         break
 
             # write into the summary file in the cache
@@ -358,7 +353,6 @@ def build(timestamp,day,universe,scenario,arch,bugtable):
     historyfile.close ()
     vertical=open(history_verticalfile(scenario,arch),'w')
     for i in hlengths.keys():
-        print('{i}={cn}/{ca}'.format(
-                i=i,cn=count_natives[i],ca=count_archall[i]),file=vertical)
+        print(i,'=',str(counter[i]),sep='',file=vertical)
     vertical.close()
 

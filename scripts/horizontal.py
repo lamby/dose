@@ -53,8 +53,9 @@ def analyze_horizontal(timestamp,scenario,architectures):
         uninstallables_here = set()
         arch_summary=open(cachedir(timestamp,scenario,arch)+'/summary')
         for entry in arch_summary: 
-            package,version,isnative,hash,explanation = entry.split('#')
+            package,version,isnative_string,hash,explanation = entry.split('#')
             explanation = explanation.rstrip()
+            isnative=isnative_string=='True'
             uninstallables_here.add(package)
             if not package in uninstallables:
                 uninstallables[package] = { hash: {'archs'   : [arch],
@@ -146,10 +147,8 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
     # file recording the first day of observed non-installability per package
     historyfile=open(histfile,'w')
 
-    # number of uninstallable arch=all packages per slice
-    count_archall={i:0 for i in hlengths.keys()}
-    # number of uninstallable native packages per slice
-    count_natives={i:0 for i in hlengths.keys()}
+    # count uninstallable packages per history slice
+    counter={i:bicounter_multi() for i in hlengths.keys()} 
 
     for package in sorted(includes.keys()):
         if not package in excludes:
@@ -166,11 +165,7 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
                         hslice=i
                         break
                 if hslice >= 0:
-                    firsthash=list(uninstallables[package].keys())[0]
-                    if uninstallables[package][firsthash]['isnative'] == 'True':
-                        count_natives[hslice] += 1
-                    else:
-                        count_archall[hslice] += 1
+                    counter[hslice].incr(uninstallables[package])
                     html_history[hslice].write(package,
                                                uninstallables[package],
                                                since=date_of_days(firstday))
@@ -188,8 +183,7 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
     historyfile.close ()
     vertical=open(history_verticalfile(scenario,what),'w')
     for i in hlengths.keys():
-        print('{i}={cn}/{ca}'.format(
-                i=i,cn=count_natives[i],ca=count_archall[i]),file=vertical)
+        print('{i}={c}'.format(i=i,c=str(counter[i])),file=vertical)
     vertical.close()
 
     # write a summary of the analysis in the cache directory
@@ -220,52 +214,21 @@ def write_row(timestamp,scenario,architectures):
           datetime.datetime.utcfromtimestamp(float(timestamp)),
           file=row,sep='')
     for arch in architectures:
-        count_natives=0
-        count_archall=0
-        summary=open(cachedir(timestamp,scenario,arch)+'/summary')
-        for entry in summary:
-            if (entry.split('#'))[2] == "True":
-                count_natives += 1
-            else:
-                count_archall += 1
-        summary.close()
-        print('{a}={cn}/{ca}'.format(
-                cn=count_natives,
-                ca=count_archall,
-                a=arch),
-              file=row,sep='')
+        counter = bicounter()
+        with open(cachedir(timestamp,scenario,arch)+'/summary') as summary:
+            for entry in summary:
+                counter.incr((entry.split('#'))[2] == "True")
+        print('{a}={c}'.format(a=arch,c=str(counter)),file=row)
 
     # count packages notinstallable somewhere or everywhere
-    countsome_natives=0
-    countsome_archall=0
-    counteach_natives=0
-    counteach_archall=0
-    for package in uninstallables:
-        isnative=False
-        for h in uninstallables[package]:
-            if uninstallables[package][h]['isnative'] == 'True':
-                isnative = True
-                break
-        if isnative:
-            countsome_natives += 1
-        else:
-            countsome_archall += 1
+    counter_some = bicounter_multi()
+    counter_each = bicounter_multi()
+    for (package,record) in uninstallables.items():
+        counter_some.incr(record)
         if not package in installables_somewhere:
-            if isnative:
-                counteach_natives += 1
-            else:
-                counteach_archall += 1
-
-    print('{a}={cn}/{ca}'.format(
-            cn=countsome_natives,
-            ca=countsome_archall,
-            a='some'),
-          file=row,sep='')
-    print('{a}={cn}/{ca}'.format(
-            cn=counteach_natives,
-            ca=counteach_archall,
-            a='each'),
-          file=row,sep='')
+            counter_each.incr(record)
+    print('{a}={c}'.format(a='some',c=str(counter_some)),file=row)
+    print('{a}={c}'.format(a='each',c=str(counter_each)),file=row)
 
     row.close ()
     

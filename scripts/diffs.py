@@ -22,10 +22,8 @@ def build(t_this,t_prev,universe_this,scenario,arch):
     info('diff for {s} on {a} from {t1} to {t2}'.format(
             s=scenario,a=arch,t1=t_prev,t2=t_this))
 
-    number_in_native=0
-    number_in_archall=0
-    number_out_native=0
-    number_out_archall=0
+    counter_in = bicounter()
+    counter_out = bicounter()
 
     # fetch previous summary
     summary_prev = {}
@@ -33,11 +31,11 @@ def build(t_this,t_prev,universe_this,scenario,arch):
     if os.path.isfile(infilename):
         infile=open(infilename)
         for entry in infile:
-            package,version,isnative,hash,explanation = entry.split('#')
+            package,version,isnative_string,hash,explanation = entry.split('#')
             explanation = explanation.rstrip()
             summary_prev[package]={
                 'version': version,
-                'isnative': isnative=='True',
+                'isnative': isnative_string=='True',
                 'hash': hash,
                 'explanation': explanation
                 }
@@ -51,11 +49,11 @@ def build(t_this,t_prev,universe_this,scenario,arch):
     if os.path.isfile(infilename):
         infile=open(infilename)
         for entry in infile:
-            package,version,isnative,hash,explanation = entry.split('#')
+            package,version,isnative_string,hash,explanation = entry.split('#')
             explanation = explanation.rstrip()
             summary_this[package]={
                 'version': version,
-                'isnative': isnative=='True',
+                'isnative': isnative_string=='True',
                 'hash': hash,
                 'explanation': explanation
                 }
@@ -90,10 +88,7 @@ def build(t_this,t_prev,universe_this,scenario,arch):
             record=summary_this[package]
             html_diff.write(package,record['isnative'],record['version'],
                             record['hash'],record['explanation'])
-            if record['isnative']:
-                number_in_native += 1
-            else:
-                number_in_archall += 1
+            counter_in.incr(record['isnative'])
 
     html_diff.section('New packages that are not installable')
     # in uninstallable in, but not in previous foreground
@@ -102,10 +97,7 @@ def build(t_this,t_prev,universe_this,scenario,arch):
             record=summary_this[package]
             html_diff.write(package,record['isnative'],record['version'],
                             record['hash'],record['explanation'])
-            if record['isnative']:
-                number_in_native += 1
-            else:
-                number_in_archall += 1
+            counter_in.incr(record['isnative'])
 
     # from here on, explanations are to be found in the previous run
     html_diff.set_path_to_packages('../'+t_prev+'/packages/')
@@ -117,10 +109,7 @@ def build(t_this,t_prev,universe_this,scenario,arch):
             record=summary_prev[package]
             html_diff.write(package,record['isnative'],record['version'],
                             record['hash'],record['explanation'])
-            if record['isnative']:
-                number_out_native += 1
-            else:
-                number_out_archall += 1
+            counter_out.incr(record['isnative'])
 
     html_diff.section('Not-installable packages that disappeared')
     # in uninstallable out, but not in current foreground
@@ -129,16 +118,12 @@ def build(t_this,t_prev,universe_this,scenario,arch):
             record=summary_prev[package]
             html_diff.write(package,record['isnative'],record['version'],
                             record['hash'],record['explanation'])
-            if record['isnative']:
-                number_out_native += 1
-            else:
-                number_out_archall += 1
+            counter_out.incr(record['isnative'])
 
     del html_diff
 
     # write size of the diff
-    totaldiff=(number_in_native+number_in_archall-
-               number_out_native-number_out_archall)
+    totaldiff=counter_in.total() - counter_out.total()
     if totaldiff>0:
         diffcolor='red'
     elif totaldiff<0:
@@ -146,10 +131,8 @@ def build(t_this,t_prev,universe_this,scenario,arch):
     else:
         diffcolor='black'
     outfile=open(cachedir(t_this,scenario,arch)+'/number-diff', 'w')
-    print('<font color={c}>+{innat}/{inall} -{outnat}/{outall}</font>'.format(
-            innat=number_in_native,inall=number_in_archall,
-            outnat=number_out_native,outall=number_out_archall,
-            c=diffcolor),
+    print('<font color={c}>+{total_in} -{total_out}</font>'.format(
+        total_in=str(counter_in),total_out=str(counter_out),c=diffcolor),
           file=outfile)
     outfile.close()
 
@@ -166,10 +149,8 @@ def build_multi(t_this,t_prev,scenario,what,architectures):
     info('diff for {s} on {a} from {t1} to {t2}'.format(
             s=scenario,a=what,t1=t_prev,t2=t_this))
 
-    number_in_native=0
-    number_in_archall=0
-    number_out_native=0
-    number_out_archall=0
+    counter_in = bicounter_multi()
+    counter_out = bicounter_multi()
 
     # fetch previous summary
     summary_prev = {}
@@ -257,24 +238,16 @@ def build_multi(t_this,t_prev,scenario,what,architectures):
     for package in uninstallables_in:
         if package in foreground_prev:
             record=summary_this[package]
-            firsthash=list(record.keys())[0]
             html_diff.write(package,record)
-            if record[firsthash]['isnative']:
-                number_in_native += 1
-            else:
-                number_in_archall += 1
+            counter_in.incr(record)
 
     html_diff.section('New packages that are not installable')
     # in uninstallable in, but not in previous foreground
     for package in uninstallables_in:
         if package not in foreground_prev:
             record=summary_this[package]
-            firsthash=list(record.keys())[0]
             html_diff.write(package,record)
-            if record[firsthash]['isnative']:
-                number_in_native += 1
-            else:
-                number_in_archall += 1
+            counter_in.incr(record)
 
     # from here on, explanations are to be found in the previous run
     html_diff.set_path_to_packages('../'+t_prev+'/packages/')
@@ -284,30 +257,21 @@ def build_multi(t_this,t_prev,scenario,what,architectures):
     for package in uninstallables_out:
         if package in foreground_this:
             record=summary_prev[package]
-            firsthash=list(record.keys())[0]
             html_diff.write(package,record)
-            if record[firsthash]['isnative']:
-                number_out_native += 1
-            else:
-                number_out_archall += 1
+            counter_out.incr(record)
 
     html_diff.section('Not-installable packages that disappeared')
     # in uninstallable out, but not in current foreground
     for package in uninstallables_out:
         if package not in foreground_this:
             record=summary_prev[package]
-            firsthash=list(record.keys())[0]
             html_diff.write(package,record)
-            if record[firsthash]['isnative']:
-                number_out_native += 1
-            else:
-                number_out_archall += 1
+            counter_out.incr(record)
 
     del html_diff
 
     # write size of the diff
-    totaldiff=(number_in_native+number_in_archall-
-               number_out_native-number_out_archall)
+    totaldiff=counter_in.total() - counter_out.total()
     if totaldiff>0:
         diffcolor='red'
     elif totaldiff<0:
@@ -315,9 +279,7 @@ def build_multi(t_this,t_prev,scenario,what,architectures):
     else:
         diffcolor='black'
     outfile=open(cachedir(t_this,scenario,what)+'/number-diff', 'w')
-    print('<font color={c}>+{innat}/{inall} -{outnat}/{outall}</font>'.format(
-            innat=number_in_native,inall=number_in_archall,
-            outnat=number_out_native,outall=number_out_archall,
-            c=diffcolor),
+    print('<font color={c}>+{total_in} -{total_out}</font>'.format(
+        total_in=str(counter_in),total_out=str(counter_out),c=diffcolor),
           file=outfile)
     outfile.close()
