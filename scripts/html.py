@@ -209,7 +209,7 @@ class html_table_multi(html_table):
             if continuation_line:
                 print('<tr>',file=self.filedesc)
             record=reasons[hash]
-            if record['isnative'] == 'True':
+            if record['isnative']:
                 all_mark = '' 
             else:
                 all_mark='[all]'

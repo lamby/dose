@@ -31,11 +31,11 @@ def build(t_this,t_prev,universe_this,scenario,arch):
     if os.path.isfile(infilename):
         infile=open(infilename)
         for entry in infile:
-            package,version,isnative,hash,explanation = entry.split('#')
+            package,version,isnative_string,hash,explanation = entry.split('#')
             explanation = explanation.rstrip()
             summary_prev[package]={
                 'version': version,
-                'isnative': isnative=='True',
+                'isnative': isnative_string=='True',
                 'hash': hash,
                 'explanation': explanation
                 }
@@ -49,11 +49,11 @@ def build(t_this,t_prev,universe_this,scenario,arch):
     if os.path.isfile(infilename):
         infile=open(infilename)
         for entry in infile:
-            package,version,isnative,hash,explanation = entry.split('#')
+            package,version,isnative_string,hash,explanation = entry.split('#')
             explanation = explanation.rstrip()
             summary_this[package]={
                 'version': version,
-                'isnative': isnative=='True',
+                'isnative': isnative_string=='True',
                 'hash': hash,
                 'explanation': explanation
                 }

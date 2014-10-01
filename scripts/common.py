@@ -189,7 +189,7 @@ class bicounter_multi(bicounter):
         
         flag=False
         for r in d.values():
-            if r['isnative']=='True':
+            if r['isnative']:
                 flag=True
                 break
         bicounter.incr(self,flag)
