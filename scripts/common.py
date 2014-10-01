@@ -7,6 +7,8 @@
 
 import os
 import conf
+import itertools
+
 from datetime import date
 
 verbose=True
@@ -172,3 +174,22 @@ class bicounter:
         'return sum of both counters'
 
         return(self.c_true + self.c_false)
+
+
+class bicounter_multi(bicounter):
+    ''''
+    pair of integer-valued counters. Selection of the counter to be
+    incremented uses a dictionary, the values of which are dictionaries
+    containing the key "isnative". If one them is true then the counter
+    "true" is incremented, otherwise the counter "false" is incremented.
+    '''
+
+    def incr(self,d):
+        'increment the counter as indicated by the dictionary d.'
+        
+        flag=False
+        for r in d.values():
+            if r['isnative']=='True':
+                flag=True
+                break
+        bicounter.incr(self,flag)
