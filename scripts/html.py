@@ -162,6 +162,10 @@ class html_table(html_file):
             self.bugtable.print_indirect(package,self.filedesc)
         print('</td></tr>',file=self.filedesc)
 
+    def write_record(self,package,reason,since=None):
+        html_table.write(self,package,reason['isnative'],reason['version'],
+                         reason['hash'],reason['short'])
+
     def section(self,text):
         '''
         write a <h2> header into the HTML file and open a table.
@@ -434,6 +438,9 @@ class diff(html_table):
 
         html_table.__init__(self,output_path,output_name,
                             header,table_header)
+
+    def write(self,record,since):
+        html_table.write_record(self,record,since)
 
 ###########################################################################
 
