@@ -130,8 +130,6 @@ def str_of_list(liste):
         result += ', ' + element
     return(result)
 
-hlengths={0:2,1:4,2:8,3:16,4:32,5:64,6:128}
-
 # number of lines in a file
 def lines_in_file(filename):
     return(sum(1 for line in open(filename)))

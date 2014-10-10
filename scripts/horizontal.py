@@ -16,7 +16,7 @@ architectures:
 
 import os, datetime
 from common import *
-import html
+import conf, html
 
 # map a package p that is not installable on at least one architecture
 # to a function that maps a hash h to the list of architectures where
@@ -142,13 +142,13 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
     # historic html files for different time slices
     html_history={i:html.history_multi(timestamp,scenario,what,bugtable,
                                        since_days=d)
-                  for i,d in hlengths.items()}
+                  for i,d in conf.hlengths.items()}
 
     # file recording the first day of observed non-installability per package
     historyfile=open(histfile,'w')
 
     # count uninstallable packages per history slice
-    counter={i:bicounter_multi() for i in hlengths.keys()} 
+    counter={i:bicounter_multi() for i in conf.hlengths.keys()} 
 
     for package in sorted(includes.keys()):
         if not package in excludes:
@@ -160,8 +160,8 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
                 firstday=int(history[package])
                 duration=day-firstday
                 hslice=-1
-                for i in sorted(hlengths.keys(),reverse=True):
-                    if duration >= hlengths[i]:
+                for i in sorted(conf.hlengths.keys(),reverse=True):
+                    if duration >= conf.hlengths[i]:
                         hslice=i
                         break
                 if hslice >= 0:
@@ -182,7 +182,7 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
 
     historyfile.close ()
     vertical=open(history_verticalfile(scenario,what),'w')
-    for i in hlengths.keys():
+    for i in conf.hlengths.keys():
         print('{i}={c}'.format(i=i,c=str(counter[i])),file=vertical)
     vertical.close()
 

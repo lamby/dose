@@ -11,7 +11,7 @@ different timestamps.
 - constructing a summary page for the last timestamps
 '''
 import os.path
-import weather, html
+import weather, html, conf
 from common import *
 
 summary_header = '''
@@ -34,7 +34,7 @@ def write_historytable(scenario,architectures,outfile):
     print('<table border=1><tr><th>Since</th>',file=outfile)
     for col in columns:
         print('<th>',col,'</th>',file=outfile,sep='')
-    t={c:{i:'0/0' for i in hlengths.keys()} for c in columns}
+    t={c:{i:'0/0' for i in conf.hlengths.keys()} for c in columns}
     for col in columns:
         if not os.path.isfile(history_verticalfile(scenario,col)):
             info('No history statistics for {a} in {s}'.format(
@@ -46,11 +46,11 @@ def write_historytable(scenario,architectures,outfile):
                 key,value=entry.split('=')
                 t[col][int(key)]=value.rstrip()
             infile.close()
-    for i in hlengths.keys():
-        print('<tr><td>{d} days</td>'.format(d=hlengths[i]),file=outfile)
+    for i in conf.hlengths.keys():
+        print('<tr><td>{d} days</td>'.format(d=conf.hlengths[i]),file=outfile)
         for col in columns:
             print('<td><a href=history/{a}/{d}.html>{nn}</a></td>'.format(
-                    a=col,d=hlengths[i],nn=t[col][i]),file=outfile)
+                    a=col,d=conf.hlengths[i],nn=t[col][i]),file=outfile)
         print('</tr>',file=outfile)
     print('</table>',file=outfile)
 
