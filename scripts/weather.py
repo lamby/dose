@@ -86,17 +86,17 @@ def build(timestamp,scenario,architectures):
         else:
             percentage=100*broken_packages/total_packages
 
-        with open_weatherfile(scenario,arch,'w') as outfile:
-            print(xml_template.format(
-                    scenario=scenario,
-                    description=conf.scenarios[scenario]['description'],
-                    architecture=arch,
-                    date=datetime.date.fromtimestamp(float(timestamp)),
-                    number_total=total_packages,
-                    number_broken=broken_packages,
-                    weather=weather_index(percentage),
-                    summary_url=url_summary(timestamp,scenario,arch)),
-                  file=outfile)
+        # with open_weatherfile(scenario,arch,'w') as outfile:
+        #     print(xml_template.format(
+        #             scenario=scenario,
+        #             description=conf.scenarios[scenario]['description'],
+        #             architecture=arch,
+        #             date=datetime.date.fromtimestamp(float(timestamp)),
+        #             number_total=total_packages,
+        #             number_broken=broken_packages,
+        #             weather=weather_index(percentage),
+        #             summary_url=url_summary(timestamp,scenario,arch)),
+        #           file=outfile)
         with open(cachedir(timestamp,scenario,arch)+'/weather', 'w') as outfile:
             print(weather_index(percentage),file=outfile)
 
