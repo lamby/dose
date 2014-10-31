@@ -29,6 +29,7 @@ bugtable=bts.Bugtable()
 
 for scenario in conf.scenarios.keys():
     architectures = conf.scenarios[scenario]['archs']
+    summary = horizontal.Summary(scenario,architectures,timestamp_now)
 
     for arch in architectures:
         universes.build(timestamp_now,scenario,arch)

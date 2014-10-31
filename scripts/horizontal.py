@@ -29,6 +29,28 @@ installables_somewhere = set()
 
 # number of packages not installables somewhere / everywhere
 
+class Summary(object):
+    """
+    Horizontal summary information.
+    """
+
+    def __init__(self,scenario_name,architectures,timestamp):
+        self.scenario_name = scenario_name
+        self.architectures = architectures
+        self.timestamp = timestamp
+        self.number_total_all = dict()
+        self.number_total_native = dict()
+        self.number_broken_all = dict()
+        self.number_broken_native = dict()
+
+    def set_numbers(self,architecture,
+                    total_all,total_native,broken_all,broken_native):
+        self.number_total_all[architecture] = total_all
+        self.number_total_native[architecture] = total_native
+        self.number_broken_all[architecture] = broken_all
+        self.number_broken_native[architecture] = broken_native
+    
+
 def analyze_horizontal(timestamp,scenario,architectures):
     '''
     fill uninstallables, and installables_somewhere
