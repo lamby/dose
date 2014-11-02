@@ -43,8 +43,8 @@ for scenario in conf.scenarios.keys():
         diffs.build_multi(timestamp_now,timestamp_last,scenario,what,
                           architectures)
 
-    weather.build(timestamp_now,scenario,architectures)
-    vertical.build(timestamps_keep,scenario,architectures)
+    weather.build(timestamp_now,scenario,architectures,summary)
+    vertical.build(timestamps_keep,scenario,architectures,summary)
     summary.dump()
 
 weather.write_available()    

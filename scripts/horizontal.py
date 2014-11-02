@@ -48,6 +48,13 @@ class Summary(object):
 
     def set_total(self,architecture,number):
         self.number_total[architecture] = number
+    
+    def get_total(self,architecture):
+        return(self.number_total[architecture])
+
+    def get_broken(self,architecture):
+        return(self.number_broken_all[architecture]+
+               self.number_broken_native[architecture])
 
     def dump(self):
         print('Scenario: ', self.scenario_name)

@@ -64,41 +64,31 @@ def icon(index):
     return('<img src="../../weathericons/{i}" alt="{t}">'.format(
             i=icon[index],t=text[index]))
 
-def build(timestamp,scenario,architectures):
+def percentage(architecture,summary):
+    total_packages=summary.get_total(architecture)
+    broken_packages=summary.get_broken(architecture)
+    if total_packages==0:
+        percentage=0
+    else:
+        percentage=100*broken_packages/total_packages
+    return(percentage)
 
-    for arch in architectures:
-        fg_filename=cachedir(timestamp,scenario,arch)+'/fg-packages'
-        rep_filename=cachedir(timestamp,scenario,arch)+'/summary'
+def build(timestamp,scenario,architectures,summary):
 
-        if not os.path.isfile(fg_filename):
-            warning('no such file: '+fg_filename)
-            return
-
-        if not os.path.isfile(rep_filename):
-            warning('no such file: '+fg_filename)
-            return
-
-        total_packages=lines_in_file(fg_filename)
-        broken_packages=lines_in_file(rep_filename)
-
-        if total_packages==0:
-            percentage=0
-        else:
-            percentage=100*broken_packages/total_packages
+    for architecture in architectures:
+        perc=percentage(architecture,summary)
 
         # with open_weatherfile(scenario,arch,'w') as outfile:
         #     print(xml_template.format(
         #             scenario=scenario,
         #             description=conf.scenarios[scenario]['description'],
-        #             architecture=arch,
+        #             architecture=architecture,
         #             date=datetime.date.fromtimestamp(float(timestamp)),
         #             number_total=total_packages,
         #             number_broken=broken_packages,
-        #             weather=weather_index(percentage),
-        #             summary_url=url_summary(timestamp,scenario,arch)),
+        #             weather=weather_index(perc),
+        #             summary_url=url_summary(timestamp,scenario,architecture)),
         #           file=outfile)
-        with open(cachedir(timestamp,scenario,arch)+'/weather', 'w') as outfile:
-            print(weather_index(percentage),file=outfile)
 
 def write_available():
     info('Describing available weather reports')
