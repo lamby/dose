@@ -56,6 +56,16 @@ class Summary(object):
         return(self.number_broken_all[architecture]+
                self.number_broken_native[architecture])
 
+    def get_percentage(self,architecture):
+        total_packages=self.get_total(architecture)
+        broken_packages=self.get_broken(architecture)
+        if total_packages==0:
+            percentage=0
+        else:
+            percentage=100*broken_packages/total_packages
+            return(percentage)
+
+
     def dump(self):
         print('Scenario: ', self.scenario_name)
         print('Architectures: ', self.architectures),

@@ -65,19 +65,10 @@ def icon_of_percentage(percentage):
     return('<img src="../../weathericons/{i}" alt="{t} ({p}%)">'.format(
             i=icon[index],t=text[index],p=percentage))
 
-def percentage(architecture,summary):
-    total_packages=summary.get_total(architecture)
-    broken_packages=summary.get_broken(architecture)
-    if total_packages==0:
-        percentage=0
-    else:
-        percentage=100*broken_packages/total_packages
-    return(percentage)
-
 def build(timestamp,scenario,architectures,summary):
 
     for architecture in architectures:
-        perc=percentage(architecture,summary)
+        perc=summary.get_percentage(architecture)
 
         # with open_weatherfile(scenario,arch,'w') as outfile:
         #     print(xml_template.format(

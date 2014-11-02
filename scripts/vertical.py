@@ -67,9 +67,9 @@ def write_table(timestamps,scenario,architectures,summary):
 
     print('<tr><td>Today\'s Weather:</td>',file=outfile)
     for architecture in columns:
-        weather_percentage=weather.percentage(architecture,summary)
         print('<td align=center>',
-              weather.icon_of_percentage(weather_percentage),'</td>',
+              weather.icon_of_percentage(summary.get_percentage(architecture)),
+              '</td>',
               file=outfile,sep='')
 
     for timestamp in timestamps:
