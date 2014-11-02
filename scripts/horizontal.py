@@ -38,16 +38,24 @@ class Summary(object):
         self.scenario_name = scenario_name
         self.architectures = architectures
         self.timestamp = timestamp
-        self.number_total_all = dict()
-        self.number_total_native = dict()
-        self.number_broken = dict()
+        self.number_broken_all = dict()
+        self.number_broken_native = dict()
+        self.number_total = dict()
 
     def set_broken(self,architecture,counter):
         self.number_broken_all[architecture] = counter.get_archall()
         self.number_broken_native[architecture] = counter.get_native()
 
     def set_total(self,architecture,number):
-        self.number_total_all[architecture] = number
+        self.number_total[architecture] = number
+
+    def dump(self):
+        print('Scenario: ', self.scenario_name)
+        print('Architectures: ', self.architectures),
+        print('Timestamp: ', self.timestamp)
+        print('Broken archAll: ', self.number_broken_all)
+        print('Broken native: ', self.number_broken_native)
+        print('Total ', self.number_total)
 
 def analyze_horizontal(timestamp,scenario,architectures):
     '''
@@ -252,6 +260,9 @@ def write_row(timestamp,scenario,architectures,summary):
     print('{a}={c}'.format(a='each',c=str(counter_each)),file=row)
     summary.set_broken('some',counter_some)
     summary.set_broken('each',counter_each)
+    total_number_packages= counter_each.total() + sum(1 for _ in installables_somewhere)
+    summary.set_total('some',total_number_packages)
+    summary.set_total('each',total_number_packages)
 
     row.close ()
     

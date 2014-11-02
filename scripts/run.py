@@ -33,7 +33,7 @@ for scenario in conf.scenarios.keys():
 
     for arch in architectures:
         universes.build(timestamp_now,scenario,arch)
-        universe=universes.Universe(timestamp_now,scenario,arch)
+        universe=universes.Universe(timestamp_now,scenario,arch,summary)
         reports.build(timestamp_now,day_now,universe,scenario,arch,bugtable)
         diffs.build(timestamp_now,timestamp_last,universe,scenario,arch)
             
@@ -45,6 +45,7 @@ for scenario in conf.scenarios.keys():
 
     weather.build(timestamp_now,scenario,architectures)
     vertical.build(timestamps_keep,scenario,architectures)
+    summary.dump()
 
 weather.write_available()    
 cleanup.cleanup(timestamps_keep, timestamps_known, timestamp_now, 
