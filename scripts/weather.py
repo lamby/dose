@@ -24,7 +24,7 @@ xml_template='''<weather>
   <url>{summary_url}</url>
 </weather>'''
 
-def weather_index(percentage):
+def index_of_percentage(percentage):
     '''
     return a weather index for a percentage of broken packages
     1: sunny
@@ -45,7 +45,7 @@ def weather_index(percentage):
     else:
         return(5)
 
-def icon(index):
+def icon_of_percentage(percentage):
     '''
     associate an icon to a weather index (as returned by weather_index)
     '''
@@ -61,8 +61,9 @@ def icon(index):
           4: 'rain',
           5: 'storm'
           }
-    return('<img src="../../weathericons/{i}" alt="{t}">'.format(
-            i=icon[index],t=text[index]))
+    index=index_of_percentage(percentage)
+    return('<img src="../../weathericons/{i}" alt="{t} ({p}%)">'.format(
+            i=icon[index],t=text[index],p=percentage))
 
 def percentage(architecture,summary):
     total_packages=summary.get_total(architecture)
@@ -86,7 +87,7 @@ def build(timestamp,scenario,architectures,summary):
         #             date=datetime.date.fromtimestamp(float(timestamp)),
         #             number_total=total_packages,
         #             number_broken=broken_packages,
-        #             weather=weather_index(perc),
+        #             weather=index(perc),
         #             summary_url=url_summary(timestamp,scenario,architecture)),
         #           file=outfile)
 

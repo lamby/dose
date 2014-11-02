@@ -45,7 +45,6 @@ for scenario in conf.scenarios.keys():
 
     weather.build(timestamp_now,scenario,architectures,summary)
     vertical.build(timestamps_keep,scenario,architectures,summary)
-    summary.dump()
 
 weather.write_available()    
 cleanup.cleanup(timestamps_keep, timestamps_known, timestamp_now, 
