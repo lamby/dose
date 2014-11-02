@@ -151,7 +151,10 @@ def date_of_days(days):
 ###########################################################################
 
 class bicounter:
-    'pair of integer-valued counters'
+    '''
+    Pair of integer-valued counters. True is for native packages, False
+    is for arch=all packages.
+    '''
 
     c_true = 0
     c_false = 0
@@ -173,6 +176,12 @@ class bicounter:
         'return sum of both counters'
 
         return(self.c_true + self.c_false)
+
+    def get_native(self):
+        return(self.c_true)
+
+    def get_archall(self):
+        return(self.c_false)
 
 
 class bicounter_multi(bicounter):

@@ -40,16 +40,14 @@ class Summary(object):
         self.timestamp = timestamp
         self.number_total_all = dict()
         self.number_total_native = dict()
-        self.number_broken_all = dict()
-        self.number_broken_native = dict()
+        self.number_broken = dict()
 
-    def set_numbers(self,architecture,
-                    total_all,total_native,broken_all,broken_native):
-        self.number_total_all[architecture] = total_all
-        self.number_total_native[architecture] = total_native
-        self.number_broken_all[architecture] = broken_all
-        self.number_broken_native[architecture] = broken_native
-    
+    def set_broken(self,architecture,counter):
+        self.number_broken_all[architecture] = counter.get_archall()
+        self.number_broken_native[architecture] = counter.get_native()
+
+    def set_total(self,architecture,number):
+        self.number_total_all[architecture] = number
 
 def analyze_horizontal(timestamp,scenario,architectures):
     '''
@@ -223,7 +221,7 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
     sumfile.close()
 #############################################################################
 
-def write_row(timestamp,scenario,architectures):
+def write_row(timestamp,scenario,architectures,summary):
     '''
     create a row of the scenario table for the current timestamp
     '''
@@ -237,10 +235,11 @@ def write_row(timestamp,scenario,architectures):
           file=row,sep='')
     for arch in architectures:
         counter = bicounter()
-        with open(cachedir(timestamp,scenario,arch)+'/summary') as summary:
-            for entry in summary:
+        with open(cachedir(timestamp,scenario,arch)+'/summary') as summary_file:
+            for entry in summary_file:
                 counter.incr((entry.split('#'))[2] == "True")
         print('{a}={c}'.format(a=arch,c=str(counter)),file=row)
+        summary.set_broken(arch,counter)
 
     # count packages notinstallable somewhere or everywhere
     counter_some = bicounter_multi()
@@ -251,13 +250,15 @@ def write_row(timestamp,scenario,architectures):
             counter_each.incr(record)
     print('{a}={c}'.format(a='some',c=str(counter_some)),file=row)
     print('{a}={c}'.format(a='each',c=str(counter_each)),file=row)
+    summary.set_broken('some',counter_some)
+    summary.set_broken('each',counter_each)
 
     row.close ()
     
 
 ########################################################################
 # top level
-def build(timestamp,day,scenario,architectures,bugtable):
+def build(timestamp,day,scenario,architectures,bugtable,summary):
     info('build horizontal tables for {s}'.format(s=scenario))
     analyze_horizontal(timestamp,scenario,architectures)
     write_package_page(timestamp,scenario,architectures)
@@ -265,4 +266,4 @@ def build(timestamp,day,scenario,architectures,bugtable):
                  'some',uninstallables,set(),bugtable)
     write_tables(timestamp,day,scenario,
                  'each',uninstallables,installables_somewhere,bugtable)
-    write_row(timestamp,scenario,architectures)
+    write_row(timestamp,scenario,architectures,summary)
