@@ -236,11 +236,12 @@ class summary(html_table):
 
     path_to_packages = 'packages/'
 
-    def __init__(self,timestamp,scenario,architecture,bugtable):
+    def __init__(self,timestamp,scenario,architecture,bugtable,total):
 
         summary_header = '''
 <h1>Packages not installable on {architecture} in scenario {scenario}</h1>
-<b>Date: {utctime} UTC</b>
+<b>Date: {utctime} UTC<br>
+Foreground: {total} packages</b>
 <p>
 
 <kbd>[all]</kbd> indicates a package with <kbd>Architecture=all</kbd>.
@@ -263,6 +264,7 @@ class summary(html_table):
         header=summary_header.format(
             scenario=scenario,
             architecture=architecture,
+            total=total,
             utctime=datetime.datetime.utcfromtimestamp(float(timestamp)))
 
         html_table.__init__(self,output_path,output_name,

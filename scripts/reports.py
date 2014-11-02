@@ -252,7 +252,7 @@ def create_reasons_file(package,version,reasons,outfile_name,
 
 #########################################################################
 # top level 
-def build(timestamp,day,universe,scenario,arch,bugtable):
+def build(timestamp,day,universe,scenario,arch,bugtable,summary):
     '''
     summarize a complete output produced by dose-debcheck to outfilename,
     and prettyprint chunks of detailed explanations that do not yet exist in 
@@ -289,7 +289,8 @@ def build(timestamp,day,universe,scenario,arch,bugtable):
         h.close()
 
     # HTML file object for the day and historical summaries
-    html_today=html.summary(timestamp,scenario,arch,bugtable)
+    html_today=html.summary(timestamp,scenario,arch,bugtable,
+                            summary.get_total(arch))
     html_history={i:html.history(timestamp,scenario,arch,bugtable,d)
                   for i,d in conf.hlengths.items()}
 
