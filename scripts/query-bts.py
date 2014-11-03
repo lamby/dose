@@ -7,20 +7,25 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
+import socket, SOAPpy, itertools, sys
 import debianbts
-import itertools
+
+socket.setdefaulttimeout(30)
 
 # get the numbers of all bugs with usertag edos-*
 umail='treinen@debian.org'
 utags=['edos-outdated', 'edos-uninstallable']
-bugnrs=itertools.chain.from_iterable(
-    debianbts.get_usertag(umail,*utags).values())
+try:
+    bugnrs=itertools.chain.from_iterable(
+        debianbts.get_usertag(umail,*utags).values())
+    # print each bug number with its package name, and all affected packages
+    for status in debianbts.get_status(list(bugnrs)):
+        if not status.done:
+            print status.bug_num, status.package,
+            for p in status.affects:
+                print p,
+            print ''
+except SOAPpy.Client.SOAPTimeoutError:
+    sys.stderr.write("BTS query timeout\n")
 
-# print each bug number with its package name, and all affected packages
-for status in debianbts.get_status(list(bugnrs)):
-    if not status.done:
-        print status.bug_num, status.package,
-        for p in status.affects:
-            print p,
-        print ''
 
