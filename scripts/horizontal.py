@@ -16,7 +16,7 @@ architectures:
 
 import os, datetime
 from common import *
-import html
+import conf, html
 
 # map a package p that is not installable on at least one architecture
 # to a function that maps a hash h to the list of architectures where
@@ -28,6 +28,51 @@ uninstallables = {}
 installables_somewhere = set()
 
 # number of packages not installables somewhere / everywhere
+
+class Summary(object):
+    """
+    Horizontal summary information.
+    """
+
+    def __init__(self,scenario_name,architectures,timestamp):
+        self.scenario_name = scenario_name
+        self.architectures = architectures
+        self.timestamp = timestamp
+        self.number_broken_all = dict()
+        self.number_broken_native = dict()
+        self.number_total = dict()
+
+    def set_broken(self,architecture,counter):
+        self.number_broken_all[architecture] = counter.get_archall()
+        self.number_broken_native[architecture] = counter.get_native()
+
+    def set_total(self,architecture,number):
+        self.number_total[architecture] = number
+    
+    def get_total(self,architecture):
+        return(self.number_total[architecture])
+
+    def get_broken(self,architecture):
+        return(self.number_broken_all[architecture]+
+               self.number_broken_native[architecture])
+
+    def get_percentage(self,architecture):
+        total_packages=self.get_total(architecture)
+        broken_packages=self.get_broken(architecture)
+        if total_packages==0:
+            percentage=0
+        else:
+            percentage=100*broken_packages/total_packages
+            return(percentage)
+
+
+    def dump(self):
+        print('Scenario: ', self.scenario_name)
+        print('Architectures: ', self.architectures),
+        print('Timestamp: ', self.timestamp)
+        print('Broken archAll: ', self.number_broken_all)
+        print('Broken native: ', self.number_broken_native)
+        print('Total ', self.number_total)
 
 def analyze_horizontal(timestamp,scenario,architectures):
     '''
@@ -142,13 +187,13 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
     # historic html files for different time slices
     html_history={i:html.history_multi(timestamp,scenario,what,bugtable,
                                        since_days=d)
-                  for i,d in hlengths.items()}
+                  for i,d in conf.hlengths.items()}
 
     # file recording the first day of observed non-installability per package
     historyfile=open(histfile,'w')
 
     # count uninstallable packages per history slice
-    counter={i:bicounter_multi() for i in hlengths.keys()} 
+    counter={i:bicounter_multi() for i in conf.hlengths.keys()} 
 
     for package in sorted(includes.keys()):
         if not package in excludes:
@@ -160,8 +205,8 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
                 firstday=int(history[package])
                 duration=day-firstday
                 hslice=-1
-                for i in sorted(hlengths.keys(),reverse=True):
-                    if duration >= hlengths[i]:
+                for i in sorted(conf.hlengths.keys(),reverse=True):
+                    if duration >= conf.hlengths[i]:
                         hslice=i
                         break
                 if hslice >= 0:
@@ -182,7 +227,7 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
 
     historyfile.close ()
     vertical=open(history_verticalfile(scenario,what),'w')
-    for i in hlengths.keys():
+    for i in conf.hlengths.keys():
         print('{i}={c}'.format(i=i,c=str(counter[i])),file=vertical)
     vertical.close()
 
@@ -201,7 +246,7 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,bugtable):
     sumfile.close()
 #############################################################################
 
-def write_row(timestamp,scenario,architectures):
+def write_row(timestamp,scenario,architectures,summary):
     '''
     create a row of the scenario table for the current timestamp
     '''
@@ -215,10 +260,11 @@ def write_row(timestamp,scenario,architectures):
           file=row,sep='')
     for arch in architectures:
         counter = bicounter()
-        with open(cachedir(timestamp,scenario,arch)+'/summary') as summary:
-            for entry in summary:
+        with open(cachedir(timestamp,scenario,arch)+'/summary') as summary_file:
+            for entry in summary_file:
                 counter.incr((entry.split('#'))[2] == "True")
         print('{a}={c}'.format(a=arch,c=str(counter)),file=row)
+        summary.set_broken(arch,counter)
 
     # count packages notinstallable somewhere or everywhere
     counter_some = bicounter_multi()
@@ -229,13 +275,18 @@ def write_row(timestamp,scenario,architectures):
             counter_each.incr(record)
     print('{a}={c}'.format(a='some',c=str(counter_some)),file=row)
     print('{a}={c}'.format(a='each',c=str(counter_each)),file=row)
+    summary.set_broken('some',counter_some)
+    summary.set_broken('each',counter_each)
+    total_number_packages= counter_each.total() + sum(1 for _ in installables_somewhere)
+    summary.set_total('some',total_number_packages)
+    summary.set_total('each',total_number_packages)
 
     row.close ()
     
 
 ########################################################################
 # top level
-def build(timestamp,day,scenario,architectures,bugtable):
+def build(timestamp,day,scenario,architectures,bugtable,summary):
     info('build horizontal tables for {s}'.format(s=scenario))
     analyze_horizontal(timestamp,scenario,architectures)
     write_package_page(timestamp,scenario,architectures)
@@ -243,4 +294,4 @@ def build(timestamp,day,scenario,architectures,bugtable):
                  'some',uninstallables,set(),bugtable)
     write_tables(timestamp,day,scenario,
                  'each',uninstallables,installables_somewhere,bugtable)
-    write_row(timestamp,scenario,architectures)
+    write_row(timestamp,scenario,architectures,summary)

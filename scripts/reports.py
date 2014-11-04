@@ -6,7 +6,7 @@
 # License, or (at your option) any later version.
 
 import os, hashlib, datetime, re
-import html
+import html, conf
 from common import *
 
 from yaml import load
@@ -252,7 +252,7 @@ def create_reasons_file(package,version,reasons,outfile_name,
 
 #########################################################################
 # top level 
-def build(timestamp,day,universe,scenario,arch,bugtable):
+def build(timestamp,day,universe,scenario,arch,bugtable,summary):
     '''
     summarize a complete output produced by dose-debcheck to outfilename,
     and prettyprint chunks of detailed explanations that do not yet exist in 
@@ -289,9 +289,10 @@ def build(timestamp,day,universe,scenario,arch,bugtable):
         h.close()
 
     # HTML file object for the day and historical summaries
-    html_today=html.summary(timestamp,scenario,arch,bugtable)
+    html_today=html.summary(timestamp,scenario,arch,bugtable,
+                            summary.get_total(arch))
     html_history={i:html.history(timestamp,scenario,arch,bugtable,d)
-                  for i,d in hlengths.items()}
+                  for i,d in conf.hlengths.items()}
 
     # a summary of the analysis in the cache directory
     sumfile = open(cachedir(timestamp,scenario,arch)+'/summary', 'w')
@@ -300,7 +301,7 @@ def build(timestamp,day,universe,scenario,arch,bugtable):
     historyfile=open(histfile,'w')
 
     # number of uninstallable arch=native/all packages per slice
-    counter={i: bicounter() for i in hlengths.keys()}
+    counter={i: bicounter() for i in conf.hlengths.keys()}
 
     if report and report['report']:
         for stanza in report['report']:
@@ -328,8 +329,8 @@ def build(timestamp,day,universe,scenario,arch,bugtable):
             if package in history:
                 firstday=int(history[package])
                 duration=day-firstday
-                for i in sorted(hlengths.keys(),reverse=True):
-                    if duration >= hlengths[i]:
+                for i in sorted(conf.hlengths.keys(),reverse=True):
+                    if duration >= conf.hlengths[i]:
                         html_history[i].write(package,isnative,version,
                                         reasons_hash,reasons_summary,
                                         since=date_of_days(firstday))
@@ -352,7 +353,7 @@ def build(timestamp,day,universe,scenario,arch,bugtable):
     sumfile.close ()
     historyfile.close ()
     vertical=open(history_verticalfile(scenario,arch),'w')
-    for i in hlengths.keys():
+    for i in conf.hlengths.keys():
         print(i,'=',str(counter[i]),sep='',file=vertical)
     vertical.close()
 

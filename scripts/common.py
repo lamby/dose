@@ -7,7 +7,6 @@
 
 import os
 import conf
-import itertools
 
 from datetime import date
 
@@ -131,6 +130,11 @@ def str_of_list(liste):
         result += ', ' + element
     return(result)
 
+# number of lines in a file
+def lines_in_file(filename):
+    return(sum(1 for line in open(filename)))
+
+############################################################################
 
 seconds_per_day = 60 * 60 * 24
 
@@ -144,15 +148,13 @@ proleptic_of_epoch = 719163
 def date_of_days(days):
     return (date.fromordinal(days+proleptic_of_epoch)).isoformat()
 
-hlengths={0:2,1:4,2:8,3:16,4:32,5:64}
-
-# number of lines in a file
-def lines_in_file(filename):
-    return(sum(1 for line in open(filename)))
-
+###########################################################################
 
 class bicounter:
-    'pair of integer-valued counters'
+    '''
+    Pair of integer-valued counters. True is for native packages, False
+    is for arch=all packages.
+    '''
 
     c_true = 0
     c_false = 0
@@ -174,6 +176,12 @@ class bicounter:
         'return sum of both counters'
 
         return(self.c_true + self.c_false)
+
+    def get_native(self):
+        return(self.c_true)
+
+    def get_archall(self):
+        return(self.c_false)
 
 
 class bicounter_multi(bicounter):
