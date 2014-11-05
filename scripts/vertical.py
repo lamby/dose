@@ -55,26 +55,23 @@ def write_historytable(scenario,architectures,outfile):
     print('</table>',file=outfile)
 
 
-def write_table(timestamps,scenario,architectures):
+def write_table(timestamps,scenario,summary):
     outfile=open(htmldir_scenario(scenario)+'/index.html', 'w')
     print(html.html_header,file=outfile)
     print(summary_header.format(scenario=scenario,
                                 numberofslices=conf.slices),file=outfile)
+    architectures=summary.get_architectures()
     columns=architectures[:]
     columns.extend(['some','each'])
-    for arch in columns:
-        print('<th>',arch,'</th>',file=outfile,sep='')
-    print('<tr><td>Today\'s Weather:</td>',file=outfile)
-    for arch in columns:
-        weatherfile=cachedir(timestamps[0],scenario,arch)+'/weather'
-        if os.path.isfile(weatherfile):
-            with open(weatherfile) as infile:
-                weatherindex=int(infile.readline())
-            print('<td align=center>',weather.icon(weatherindex),'</td>',
-                  file=outfile,sep='')
-        else:
-            print('<td></td>',file=outfile)
+    for architecture in columns:
+        print('<th>',architecture,'</th>',file=outfile,sep='')
 
+    print('<tr><td>Today\'s Weather:</td>',file=outfile)
+    for architecture in columns:
+        print('<td align=center>',
+              weather.icon_of_percentage(summary.get_percentage(architecture)),
+              '</td>',
+              file=outfile,sep='')
 
     for timestamp in timestamps:
         if not os.path.isfile(cachedir(timestamp,scenario,'summary')+'/row'):
@@ -124,6 +121,6 @@ def write_table(timestamps,scenario,architectures):
 ###########################################################################
 # top level
 
-def build(timestamps,scenario,architectures):
+def build(timestamps,scenario,summary):
     info('update vertical table for {s}'.format(s=scenario))
-    write_table(timestamps,scenario,architectures)
+    write_table(timestamps,scenario,summary)

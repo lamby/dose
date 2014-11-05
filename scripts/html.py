@@ -162,6 +162,10 @@ class html_table(html_file):
             self.bugtable.print_indirect(package,self.filedesc)
         print('</td></tr>',file=self.filedesc)
 
+    def write_record(self,package,reason,since=None):
+        html_table.write(self,package,reason['isnative'],reason['version'],
+                         reason['hash'],reason['short'])
+
     def section(self,text):
         '''
         write a <h2> header into the HTML file and open a table.
@@ -236,11 +240,12 @@ class summary(html_table):
 
     path_to_packages = 'packages/'
 
-    def __init__(self,timestamp,scenario,architecture,bugtable):
+    def __init__(self,timestamp,scenario,architecture,bugtable,total):
 
         summary_header = '''
 <h1>Packages not installable on {architecture} in scenario {scenario}</h1>
-<b>Date: {utctime} UTC</b>
+<b>Date: {utctime} UTC<br>
+Foreground: {total} packages</b>
 <p>
 
 <kbd>[all]</kbd> indicates a package with <kbd>Architecture=all</kbd>.
@@ -263,6 +268,7 @@ class summary(html_table):
         header=summary_header.format(
             scenario=scenario,
             architecture=architecture,
+            total=total,
             utctime=datetime.datetime.utcfromtimestamp(float(timestamp)))
 
         html_table.__init__(self,output_path,output_name,
@@ -434,6 +440,9 @@ class diff(html_table):
 
         html_table.__init__(self,output_path,output_name,
                             header,table_header)
+
+    def write(self,record,since):
+        html_table.write_record(self,record,since)
 
 ###########################################################################
 

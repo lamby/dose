@@ -46,22 +46,19 @@ class Universe:
     of foreground packages is written to a file.
     """
 
-    def __init__(self,timestamp,scenario,architecture):
+    def __init__(self,timestamp,scenario,architecture,summary):
         info('extracting foreground for {s} on {a}'.format(
                 a=architecture,s=scenario))
 
         self.fg_packages=set()
+        number_fg_packages=0
         self.source_packages=dict()
         self.source_version_table=dict()
 
         for fg in conf.scenarios[scenario]['fgs']:
             fg_filename = fg.format(
                 m=conf.locations['debmirror'],a=architecture)
-            if not os.path.exists(fg_filename):
-                warning('No such file: {p}, dropping from foregrounds'.format(
-                        p=fg_filename,))
-                continue
-            elif fg[-3:]=='.gz':
+            if fg[-3:]=='.gz':
                 infile = codecs.getreader('utf-8')(gzip.open(fg_filename,'r'))
             else:
                 infile = open(fg_filename)
@@ -69,6 +66,7 @@ class Universe:
                 if line.startswith('Package:'):
                     current_package=line.split()[1]
                     self.fg_packages.add(current_package)
+                    number_fg_packages+=1
                 if line.startswith('Source:'):
                     l=line.split()
                     self.source_packages[current_package]=l[1]
@@ -83,6 +81,8 @@ class Universe:
         outfile = open(outdir + '/fg-packages', 'w')
         for f in self.fg_packages: print(f,file=outfile)
         outfile.close ()
+
+        summary.set_total(architecture,number_fg_packages)
      
     def is_in_foreground(self,package):
         '''

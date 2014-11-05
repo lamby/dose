@@ -31,13 +31,13 @@ def build(t_this,t_prev,universe_this,scenario,arch):
     if os.path.isfile(infilename):
         infile=open(infilename)
         for entry in infile:
-            package,version,isnative_string,hash,explanation = entry.split('#')
-            explanation = explanation.rstrip()
+            package,version,isnative_string,hash,short = entry.split('#')
+            short = short.rstrip()
             summary_prev[package]={
                 'version': version,
                 'isnative': isnative_string=='True',
                 'hash': hash,
-                'explanation': explanation
+                'short': short
                 }
         infile.close()
     else:
@@ -49,13 +49,13 @@ def build(t_this,t_prev,universe_this,scenario,arch):
     if os.path.isfile(infilename):
         infile=open(infilename)
         for entry in infile:
-            package,version,isnative_string,hash,explanation = entry.split('#')
-            explanation = explanation.rstrip()
+            package,version,isnative_string,hash,short = entry.split('#')
+            short = short.rstrip()
             summary_this[package]={
                 'version': version,
                 'isnative': isnative_string=='True',
                 'hash': hash,
-                'explanation': explanation
+                'short': short
                 }
         infile.close()
     else:
@@ -86,8 +86,7 @@ def build(t_this,t_prev,universe_this,scenario,arch):
     for package in uninstallables_in:
         if package in foreground_prev:
             record=summary_this[package]
-            html_diff.write(package,record['isnative'],record['version'],
-                            record['hash'],record['explanation'])
+            html_diff.write_record(package,record)
             counter_in.incr(record['isnative'])
 
     html_diff.section('New packages that are not installable')
@@ -95,8 +94,7 @@ def build(t_this,t_prev,universe_this,scenario,arch):
     for package in uninstallables_in:
         if package not in foreground_prev:
             record=summary_this[package]
-            html_diff.write(package,record['isnative'],record['version'],
-                            record['hash'],record['explanation'])
+            html_diff.write(package,record)
             counter_in.incr(record['isnative'])
 
     # from here on, explanations are to be found in the previous run
@@ -107,8 +105,7 @@ def build(t_this,t_prev,universe_this,scenario,arch):
     for package in uninstallables_out:
         if universe_this.is_in_foreground(package):
             record=summary_prev[package]
-            html_diff.write(package,record['isnative'],record['version'],
-                            record['hash'],record['explanation'])
+            html_diff.write(package,record)
             counter_out.incr(record['isnative'])
 
     html_diff.section('Not-installable packages that disappeared')
@@ -116,8 +113,7 @@ def build(t_this,t_prev,universe_this,scenario,arch):
     for package in uninstallables_out:
         if not universe_this.is_in_foreground(package):
             record=summary_prev[package]
-            html_diff.write(package,record['isnative'],record['version'],
-                            record['hash'],record['explanation'])
+            html_diff.write(package,record)
             counter_out.incr(record['isnative'])
 
     del html_diff
@@ -138,7 +134,7 @@ def build(t_this,t_prev,universe_this,scenario,arch):
 
 #############################################################################
 
-def build_multi(t_this,t_prev,scenario,what,architectures):
+def build_multi(t_this,t_prev,scenario,what,summary):
     '''build a difference table between two runs'''
 
     if not os.path.isfile(cachedir(t_prev,scenario,what)+'/summary'):
@@ -209,7 +205,7 @@ def build_multi(t_this,t_prev,scenario,what,architectures):
     
     # fetch previous foreground
     foreground_prev=set()
-    for arch in architectures:
+    for arch in summary.get_architectures():
         fg_file=cachedir(t_prev,scenario,arch)+'/fg-packages'
         if os.path.isfile(fg_file):
             with open(fg_file) as infile:
@@ -218,7 +214,7 @@ def build_multi(t_this,t_prev,scenario,what,architectures):
 
     # fetch current foreground
     foreground_this=set()
-    for arch in architectures:
+    for arch in summary.get_architectures():
         with open(cachedir(t_this,scenario,arch)+'/fg-packages') as infile:
             for line in infile:
                 foreground_this.add(line.rstrip())
