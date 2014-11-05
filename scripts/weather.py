@@ -62,7 +62,7 @@ def icon_of_percentage(percentage):
           5: 'storm'
           }
     index=index_of_percentage(percentage)
-    return('<img src="../../weathericons/{i}" alt="{t} ({p}%)">'.format(
+    return('<img src="../../weathericons/{i}" alt="{t} {p:.2f}%">'.format(
             i=icon[index],t=text[index],p=percentage))
 
 def build(timestamp,scenario,summary):
