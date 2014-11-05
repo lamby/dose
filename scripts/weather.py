@@ -65,9 +65,9 @@ def icon_of_percentage(percentage):
     return('<img src="../../weathericons/{i}" alt="{t} ({p}%)">'.format(
             i=icon[index],t=text[index],p=percentage))
 
-def build(timestamp,scenario,architectures,summary):
+def build(timestamp,scenario,summary):
 
-    for architecture in architectures:
+    for architecture in summary.get_architectures():
         perc=summary.get_percentage(architecture)
 
         # with open_weatherfile(scenario,arch,'w') as outfile:

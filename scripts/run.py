@@ -28,24 +28,21 @@ timestamps_keep[0:0] = [timestamp_now]
 bugtable=bts.Bugtable()
 
 for scenario in conf.scenarios.keys():
-    architectures = conf.scenarios[scenario]['archs']
-    summary = horizontal.Summary(scenario,architectures,timestamp_now)
+    summary = horizontal.Summary(scenario,timestamp_now)
 
-    for arch in architectures:
+    for arch in summary.get_architectures():
         universes.build(timestamp_now,scenario,arch)
         universe=universes.Universe(timestamp_now,scenario,arch,summary)
         reports.build(timestamp_now,day_now,universe,scenario,arch,
                       bugtable,summary)
         diffs.build(timestamp_now,timestamp_last,universe,scenario,arch)
-            
-    horizontal.build(timestamp_now,day_now,scenario,architectures,bugtable,
-                     summary)
+        
+    horizontal.build(timestamp_now,day_now,scenario,bugtable,summary)
     for what in ['some','each']:
-        diffs.build_multi(timestamp_now,timestamp_last,scenario,what,
-                          architectures)
+        diffs.build_multi(timestamp_now,timestamp_last,scenario,what,summary)
 
-    weather.build(timestamp_now,scenario,architectures,summary)
-    vertical.build(timestamps_keep,scenario,architectures,summary)
+    weather.build(timestamp_now,scenario,summary)
+    vertical.build(timestamps_keep,scenario,summary)
 
 weather.write_available()    
 cleanup.cleanup(timestamps_keep, timestamps_known, timestamp_now, 

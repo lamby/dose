@@ -34,9 +34,24 @@ class Summary(object):
     Horizontal summary information.
     """
 
-    def __init__(self,scenario_name,architectures,timestamp):
+    def __init__(self,scenario_name,timestamp):
         self.scenario_name = scenario_name
-        self.architectures = architectures
+
+        self.architectures = []
+        # we only keep architectures for which all the files exist
+        for architecture in conf.scenarios[scenario_name]['archs']:
+            filelist=conf.scenarios[scenario_name]['fgs'] + \
+                      conf.scenarios[scenario_name]['bgs']
+            for fg in filelist:
+                fg_filename = fg.format(
+                    m=conf.locations['debmirror'],a=architecture)
+                if not os.path.exists(fg_filename):
+                    warning('No such file: {p}, dropping architecture'.format(
+                        p=fg_filename,))
+                    break
+            else:
+                self.architectures.append(architecture)
+
         self.timestamp = timestamp
         self.number_broken_all = dict()
         self.number_broken_native = dict()
@@ -65,6 +80,12 @@ class Summary(object):
             percentage=100*broken_packages/total_packages
             return(percentage)
 
+    def remove_architecture(self,architecture):
+        if architecture in self.architectures:
+            self.architectures.remove(architecture)
+            
+    def get_architectures(self):
+        return(self.architectures)
 
     def dump(self):
         print('Scenario: ', self.scenario_name)
@@ -286,8 +307,9 @@ def write_row(timestamp,scenario,architectures,summary):
 
 ########################################################################
 # top level
-def build(timestamp,day,scenario,architectures,bugtable,summary):
+def build(timestamp,day,scenario,bugtable,summary):
     info('build horizontal tables for {s}'.format(s=scenario))
+    architectures=summary.get_architectures()
     analyze_horizontal(timestamp,scenario,architectures)
     write_package_page(timestamp,scenario,architectures)
     write_tables(timestamp,day,scenario,

@@ -58,11 +58,7 @@ class Universe:
         for fg in conf.scenarios[scenario]['fgs']:
             fg_filename = fg.format(
                 m=conf.locations['debmirror'],a=architecture)
-            if not os.path.exists(fg_filename):
-                warning('No such file: {p}, dropping from foregrounds'.format(
-                        p=fg_filename,))
-                continue
-            elif fg[-3:]=='.gz':
+            if fg[-3:]=='.gz':
                 infile = codecs.getreader('utf-8')(gzip.open(fg_filename,'r'))
             else:
                 infile = open(fg_filename)

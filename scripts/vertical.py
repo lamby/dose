@@ -55,11 +55,12 @@ def write_historytable(scenario,architectures,outfile):
     print('</table>',file=outfile)
 
 
-def write_table(timestamps,scenario,architectures,summary):
+def write_table(timestamps,scenario,summary):
     outfile=open(htmldir_scenario(scenario)+'/index.html', 'w')
     print(html.html_header,file=outfile)
     print(summary_header.format(scenario=scenario,
                                 numberofslices=conf.slices),file=outfile)
+    architectures=summary.get_architectures()
     columns=architectures[:]
     columns.extend(['some','each'])
     for architecture in columns:
@@ -120,6 +121,6 @@ def write_table(timestamps,scenario,architectures,summary):
 ###########################################################################
 # top level
 
-def build(timestamps,scenario,architectures,summary):
+def build(timestamps,scenario,summary):
     info('update vertical table for {s}'.format(s=scenario))
-    write_table(timestamps,scenario,architectures,summary)
+    write_table(timestamps,scenario,summary)
