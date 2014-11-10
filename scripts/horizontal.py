@@ -56,14 +56,15 @@ class Summary(object):
         self.number_broken = dict()
         self.number_total = dict()
 
-    def set_broken(self,architecture,counter):
-        self.number_broken[architecture] = counter
 
     def set_total(self,architecture,number):
         self.number_total[architecture] = number
     
     def get_total(self,architecture):
         return(self.number_total[architecture])
+
+    def set_broken(self,architecture,counter):
+        self.number_broken[architecture] = counter
 
     def get_broken(self,architecture):
         return(self.number_broken[architecture])
@@ -88,7 +89,7 @@ class Summary(object):
         print('Broken native: ', self.number_broken_native)
         print('Total ', self.number_total)
 
-def analyze_horizontal(timestamp,scenario,architectures):
+def analyze_horizontal(timestamp,scenario,summary):
     '''
     fill uninstallables, and installables_somewhere
     '''
@@ -98,7 +99,7 @@ def analyze_horizontal(timestamp,scenario,architectures):
     uninstallables = {}
     installables_somewhere = set() 
 
-    for arch in architectures:
+    for arch in summary.get_architectures():
         
         # get the set of foreground packages for this architecture
         arch_packages=open(
@@ -303,7 +304,7 @@ def write_row(timestamp,scenario,architectures,summary):
 def build(timestamp,day,scenario,bugtable,summary):
     info('build horizontal tables for {s}'.format(s=scenario))
     architectures=summary.get_architectures()
-    analyze_horizontal(timestamp,scenario,architectures)
+    analyze_horizontal(timestamp,scenario,summary)
     write_package_page(timestamp,scenario,architectures)
     write_tables(timestamp,day,scenario,
                  'some',uninstallables,set(),bugtable)
