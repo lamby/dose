@@ -100,6 +100,8 @@ def analyze_horizontal(timestamp,scenario,summary):
     installables_somewhere = set() 
 
     for arch in summary.get_architectures():
+
+        counter = bicounter()
         
         # get the set of foreground packages for this architecture
         arch_packages=open(
@@ -117,6 +119,7 @@ def analyze_horizontal(timestamp,scenario,summary):
             explanation = explanation.rstrip()
             isnative=isnative_string=='True'
             uninstallables_here.add(package)
+            counter.incr(isnative)
             if not package in uninstallables:
                 uninstallables[package] = { hash: {'archs'   : [arch],
                                                    'version' : version,
@@ -130,6 +133,7 @@ def analyze_horizontal(timestamp,scenario,summary):
             else:
                 (uninstallables[package][hash]['archs']).append(arch)
         arch_summary.close()
+        summary.set_broken(arch,counter)
 
         # update installables_somewhere
         installables_somewhere.update(foreground_here - uninstallables_here)
@@ -270,16 +274,11 @@ def write_row(timestamp,scenario,architectures,summary):
     if not os.path.isdir(outdir): os.makedirs(outdir)
 
     row=open(outdir+'/row', 'w')
-    print('date=',
-          datetime.datetime.utcfromtimestamp(float(timestamp)),
+    print('date=',datetime.datetime.utcfromtimestamp(float(timestamp)),
           file=row,sep='')
     for arch in architectures:
-        counter = bicounter()
-        with open(cachedir(timestamp,scenario,arch)+'/summary') as summary_file:
-            for entry in summary_file:
-                counter.incr((entry.split('#'))[2] == "True")
-        print('{a}={c}'.format(a=arch,c=str(counter)),file=row)
-        summary.set_broken(arch,counter)
+        print('{a}={c}'.format(a=arch,c=str(summary.get_broken(arch))),
+              file=row)
 
     # count packages notinstallable somewhere or everywhere
     counter_some = bicounter_multi()
