@@ -80,10 +80,6 @@ class Summary(object):
             percentage=100*broken_packages/total_packages
             return(percentage)
 
-    def remove_architecture(self,architecture):
-        if architecture in self.architectures:
-            self.architectures.remove(architecture)
-            
     def get_architectures(self):
         return(self.architectures)
 
