@@ -53,13 +53,11 @@ class Summary(object):
                 self.architectures.append(architecture)
 
         self.timestamp = timestamp
-        self.number_broken_all = dict()
-        self.number_broken_native = dict()
+        self.number_broken = dict()
         self.number_total = dict()
 
     def set_broken(self,architecture,counter):
-        self.number_broken_all[architecture] = counter.get_archall()
-        self.number_broken_native[architecture] = counter.get_native()
+        self.number_broken[architecture] = counter
 
     def set_total(self,architecture,number):
         self.number_total[architecture] = number
@@ -68,12 +66,11 @@ class Summary(object):
         return(self.number_total[architecture])
 
     def get_broken(self,architecture):
-        return(self.number_broken_all[architecture]+
-               self.number_broken_native[architecture])
+        return(self.number_broken[architecture])
 
     def get_percentage(self,architecture):
         total_packages=self.get_total(architecture)
-        broken_packages=self.get_broken(architecture)
+        broken_packages=(self.get_broken(architecture)).total()
         if total_packages==0:
             percentage=0
         else:
