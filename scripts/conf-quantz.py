@@ -35,35 +35,42 @@ architectures = {
 }
 _get_architectures(architectures)
 
-scenarios = {
-    'unstable_main': {
+scenarios = [
+    {
+        'name'  : 'unstable_main',
+        'type'  : 'binary',
         'archs' : architectures['unstable'],
         'fgs'   : [ '{m}/unstable/main/binary-{a}/Packages.gz' ],
         'bgs'   : [],
         'description' : 'Debian unstable (main only)'
-        },
-    'unstable_contrib+nonfree': {
+    },
+    {
+        'name'  : 'unstable_contrib+nonfree',
+        'type'  : 'binary',
         'archs' : architectures['unstable'],
         'fgs'   : [ '{m}/unstable/contrib/binary-{a}/Packages.gz',
                     '{m}/unstable/non-free/binary-{a}/Packages.gz' ],
         'bgs'   : [ '{m}/unstable/main/binary-{a}/Packages.gz' ],
         'description' : 'Debian unstable (contrib and non-free only)'
-        },
-    'testing_main': {
+    },
+    {
+        'name'  : 'testing_main',
+        'type'  : 'binary',
         'archs' : architectures['testing'],
         'fgs'   : [ '{m}/testing/main/binary-{a}/Packages.gz' ],
         'bgs'   : [],
         'description' : 'Debian testing (main only)'
-        },
-    'testing_contrib+nonfree': {
+    },
+    {
+        'name'  : 'testing_contrib+nonfree',
+        'type'  : 'binary',
         'archs' : architectures['testing'],
         'fgs'   : [ '{m}/testing/contrib/binary-{a}/Packages.gz',
                     '{m}/testing/non-free/binary-{a}/Packages.gz' ],
         'bgs'   : [ '{m}/testing/main/binary-{a}/Packages.gz' ],
         'description' : 'Debian testing (contrib and non-free only)'
-        }
-
-}
+    }
+]
 
 # number of runs that are diplays
 slices = 7

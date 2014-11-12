@@ -19,13 +19,14 @@ def run_debcheck(scenario,arch,outdir):
     run dose-debcheck and store the resulting report
     """
 
-    info('running debcheck for {s} on {a}'.format(a=arch,s=scenario))
+    scenario_name = scenario['name']
+    info('running debcheck for {s} on {a}'.format(a=arch,s=scenario_name))
     invocation = ['dose-debcheck', '--explain', '--failures', '--latest' ]
-    for fg in conf.scenarios[scenario]['fgs']:
+    for fg in scenario['fgs']:
         invocation.append('--fg')
         invocation.append(
             fg.format(m=conf.locations['debmirror'],a=arch))
-    for bg in conf.scenarios[scenario]['bgs']:
+    for bg in scenario['bgs']:
         invocation.append('--bg')
         invocation.append(
             bg.format(m=conf.locations['debmirror'],a=arch))
@@ -35,7 +36,7 @@ def run_debcheck(scenario,arch,outdir):
         subprocess.call(invocation,stdout=outfile)
     except OSError as exc:
         warning('debcheck for {s} on {a} raised {e}'.format(
-            a=arch,s=scenario,e=exc.strerror))
+            a=arch,s=scenario_name,e=exc.strerror))
     outfile.close ()
                 
 
@@ -47,15 +48,16 @@ class Universe:
     """
 
     def __init__(self,timestamp,scenario,architecture,summary):
+        scenario_name=scenario['name']
         info('extracting foreground for {s} on {a}'.format(
-                a=architecture,s=scenario))
+                a=architecture,s=scenario_name))
 
         self.fg_packages=set()
         number_fg_packages=0
         self.source_packages=dict()
         self.source_version_table=dict()
 
-        for fg in conf.scenarios[scenario]['fgs']:
+        for fg in scenario['fgs']:
             fg_filename = fg.format(
                 m=conf.locations['debmirror'],a=architecture)
             if fg[-3:]=='.gz':
@@ -76,7 +78,7 @@ class Universe:
 
             infile.close ()
 
-        outdir=cachedir(timestamp,scenario,architecture)
+        outdir=cachedir(timestamp,scenario_name,architecture)
         if not os.path.isdir(outdir): os.makedirs(outdir)
         outfile = open(outdir + '/fg-packages', 'w')
         for f in self.fg_packages: print(f,file=outfile)
@@ -108,6 +110,6 @@ class Universe:
 # top level
 
 def build(timestamp,scenario,architecture):
-    outdir=cachedir(timestamp,scenario,architecture)
+    outdir=cachedir(timestamp,scenario['name'],architecture)
     if not os.path.isdir(outdir): os.makedirs(outdir)
     run_debcheck(scenario,architecture,outdir)

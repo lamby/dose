@@ -34,14 +34,13 @@ class Summary(object):
     Horizontal summary information.
     """
 
-    def __init__(self,scenario_name,timestamp):
-        self.scenario_name = scenario_name
+    def __init__(self,scenario,timestamp):
+        self.scenario_name = scenario['name']
 
         self.architectures = []
         # we only keep architectures for which all the files exist
-        for architecture in conf.scenarios[scenario_name]['archs']:
-            filelist=conf.scenarios[scenario_name]['fgs'] + \
-                      conf.scenarios[scenario_name]['bgs']
+        for architecture in scenario['archs']:
+            filelist=scenario['fgs'] + scenario['bgs']
             for fg in filelist:
                 fg_filename = fg.format(
                     m=conf.locations['debmirror'],a=architecture)
