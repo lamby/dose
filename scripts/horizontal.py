@@ -166,7 +166,7 @@ def analyze_horizontal(timestamp,scenario,summary):
     summary.set_total('each',total_number_packages)
 
 ############################################################################
-def write_package_page(timestamp,scenario,architectures):
+def write_package_pages(timestamp,scenario):
     '''
     creates for each package an html page with all reasons for 
     non-installability
@@ -297,9 +297,8 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,
 # top level
 def build(timestamp,day,scenario,bugtable,summary):
     info('build horizontal tables for {s}'.format(s=scenario))
-    architectures=summary.get_architectures()
     analyze_horizontal(timestamp,scenario,summary)
-    write_package_page(timestamp,scenario,architectures)
+    write_package_pages(timestamp,scenario)
     write_tables(timestamp,day,scenario,
                  'some',uninstallables,set(),bugtable,summary)
     write_tables(timestamp,day,scenario,
