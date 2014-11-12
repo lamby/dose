@@ -7,6 +7,8 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
+verbose=False
+
 locations = {
     'debmirror' : '/srv/mirrors/debian/dists',
     'cacheroot' : '/srv/qa.debian.org/data/dose-debcheck',

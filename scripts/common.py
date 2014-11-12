@@ -10,10 +10,8 @@ import conf
 
 from datetime import date
 
-verbose=True
-
 def info(message):
-    if verbose: print(message)
+    if conf.verbose: print(message)
 
 def warning(message):
     print(message)
