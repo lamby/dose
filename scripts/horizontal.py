@@ -53,8 +53,8 @@ class Summary(object):
                 self.architectures.append(architecture)
 
         self.timestamp = timestamp
-        self.number_broken = dict()
-        self.number_total = dict()
+        self.number_broken = dict()  # arch -> bicounter
+        self.number_total = dict()   # arch -> number
 
 
     def set_total(self,architecture,number):
@@ -88,6 +88,22 @@ class Summary(object):
         print('Broken archAll: ', self.number_broken_all)
         print('Broken native: ', self.number_broken_native)
         print('Total ', self.number_total)
+
+    def to_cache(self):
+        utc_time=datetime.datetime.utcfromtimestamp(float(self.timestamp))
+        outdir=cachedir(self.timestamp,self.scenario_name,'summary')
+        if not os.path.isdir(outdir): os.makedirs(outdir)
+        with open(outdir+'/row', 'w') as row:
+            print('date=',utc_time,file=row,sep='')
+            for arch in self.architectures:
+                print('{a}={c}'.format(a=arch,c=str(self.get_broken(arch))),
+                      file=row)
+            print('{a}={c}'.format(a='some',c=str(self.get_broken('some'))),
+                  file=row)
+            print('{a}={c}'.format(a='each',c=str(self.get_broken('each'))),
+                  file=row)
+
+############################################################################
 
 def analyze_horizontal(timestamp,scenario,summary):
     '''
@@ -277,26 +293,6 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,
                 print('',file=sumfile)
     sumfile.close()
 
-#############################################################################
-
-def write_row(timestamp,scenario,architectures,summary):
-    '''
-    create a row of the scenario table for the current timestamp
-    '''
-    
-    outdir=cachedir(timestamp,scenario,'summary')
-    if not os.path.isdir(outdir): os.makedirs(outdir)
-    with open(outdir+'/row', 'w') as row:
-        print('date=',datetime.datetime.utcfromtimestamp(float(timestamp)),
-              file=row,sep='')
-        for arch in architectures:
-            print('{a}={c}'.format(a=arch,c=str(summary.get_broken(arch))),
-                  file=row)
-        print('{a}={c}'.format(a='some',c=str(summary.get_broken('some'))),
-              file=row)
-        print('{a}={c}'.format(a='each',c=str(summary.get_broken('each'))),
-              file=row)
-
 ########################################################################
 # top level
 def build(timestamp,day,scenario,bugtable,summary):
@@ -308,4 +304,4 @@ def build(timestamp,day,scenario,bugtable,summary):
                  'some',uninstallables,set(),bugtable,summary)
     write_tables(timestamp,day,scenario,
                  'each',uninstallables,installables_somewhere,bugtable,summary)
-    write_row(timestamp,scenario,architectures,summary)
+    summary.to_cache()
