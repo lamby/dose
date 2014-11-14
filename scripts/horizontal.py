@@ -40,7 +40,12 @@ class Summary(object):
         self.architectures = []
         # we only keep architectures for which all the files exist
         for architecture in scenario['archs']:
-            filelist=scenario['fgs'] + scenario['bgs']
+            if (scenario['type'] == 'binary') : 
+                filelist=scenario['fgs'] + scenario['bgs']
+            elif (scenario['type'] == 'source') :
+                filelist=scenario['bins']
+            else:
+                warning('unknown scenario type: '+scenario['type'])
             for fg in filelist:
                 fg_filename = fg.format(
                     m=conf.locations['debmirror'],a=architecture)

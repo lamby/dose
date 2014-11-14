@@ -21,16 +21,23 @@ def run_debcheck(scenario,arch,outdir):
 
     scenario_name = scenario['name']
     info('running debcheck for {s} on {a}'.format(a=arch,s=scenario_name))
-    invocation = ['dose-debcheck', '--explain', '--failures', '--latest' ]
-    for fg in scenario['fgs']:
-        invocation.append('--fg')
-        invocation.append(
-            fg.format(m=conf.locations['debmirror'],a=arch))
-    for bg in scenario['bgs']:
-        invocation.append('--bg')
-        invocation.append(
-            bg.format(m=conf.locations['debmirror'],a=arch))
-
+    if (scenario['type'] == 'binary'):
+        invocation = ['dose-debcheck', '-e', '-f', '--latest' ]
+        for fg in scenario['fgs']:
+            invocation.append('--fg')
+            invocation.append(fg.format(m=conf.locations['debmirror'],a=arch))
+        for bg in scenario['bgs']:
+            invocation.append('--bg')
+            invocation.append(bg.format(m=conf.locations['debmirror'],a=arch))
+    elif (scenario['type'] == 'source'):
+        invocation = ['dose-builddebcheck', '-e', '-f', '--latest' ]
+        invocation.append('--deb-native-arch='+arch)
+        for bg in scenario['bins']:
+            invocation.append(bg.format(m=conf.locations['debmirror'],a=arch))
+        invocation.append(scenario['src'].format(
+            m=conf.locations['debmirror']))
+    else:
+        warning('unknown scenario type: ' + scenario['type'])
     outfile=open(outdir + "/debcheck.out", 'w')
     try:
         subprocess.call(invocation,stdout=outfile)
@@ -57,7 +64,11 @@ class Universe:
         self.source_packages=dict()
         self.source_version_table=dict()
 
-        for fg in scenario['fgs']:
+        if scenario['type'] == 'binary' : 
+            filelist = scenario['fgs']
+        elif scenario['type'] == 'source' :
+            filelist = [ scenario['src'] ]
+        for fg in filelist:
             fg_filename = fg.format(
                 m=conf.locations['debmirror'],a=architecture)
             if fg[-3:]=='.gz':
