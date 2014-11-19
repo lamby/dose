@@ -37,12 +37,6 @@ def history_cachefile(scenario,architecture):
             s=scenario,
             a=architecture))
 
-def history_verticalfile(scenario,architecture):
-    return('{r}/{s}/{a}-perslice'.format(
-            r=conf.locations['historyroot'],
-            s=scenario,
-            a=architecture))
-
 def history_htmldir(scenario,architecture):
     return('{r}/{s}/history/{a}'.format(
             r=conf.locations['htmlroot'],

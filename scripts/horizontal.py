@@ -54,8 +54,8 @@ class Summary(object):
 
         self.timestamp = timestamp
         self.number_broken = dict()  # arch -> bicounter
+        self.history_broken = dict() # arch -> slicenr -> bicounter
         self.number_total = dict()   # arch -> number
-
 
     def set_total(self,architecture,number):
         self.number_total[architecture] = number
@@ -68,6 +68,12 @@ class Summary(object):
 
     def get_broken(self,architecture):
         return(self.number_broken[architecture])
+
+    def set_history_broken(self,architecture,d):
+        self.history_broken[architecture] = d
+
+    def get_history_broken(self,architecture):
+        return(self.history_broken[architecture])
 
     def get_percentage(self,architecture):
         total_packages=self.get_total(architecture)
@@ -274,10 +280,7 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,
     for f in html_history.values(): del f
 
     historyfile.close ()
-    vertical=open(history_verticalfile(scenario,what),'w')
-    for i in conf.hlengths.keys():
-        print('{i}={c}'.format(i=i,c=str(counter[i])),file=vertical)
-    vertical.close()
+    summary.set_history_broken(what,counter)
 
     # write a summary of the analysis in the cache directory
     sumfile = open(cachedir(timestamp,scenario,what)+'/summary', 'w')

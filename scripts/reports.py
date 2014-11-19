@@ -352,8 +352,5 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
     for f in html_history.values(): del f
     sumfile.close ()
     historyfile.close ()
-    vertical=open(history_verticalfile(scenario,arch),'w')
-    for i in conf.hlengths.keys():
-        print(i,'=',str(counter[i]),sep='',file=vertical)
-    vertical.close()
+    summary.set_history_broken(arch,counter)
 
