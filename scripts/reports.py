@@ -19,6 +19,14 @@ except ImportError:
 format_short_dep="unsatisfied dependency on {d}"
 format_short_con="conflict between {c1} and {c2}"
 
+#######################################################################
+# remove a prefix p of length n from a string s:
+def ccp(s,p,n):
+    if s.startswith(p):
+        return(s[n:])
+    else:
+        return(s)
+
 ##########################################################################
 # hashing reasons
 
@@ -58,30 +66,30 @@ def hash_reasons(structure):
 ########################################################################
 # summaries of reasons
 
-def summary_of_reason (reason):
+def summary_of_reason (reason,p,n):
     '''
     return a summary of one reason
     '''
 
     if 'missing' in reason:
         return(format_short_dep.format(
-                d=reason['missing']['pkg']['unsat-dependency']))
+                d=ccp(reason['missing']['pkg']['unsat-dependency'],p,n)))
     elif 'conflict' in reason:
         return(format_short_con.format(
-                c1=reason['conflict']['pkg1']['package'],
-                c2=reason['conflict']['pkg2']['package']))
+                c1=ccp(reason['conflict']['pkg1']['package'],p,n),
+                c2=ccp(reason['conflict']['pkg2']['package'],p,n)))
     else:
         raise Exception('Unknown reason')
 
-def summary_of_reasons (reasons):
+def summary_of_reasons (reasons,p,n):
     '''
     return a summary of a list of reasons
     '''
     
     head, *tail = reasons
-    summary=summary_of_reason(head)
+    summary=summary_of_reason(head,p,n)
     for reason in tail:
-        summary += '; ' + summary_of_reason(reason)
+        summary += '; ' + summary_of_reason(reason,p,n)
     return(summary)
 
 
@@ -89,7 +97,7 @@ def summary_of_reasons (reasons):
 # detailed printing of reasons
 
 def print_reason(root_package,root_version,
-                 reason,outfile,universe,bugtable,uninstallables):
+                 reason,outfile,universe,arch,bugtable,uninstallables):
     '''
     Detailed printing of reason why root_package (root_version) is
     not installable, in HTML to outfile.
@@ -102,6 +110,9 @@ def print_reason(root_package,root_version,
     essential.
     '''
 
+    p=arch+':'
+    n=len(p)
+    
     def print_p(package,version,source,root_package):
         '''print a single package as part of a detailed explanation'''
 
@@ -127,16 +138,17 @@ def print_reason(root_package,root_version,
 
     def print_d(dependency):
         '''print a dependency as part of a detailed explanation'''
-        print('&nbsp;&nbsp;&nbsp;&darr;&nbsp;',sanitize_d(dependency),'<br>',
+        print('&nbsp;&nbsp;&nbsp;&darr;&nbsp;',
+              ccp(sanitize_d(dependency),p,n),'<br>',
               file=outfile,sep='')
 
     def print_depchain(depchain):
         '''print a single dependency chain'''
     
-        root_package=depchain['depchain'][0]['package']
+        root_package=ccp(depchain['depchain'][0]['package'],p,n)
         firstiteration=True
         for member in depchain['depchain']:
-            package=member['package']
+            package=ccp(member['package'],p,n)
             if not firstiteration:
                 print_p(package,member['version'],universe.source(package),
                         root_package)
@@ -162,7 +174,7 @@ def print_reason(root_package,root_version,
 
     print('<table>',file=outfile)
     if 'missing' in reason:
-        last_package=reason['missing']['pkg']['package']
+        last_package=ccp(reason['missing']['pkg']['package'],p,n)
         last_version=reason['missing']['pkg']['version']
         last_source=universe.source(last_package)
         last_dependency=reason['missing']['pkg']['unsat-dependency']
@@ -199,8 +211,8 @@ def print_reason(root_package,root_version,
                 print('<font color=red>MISSING</font></td></tr></table>',
                       file=outfile)
     elif 'conflict' in reason:
-        last_package1=reason['conflict']['pkg1']['package']
-        last_package2=reason['conflict']['pkg2']['package']
+        last_package1=ccp(reason['conflict']['pkg1']['package'],p,n)
+        last_package2=ccp(reason['conflict']['pkg2']['package'],p,n)
         last_version1=reason['conflict']['pkg1']['version']
         last_version2=reason['conflict']['pkg2']['version']
         last_source1=universe.source(last_package1)
@@ -229,7 +241,7 @@ def print_reason(root_package,root_version,
 
 
 def create_reasons_file(package,version,reasons,outfile_name,
-                        universe,bugtable,uninstallables):
+                        universe,arch,bugtable,uninstallables):
     '''
     print to outfile_name the detailed explanation why (package,version) is
     not installable, according to reason.
@@ -239,13 +251,13 @@ def create_reasons_file(package,version,reasons,outfile_name,
 
     if len(reasons)==1:
         print_reason(package,version,reasons[0],outfile,
-                     universe,bugtable,uninstallables)
+                     universe,arch,bugtable,uninstallables)
     else:
         print('Conjunction of multiple reasons:','<ol>',file=outfile)
         for reason in reasons:
             print('<li>',file=outfile)
             print_reason(package,version,reason,outfile,
-                         universe,bugtable,uninstallables)
+                         universe,arch,bugtable,uninstallables)
         print('</ol>',file=outfile)
 
     outfile.close ()
@@ -304,8 +316,10 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
     counter={i: bicounter() for i in conf.hlengths.keys()}
 
     if report and report['report']:
+        p=arch+':'
+        n=len(p)
         for stanza in report['report']:
-            package  = stanza['package']
+            package  = ccp(stanza['package'],p,n)
             version  = stanza['version']
             reasons  = stanza['reasons']
             isnative = stanza['architecture'] != 'all'
@@ -314,11 +328,11 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
             # create short and complete explanation, add complete
             # explanation to the corresponding file
             reasons_hash=hash_reasons(reasons)
-            reasons_summary=summary_of_reasons(reasons)
+            reasons_summary=summary_of_reasons(reasons,p,n)
             reasons_filename = pooldir + '/' + str(reasons_hash)
             if not os.path.isfile(reasons_filename):
                 create_reasons_file(package,version,reasons,reasons_filename,
-                                    universe,bugtable,uninstallables)
+                                    universe,arch,bugtable,uninstallables)
 
             # write to html summary for that day
             html_today.write(package,isnative,version,
