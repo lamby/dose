@@ -28,14 +28,14 @@ def cachedir(timestamp,scenario,arch):
 
 def history_cachedir(scenario):
     return('{r}/{s}'.format(
-            r=conf.locations['historyroot'],
-            s=scenario))
+        r=conf.locations['historyroot'],
+        s=scenario))
 
 def history_cachefile(scenario,architecture):
     return('{r}/{s}/{a}'.format(
-            r=conf.locations['historyroot'],
-            s=scenario,
-            a=architecture))
+        r=conf.locations['historyroot'],
+        s=scenario,
+        a=architecture))
 
 def history_htmldir(scenario,architecture):
     return('{r}/{s}/history/{a}'.format(
