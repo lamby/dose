@@ -27,19 +27,19 @@ def cachedir(timestamp,scenario,arch):
             a=arch))
 
 def history_cachedir(scenario):
-    return('{r}/history/{s}'.format(
-            r=conf.locations['cacheroot'],
+    return('{r}/{s}'.format(
+            r=conf.locations['historyroot'],
             s=scenario))
 
 def history_cachefile(scenario,architecture):
-    return('{r}/history/{s}/{a}'.format(
-            r=conf.locations['cacheroot'],
+    return('{r}/{s}/{a}'.format(
+            r=conf.locations['historyroot'],
             s=scenario,
             a=architecture))
 
 def history_verticalfile(scenario,architecture):
-    return('{r}/history/{s}/{a}-perslice'.format(
-            r=conf.locations['cacheroot'],
+    return('{r}/{s}/{a}-perslice'.format(
+            r=conf.locations['historyroot'],
             s=scenario,
             a=architecture))
 

@@ -10,10 +10,11 @@
 verbose=False
 
 locations = {
-    'debmirror' : '/srv/mirrors/debian/dists',
-    'cacheroot' : '/srv/qa.debian.org/data/dose-debcheck',
-    'htmlroot'  : '/srv/qa.debian.org/web/dose/debcheck',
-    'scriptdir' : '/srv/qa.debian.org/dose'
+    'debmirror'   : '/srv/mirrors/debian/dists',
+    'cacheroot'   : '/srv/qa.debian.org/data/dose-debcheck/cache',
+    'historyroot' : '/srv/qa.debian.org/data/dose-debcheck/history',
+    'htmlroot'    : '/srv/qa.debian.org/web/dose/debcheck',
+    'scriptdir'   : '/srv/qa.debian.org/dose'
 }
 
 def _get_architectures(archs):
