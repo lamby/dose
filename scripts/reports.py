@@ -11,9 +11,9 @@ from common import *
 
 from yaml import load
 try:
-    from yaml import CLoader as Loader
+    from yaml import CBaseLoader as Loader
 except ImportError:
-    from yaml import Loader
+    from yaml import BaseLoader as Loader
     warning('YAML C-library not available, falling back to python')
 
 format_short_dep="unsatisfied dependency on {d}"
