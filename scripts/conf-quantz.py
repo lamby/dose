@@ -69,7 +69,15 @@ scenarios = [
                     '{m}/testing/non-free/binary-{a}/Packages.gz' ],
         'bgs'   : [ '{m}/testing/main/binary-{a}/Packages.gz' ],
         'description' : 'Debian testing (contrib and non-free only)'
-    }
+    },
+    {
+        'name'  : 'src_unstable_main',
+        'type'  : 'source',
+        'archs' : architectures['unstable'],
+        'src'   : '{m}/unstable/main/source/Sources.gz',
+        'bins'  : [ '{m}/unstable/main/binary-{a}/Packages.gz' ],
+        'description' : 'Build-dependencies unstable (main only)'
+    },
 ]
 
 # number of runs that are diplays
