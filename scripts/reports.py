@@ -113,11 +113,16 @@ def print_reason(root_package,root_version,
     p=arch+':'
     n=len(p)
     
-    def print_p(package,version,source,root_package):
+    def print_p(package,version,root_package):
         '''print a single package as part of a detailed explanation'''
 
-        source_version=universe.source_version(package)
-        if not source_version: source_version = version
+        if package.startswith('src:'):
+            source=package[4:]
+            source_version=version
+        else:
+            source=universe.source(package)
+            source_version=universe.source_version(package)
+            if not source_version: source_version = version
 
         if package in uninstallables and package != root_package:
             print('<a href={p}.html>{p}</a>'.format(p=package),
@@ -150,8 +155,7 @@ def print_reason(root_package,root_version,
         for member in depchain['depchain']:
             package=ccp(member['package'],p,n)
             if not firstiteration:
-                print_p(package,member['version'],universe.source(package),
-                        root_package)
+                print_p(package,member['version'],root_package)
             print_d(member['depends'])
             firstiteration=False
 
@@ -170,20 +174,17 @@ def print_reason(root_package,root_version,
                 print('</td>',file=outfile)
             print('</tr></table>',file=outfile)
 
-    root_source=universe.source(root_package)
-
     print('<table>',file=outfile)
     if 'missing' in reason:
         last_package=ccp(reason['missing']['pkg']['package'],p,n)
         last_version=reason['missing']['pkg']['version']
-        last_source=universe.source(last_package)
         last_dependency=reason['missing']['pkg']['unsat-dependency']
 
         if root_package == last_package :
             # no dependency chain - the root package itself has an
             # unsatisfied dependency
             print('<tr><td>',file=outfile)
-            print_p(root_package,root_version,root_source,root_package)
+            print_p(root_package,root_version,root_package)
             print_d(last_dependency)
             print('<font color=red>MISSING</font>',file=outfile)
             print('</td></tr>',file=outfile)
@@ -192,21 +193,21 @@ def print_reason(root_package,root_version,
             if len(depchains)==1 :
                 # only one dependency chain
                 print('<tr><td>',file=outfile)
-                print_p(root_package,root_version,root_source,root_package)
+                print_p(root_package,root_version,root_package)
                 print_depchains(depchains)
-                print_p(last_package,last_version,last_source,root_package)
+                print_p(last_package,last_version,root_package)
                 print_d(last_dependency)
                 print('<font color=red>MISSING</font>',file=outfile)
                 print('</td></tr>',file=outfile)
             else :
                 # multiple dependency chains
                 print('<tr><td style="text-align:center">',file=outfile)
-                print_p(root_package,root_version,root_source,root_package)
+                print_p(root_package,root_version,root_package)
                 print('</td></tr><tr><td>',file=outfile)
                 print_depchains(depchains)
                 print('</td></tr><tr><td style="text-align:center">',
                       '<table><tr><td>',file=outfile,sep='')
-                print_p(last_package,last_version,last_source,root_package)
+                print_p(last_package,last_version,root_package)
                 print_d(last_dependency)
                 print('<font color=red>MISSING</font></td></tr></table>',
                       file=outfile)
@@ -215,11 +216,9 @@ def print_reason(root_package,root_version,
         last_package2=ccp(reason['conflict']['pkg2']['package'],p,n)
         last_version1=reason['conflict']['pkg1']['version']
         last_version2=reason['conflict']['pkg2']['version']
-        last_source1=universe.source(last_package1)
-        last_source2=universe.source(last_package2)
         
         print('<tr><td style="text-align:center" colspan=2>',file=outfile)
-        print_p(root_package,root_version,root_source,root_package)
+        print_p(root_package,root_version,root_package)
         print('</td></tr>',file=outfile)
         print('<tr><td>',file=outfile)
         if 'depchain1' in reason['conflict']:
@@ -229,9 +228,9 @@ def print_reason(root_package,root_version,
             print_depchains(reason['conflict']['depchain2'])
         print('</td></tr>',file=outfile)
         print('<tr><td style="text-align:center">',file=outfile)
-        print_p(last_package1,last_version1,last_source1,root_package)
+        print_p(last_package1,last_version1,root_package)
         print('</td><td style="text-align:center">',file=outfile)
-        print_p(last_package2,last_version2,last_source2,root_package)
+        print_p(last_package2,last_version2,root_package)
         print('</td></tr><tr><td style="text-align:center" colspan=2>',
               file=outfile)
         print('<font color=red>CONFLICT</font></td></tr>',file=outfile)
