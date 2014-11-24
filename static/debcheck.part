@@ -4,14 +4,20 @@
 
 These checks are run daily on <kbd>qa.debian.org</kbd>: 
 <ul>
-  <li><a href="debcheck/unstable_main/index.html">unstable:
-      main only</a>
-  <li><a href="debcheck/unstable_contrib+nonfree/index.html">unstable:
-      contrib + non-free, with main as background</a>
-  <li><a href="debcheck/testing_main/index.html">testing:
-      main only</a>
-  <li><a href="debcheck/testing_contrib+nonfree/index.html">testing:
-      contrib + non-free, with main as background</a>
+  <li>Unstable:
+    <ul>	
+      <li><a href="debcheck/unstable_main/index.html">main</a>
+      <li><a href="debcheck/unstable_contrib+nonfree/index.html">
+	  contrib + non-free</a> (with main as background)
+      <li><a href="debcheck/src_unstable_main/index.html">main
+	  build dependencies</a>
+    </ul>
+  <li>Testing:
+    <ul>
+      <li><a href="debcheck/testing_main/index.html">main</a>
+      <li><a href="debcheck/testing_contrib+nonfree/index.html">
+	  contrib + non-free</a> (with main as background)
+    </ul>
 </ul>
 
 <h2>What it means</h2>
