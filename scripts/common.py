@@ -193,3 +193,17 @@ class bicounter_multi(bicounter):
                 flag=True
                 break
         bicounter.incr(self,flag)
+
+##########################################################################
+
+# FIXME: replace by a correct implementation. See bug #771058
+def archmatch(arch,wildcards):
+    i=arch.find('-')
+    if i == -1:
+        os='linux'
+        cpu=arch
+    else:
+        os=arch[:i]
+        cpu=arch[i+1:]
+    matchers={'all','any',arch,os+'-any','any-'+arch}
+    return(not matchers.isdisjoint(wildcards))
