@@ -32,7 +32,11 @@ for scenario in conf.scenarios:
 
     for arch in summary.get_architectures():
         universes.build(timestamp_now,scenario,arch)
-        universe=universes.Universe(timestamp_now,scenario,arch,summary)
+        if scenario['type'] == 'binary':
+            universe=universes.BinUniverse(timestamp_now,scenario,arch,summary)
+        elif scenario['type'] == 'source':
+            # FIXME
+            universe=universes.BinUniverse(timestamp_now,scenario,arch,summary)
         reports.build(timestamp_now,day_now,universe,scenario['name'],arch,
                       bugtable,summary)
         diffs.build(timestamp_now,timestamp_last,universe,scenario['name'],arch)
