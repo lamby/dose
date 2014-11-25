@@ -20,10 +20,14 @@ format_short_dep="unsatisfied dependency on {d}"
 format_short_con="conflict between {c1} and {c2}"
 
 #######################################################################
-# remove a prefix p of length n from a string s:
+# remove a prefix p of length n from a string s, or a prefix 'src%3a'
 def ccp(s,p,n):
     if s.startswith(p):
         return(s[n:])
+    elif s.startswith('src%3a'):
+        return(s[6:])
+    elif s.startswith('src:'):
+        return(s[4:])
     else:
         return(s)
 
