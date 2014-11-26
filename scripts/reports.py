@@ -100,7 +100,7 @@ def summary_of_reasons (reasons,p,n):
 #######################################################################
 # detailed printing of reasons
 
-def print_reason(root_package,root_version,
+def print_reason(root_package,root_version,scenario_type,
                  reason,outfile,universe,arch,bugtable,uninstallables):
     '''
     Detailed printing of reason why root_package (root_version) is
@@ -120,13 +120,9 @@ def print_reason(root_package,root_version,
     def print_p(package,version,root_package):
         '''print a single package as part of a detailed explanation'''
 
-        if package.startswith('src:'):
-            source=package[4:]
-            source_version=version
-        else:
-            source=universe.source(package)
-            source_version=universe.source_version(package)
-            if not source_version: source_version = version
+        source=universe.source(package)
+        source_version=universe.source_version(package)
+        if not source_version: source_version = version
 
         if package in uninstallables and package != root_package:
             print('<a href={p}.html>{p}</a>'.format(p=package),
@@ -140,6 +136,16 @@ def print_reason(root_package,root_version,
         bugtable.print_direct(package,source,root_package,outfile)
         print('<br>',file=outfile)
 
+    def print_s(package,version):
+        '''print a single source package (which must be the root)'''
+        print('src:',package,file=outfile,sep='',end=' ')
+        print('(',version,')',file=outfile,sep='')
+        print('[<a href=https://packages.qa.debian.org/',package,'>PTS</a>]',
+              file=outfile,sep='')
+        print('[<a href=http://sources.debian.net/src/{s}/{v}/debian/control>ctrl</a>]'.format(s=package,v=version),file=outfile)
+        bugtable.print_source(package,outfile)
+        print('<br>',file=outfile)
+        
     virtualdep_re=re.compile('\| --virtual-\S+\s*')
     def sanitize_d(dependency):
         '''drop --virtual-* packages, see upstream bug report #17736'''
@@ -188,7 +194,12 @@ def print_reason(root_package,root_version,
             # no dependency chain - the root package itself has an
             # unsatisfied dependency
             print('<tr><td>',file=outfile)
-            print_p(root_package,root_version,root_package)
+            if scenario_type == 'binary':
+                print_p(root_package,root_version,root_package)
+            elif scenario_type == 'source':
+                print_s(root_package,root_version)
+            else:
+                warning('unknown scenario type: '+scenario_type)
             print_d(last_dependency)
             print('<font color=red>MISSING</font>',file=outfile)
             print('</td></tr>',file=outfile)
@@ -197,7 +208,10 @@ def print_reason(root_package,root_version,
             if len(depchains)==1 :
                 # only one dependency chain
                 print('<tr><td>',file=outfile)
-                print_p(root_package,root_version,root_package)
+                if scenario_type == 'binary':
+                    print_p(root_package,root_version,root_package)
+                elif scenario_type == 'source':
+                    print_s(root_package,root_version)
                 print_depchains(depchains)
                 print_p(last_package,last_version,root_package)
                 print_d(last_dependency)
@@ -206,7 +220,10 @@ def print_reason(root_package,root_version,
             else :
                 # multiple dependency chains
                 print('<tr><td style="text-align:center">',file=outfile)
-                print_p(root_package,root_version,root_package)
+                if scenario_type == 'binary':
+                    print_p(root_package,root_version,root_package)
+                elif scenario_type == 'source':
+                    print_s(root_package,root_version)
                 print('</td></tr><tr><td>',file=outfile)
                 print_depchains(depchains)
                 print('</td></tr><tr><td style="text-align:center">',
@@ -222,7 +239,10 @@ def print_reason(root_package,root_version,
         last_version2=reason['conflict']['pkg2']['version']
         
         print('<tr><td style="text-align:center" colspan=2>',file=outfile)
-        print_p(root_package,root_version,root_package)
+        if scenario_type == 'bianry':
+            print_p(root_package,root_version,root_package)
+        elif scenario_type == 'source':
+            print_s(root_package,root_version)
         print('</td></tr>',file=outfile)
         print('<tr><td>',file=outfile)
         if 'depchain1' in reason['conflict']:
@@ -243,7 +263,7 @@ def print_reason(root_package,root_version,
     print('</table>',file=outfile)
 
 
-def create_reasons_file(package,version,reasons,outfile_name,
+def create_reasons_file(package,version,scenario_type,reasons,outfile_name,
                         universe,arch,bugtable,uninstallables):
     '''
     print to outfile_name the detailed explanation why (package,version) is
@@ -253,13 +273,13 @@ def create_reasons_file(package,version,reasons,outfile_name,
     outfile=open(outfile_name, 'w')
 
     if len(reasons)==1:
-        print_reason(package,version,reasons[0],outfile,
+        print_reason(package,version,scenario_type,reasons[0],outfile,
                      universe,arch,bugtable,uninstallables)
     else:
         print('Conjunction of multiple reasons:','<ol>',file=outfile)
         for reason in reasons:
             print('<li>',file=outfile)
-            print_reason(package,version,reason,outfile,
+            print_reason(package,version,scenario_type,reason,outfile,
                          universe,arch,bugtable,uninstallables)
         print('</ol>',file=outfile)
 
@@ -275,17 +295,18 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
     '''
 
     daystamp=str(day)
+    scenario_name=scenario['name']
 
-    info('building report for {s} on {a}'.format(s=scenario,a=arch))
+    info('building report for {s} on {a}'.format(s=scenario_name,a=arch))
 
     # assure existence of output directories:
-    histcachedir=history_cachedir(scenario)
+    histcachedir=history_cachedir(scenario_name)
     if not os.path.isdir(histcachedir): os.makedirs(histcachedir)
-    pooldir = cachedir(timestamp,scenario,'pool')
+    pooldir = cachedir(timestamp,scenario_name,'pool')
     if not os.path.isdir(pooldir): os.makedirs(pooldir)
 
     # fetch the report obtained from dose-debcheck
-    reportfile = open(cachedir(timestamp,scenario,arch)+'/debcheck.out')
+    reportfile = open(cachedir(timestamp,scenario_name,arch)+'/debcheck.out')
     report = load(reportfile, Loader=Loader)
     reportfile.close()
     if report and report['report']:
@@ -294,7 +315,7 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
         uninstallables=set()
 
     # fetch the history of packages
-    histfile=history_cachefile(scenario,arch)
+    histfile=history_cachefile(scenario_name,arch)
     history={}
     if os.path.isfile(histfile):
         h=open(histfile)
@@ -304,13 +325,13 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
         h.close()
 
     # HTML file object for the day and historical summaries
-    html_today=html.summary(timestamp,scenario,arch,bugtable,
+    html_today=html.summary(timestamp,scenario_name,arch,bugtable,
                             summary.get_total(arch))
-    html_history={i:html.history(timestamp,scenario,arch,bugtable,d)
+    html_history={i:html.history(timestamp,scenario_name,arch,bugtable,d)
                   for i,d in conf.hlengths.items()}
 
     # a summary of the analysis in the cache directory
-    sumfile = open(cachedir(timestamp,scenario,arch)+'/summary', 'w')
+    sumfile = open(cachedir(timestamp,scenario_name,arch)+'/summary', 'w')
 
     # file recording the first day of observed non-installability per package
     historyfile=open(histfile,'w')
@@ -334,7 +355,8 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
             reasons_summary=summary_of_reasons(reasons,p,n)
             reasons_filename = pooldir + '/' + str(reasons_hash)
             if not os.path.isfile(reasons_filename):
-                create_reasons_file(package,version,reasons,reasons_filename,
+                create_reasons_file(package,version,scenario['type'],
+                                    reasons,reasons_filename,
                                     universe,arch,bugtable,uninstallables)
 
             # write to html summary for that day

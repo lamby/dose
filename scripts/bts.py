@@ -77,6 +77,16 @@ class Bugtable(object):
         self.indbugs[root_package].update(self.binbugs[package_name])
         self.indbugs[root_package].update(self.srcbugs[source_name])
 
+    def print_source(self,package_name,outfile):
+        """
+        print in html to outfile  all direct bugs for source package
+        package_name, with link to the BTS.
+        """
+        for bugnr in self.srcbugs[package_name]:
+            print('[<a href="http://bugs.debian.org/{n}">Bug #{n}</a>]'.format(
+                    n=bugnr),
+                  file=outfile,end=' ')
+
     def print_indirect(self,package_name,outfile):
         """
         print in html to outfile all indirect bugs for package_name, with

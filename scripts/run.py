@@ -30,14 +30,19 @@ bugtable=bts.Bugtable()
 for scenario in conf.scenarios:
     summary = horizontal.Summary(scenario,timestamp_now)
 
+    if scenario['type'] == 'source':
+        sources=universes.getsources(scenario['src'].format(
+            m=conf.locations['debmirror']))
+#        for (n,a) in sources:
+#            print(n,a)
     for arch in summary.get_architectures():
         universes.build(timestamp_now,scenario,arch)
         if scenario['type'] == 'binary':
             universe=universes.BinUniverse(timestamp_now,scenario,arch,summary)
         elif scenario['type'] == 'source':
-            # FIXME
-            universe=universes.BinUniverse(timestamp_now,scenario,arch,summary)
-        reports.build(timestamp_now,day_now,universe,scenario['name'],arch,
+            universe=universes.Universe(timestamp_now,scenario,arch,
+                                        summary,sources)
+        reports.build(timestamp_now,day_now,universe,scenario,arch,
                       bugtable,summary)
         diffs.build(timestamp_now,timestamp_last,universe,scenario['name'],arch)
         
