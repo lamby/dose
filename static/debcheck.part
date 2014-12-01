@@ -17,6 +17,8 @@ These checks are run daily on <kbd>qa.debian.org</kbd>:
       <li><a href="debcheck/testing_main/index.html">main</a>
       <li><a href="debcheck/testing_contrib+nonfree/index.html">
 	  contrib + non-free</a> (with main as background)
+      <li><a href="debcheck/src_testing_main/index.html">main
+	  build dependencies</a>
     </ul>
 </ul>
 
