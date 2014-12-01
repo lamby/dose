@@ -130,7 +130,7 @@ def print_reason(root_package,root_version,scenario_type,
         else:
             print(package,file=outfile,end=' ')
         print('(',version,')',file=outfile,sep='')
-        print('[<a href=https://packages.qa.debian.org/',source,'>PTS</a>]',
+        print('[<a href=https://tracker.debian.org/pkg/',source,'>PTS</a>]',
               file=outfile,sep='')
         print('[<a href=http://sources.debian.net/src/{s}/{v}/debian/control>ctrl</a>]'.format(s=source,v=source_version),file=outfile)
         bugtable.print_direct(package,source,root_package,outfile)
