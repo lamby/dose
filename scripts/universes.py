@@ -48,6 +48,7 @@ def run_debcheck(scenario,arch,outdir):
 
 def getsources(filename):
     res=[]
+    saved=True
     if filename[-3:]=='.gz':
         infile = codecs.getreader('utf-8')(gzip.open(filename,'r'))
     else:
@@ -55,9 +56,14 @@ def getsources(filename):
     for line in infile:
         if line.startswith('Package:'):
             current_package=line.split()[1]
+            saved=False
         elif line.startswith('Architecture:'):
             current_archs={arch for arch in line.split()[1:]}
+        elif line.isspace() and not saved:
             res.append((current_package,current_archs))
+            saved=True
+    if not saved:
+        res.append((current_package,current_archs))
     infile.close()
     return(res)
 
