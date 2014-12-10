@@ -57,12 +57,15 @@ def getsources(filename):
         if line.startswith('Package:'):
             current_package=line.split()[1]
             saved=False
+            current_extra_source_only=False
         elif line.startswith('Architecture:'):
             current_archs={arch for arch in line.split()[1:]}
-        elif line.isspace() and not saved:
+        elif line.startswith('Extra-Source-Only:'):
+            current_extra_source_only=line.endswith('yes\n')
+        elif line.isspace() and not saved and not current_extra_source_only:
             res.append((current_package,current_archs))
             saved=True
-    if not saved:
+    if not saved and not current_extra_source_only:
         res.append((current_package,current_archs))
     infile.close()
     return(res)
