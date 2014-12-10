@@ -309,10 +309,6 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
     reportfile = open(cachedir(timestamp,scenario_name,arch)+'/debcheck.out')
     report = load(reportfile, Loader=Loader)
     reportfile.close()
-    if report and report['report']:
-        uninstallables={stanza['package'] for stanza in report['report']}
-    else:
-        uninstallables=set()
 
     # fetch the history of packages
     histfile=history_cachefile(scenario_name,arch)
@@ -339,6 +335,7 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
     # number of uninstallable arch=native/all packages per slice
     counter={i: bicounter() for i in conf.hlengths.keys()}
 
+    uninstallables=set()
     if report and report['report']:
         p=arch+':'
         n=len(p)
@@ -349,6 +346,8 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
             isnative = stanza['architecture'] != 'all'
             all_mark = '' if isnative else '[all] '
     
+            uninstallables.add(package)
+
             # create short and complete explanation, add complete
             # explanation to the corresponding file
             reasons_hash=hash_reasons(reasons)
