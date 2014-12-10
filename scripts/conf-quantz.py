@@ -92,5 +92,5 @@ scenarios = [
 slices = 7
 
 # timeslices for the "summary by duration"
-hlengths={0:2,1:4,2:8,3:16,4:32,5:64,6:128}
+hlengths={0:2,1:4,2:8,3:16,4:32,5:64,6:128,7:256}
 
