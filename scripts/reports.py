@@ -345,6 +345,11 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
             reasons  = stanza['reasons']
             isnative = stanza['architecture'] != 'all'
             all_mark = '' if isnative else '[all] '
+
+            if not universe.is_in_foreground(package):
+                # a package may be not in the foreground, e.g. source
+                # package with Extra-Source-Only set.
+                continue
     
             uninstallables.add(package)
 
