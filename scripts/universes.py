@@ -30,7 +30,7 @@ def run_debcheck(scenario,arch,outdir):
             invocation.append('--bg')
             invocation.append(bg.format(m=conf.locations['debmirror'],a=arch))
     elif (scenario['type'] == 'source'):
-        invocation = ['dose-builddebcheck', '-e', '-f' ]
+        invocation = ['dose-builddebcheck', '-e', '-f', '--latest' ]
         invocation.append('--deb-native-arch='+arch)
         for bg in scenario['bins']:
             invocation.append(bg.format(m=conf.locations['debmirror'],a=arch))
