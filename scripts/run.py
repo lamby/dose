@@ -38,8 +38,8 @@ for scenario in conf.scenarios:
         if scenario['type'] == 'binary':
             universe=universes.BinUniverse(timestamp_now,scenario,arch,summary)
         elif scenario['type'] == 'source':
-            universe=universes.Universe(timestamp_now,scenario,arch,
-                                        summary,sources[0],sources[1])
+            universe=universes.SrcUniverse(timestamp_now,scenario,arch,
+                                           summary,sources[0],sources[1])
         reports.build(timestamp_now,day_now,universe,scenario,arch,
                       bugtable,summary)
         diffs.build(timestamp_now,timestamp_last,universe,scenario['name'],arch)

@@ -92,7 +92,7 @@ def archmatch(arch,wildcards):
     matchers={'all','any',arch,os+'-any','any-'+arch}
     return(not matchers.isdisjoint(wildcards))
 
-class Universe:
+class SrcUniverse:
     """
     A universe object contains information about the source
     packages that exist in a certain scenario.
@@ -128,7 +128,8 @@ class Universe:
     def source_version(self,package):
         return(0)
 
-class BinUniverse(Universe):
+#############################################################################
+class BinUniverse:
     """
     A binuniverse is a universe for binary packages. It also stores, for
     any binary package name, a source package name and a source version.
