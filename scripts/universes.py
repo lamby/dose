@@ -47,7 +47,12 @@ def run_debcheck(scenario,arch,outdir):
     outfile.close ()
 
 def getsources(filename):
-    res=[]
+    # scans file named filename for source package stanzas.
+    # returns a pair of hashtables, associating to each source package name
+    # found the contents of Architecture:, resp Version:, field of the last
+    # occurrence. Stanzas with 'Extra-Source-Only: yes' are skipped.
+    version_table={}
+    archs_table={}
     saved=True
     if filename[-3:]=='.gz':
         infile = codecs.getreader('utf-8')(gzip.open(filename,'r'))
@@ -62,13 +67,17 @@ def getsources(filename):
             current_archs={arch for arch in line.split()[1:]}
         elif line.startswith('Extra-Source-Only:'):
             current_extra_source_only=line.endswith('yes\n')
+        elif line.startswith('Version:'):
+            current_version=line.split()[1]
         elif line.isspace() and not saved and not current_extra_source_only:
-            res.append((current_package,current_archs))
+            archs_table[current_package]=current_archs
+            version_table[current_package]=current_version
             saved=True
     if not saved and not current_extra_source_only:
-        res.append((current_package,current_archs))
+        archs_table[current_package]=current_archs
+        version_table[current_package]=current_version
     infile.close()
-    return(res)
+    return((version_table,archs_table))
 
 #############################################################################
 
@@ -85,27 +94,33 @@ def archmatch(arch,wildcards):
 
 class Universe:
     """
-    A universe object contains information about the packages that exist
-    in a certain scenario and for a certain architecture. The list
-    of foreground packages is written to a file.
+    A universe object contains information about the source
+    packages that exist in a certain scenario.
+    architecture. The list of foreground packages is written to a
+    file.
     """
 
-    def __init__(self,timestamp,scenario,architecture,summary,sources):
+    def __init__(self,timestamp,scenario,architecture,summary,
+                 versions_table,archs_table):
         scenario_name=scenario['name']
         info('extracting foreground for {s} on {a}'.format(
                 a=architecture,s=scenario_name))
-        self.fg_packages={p for (p,a) in sources if archmatch(architecture,a)}
+        self.fg_packages={p:v for (p,v) in versions_table.items()
+                          if archmatch(architecture,archs_table[p])}
         summary.set_total(architecture,len(self.fg_packages))
         outdir=cachedir(timestamp,scenario_name,architecture)
         if not os.path.isdir(outdir): os.makedirs(outdir)
         with open(outdir + '/fg-packages', 'w') as outfile:
             for f in self.fg_packages: print(f,file=outfile)
 
-    def is_in_foreground(self,package):
+    def is_in_foreground(self,package_name,version):
         '''
         tell whether a package is in the foregound
         '''
-        return(package in self.fg_packages)
+        try:
+            return(version == self.fg_packages[package_name])
+        except KeyError:
+            return(False)
 
     def source(self,package):
         return(package)
@@ -160,6 +175,12 @@ class BinUniverse(Universe):
             for f in self.fg_packages: print(f,file=outfile)
 
         summary.set_total(architecture,number_fg_packages)
+
+    def is_in_foreground(self,package_name,version):
+        '''
+        tell whether a package is in the foregound
+        '''
+        return(package_name in self.fg_packages)
      
     def source(self,package):
         '''

@@ -346,9 +346,9 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
             isnative = stanza['architecture'] != 'all'
             all_mark = '' if isnative else '[all] '
 
-            if not universe.is_in_foreground(package):
-                # a package may be not in the foreground, e.g. source
-                # package with Extra-Source-Only set.
+            if not universe.is_in_foreground(package,version):
+                # ignore packages that are not in the foreground, e.g. source
+                # package with Extra-Source-Only set, or cruft packages.
                 continue
     
             uninstallables.add(package)
