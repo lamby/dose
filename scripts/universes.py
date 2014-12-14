@@ -122,6 +122,12 @@ class SrcUniverse:
         except KeyError:
             return(False)
 
+    def is_in_foreground_someversion(self,package_name):
+        '''
+        tell whether a package is in the foregound for any version
+        '''
+        return(package_name in self.fg_packages.keys())
+
     def source(self,package):
         return(package)
 
@@ -182,7 +188,13 @@ class BinUniverse:
         tell whether a package is in the foregound
         '''
         return(package_name in self.fg_packages)
-     
+
+    def is_in_foreground_someversion(self,package_name):
+        '''
+        tell whether a package is in the foregound for any version
+        '''
+        return(package_name in self.fg_packages)
+
     def source(self,package):
         '''
         return the source package name pertaining to a binary package

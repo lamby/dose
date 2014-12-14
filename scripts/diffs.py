@@ -103,7 +103,7 @@ def build(t_this,t_prev,universe_this,scenario,arch):
     html_diff.section('Old packages that became installable')
     # in uninstallable out, and in current foreground
     for package in uninstallables_out:
-        if universe_this.is_in_foreground(package):
+        if universe_this.is_in_foreground_someversion(package):
             record=summary_prev[package]
             html_diff.write(package,record)
             counter_out.incr(record['isnative'])
@@ -111,7 +111,7 @@ def build(t_this,t_prev,universe_this,scenario,arch):
     html_diff.section('Not-installable packages that disappeared')
     # in uninstallable out, but not in current foreground
     for package in uninstallables_out:
-        if not universe_this.is_in_foreground(package):
+        if not universe_this.is_in_foreground_someversion(package):
             record=summary_prev[package]
             html_diff.write(package,record)
             counter_out.incr(record['isnative'])
