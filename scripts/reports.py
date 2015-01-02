@@ -1,4 +1,4 @@
-# Copyright (C) 2014 Ralf Treinen <treinen@debian.org>
+# Copyright (C) 2014,2015 Ralf Treinen <treinen@debian.org>
 #
 # This software is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as
@@ -239,7 +239,7 @@ def print_reason(root_package,root_version,scenario_type,
         last_version2=reason['conflict']['pkg2']['version']
         
         print('<tr><td style="text-align:center" colspan=2>',file=outfile)
-        if scenario_type == 'bianry':
+        if scenario_type == 'binary':
             print_p(root_package,root_version,root_package)
         elif scenario_type == 'source':
             print_s(root_package,root_version)
