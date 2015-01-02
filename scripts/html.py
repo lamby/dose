@@ -1,4 +1,4 @@
-# Copyright (C) 2014 Ralf Treinen <treinen@debian.org>
+# Copyright (C) 2014,2015 Ralf Treinen <treinen@debian.org>
 #
 # This software is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as
@@ -67,7 +67,7 @@ html_footer='''</div>
       Made by Ralf Treinen; code is
       <a href="https://alioth.debian.org/plugins/scmgit/cgi-bin/gitweb.cgi?p=qa/dose.git;a=summary">
       available</a>.<br>
-      Copyright &copy; 2014
+      Copyright &copy; 2014, 2015
       <a href="http://www.spi-inc.org/">SPI</a>;
       see <a href="http://www.debian.org/license" rel="copyright">license terms</a>.<br>
       Debian is a registered <a href="http://www.debian.org/trademark">trademark</a> of
