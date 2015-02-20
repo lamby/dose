@@ -1,4 +1,4 @@
-# Copyright (C) 2014 Ralf Treinen <treinen@debian.org>
+# Copyright (C) 2014,2015 Ralf Treinen <treinen@debian.org>
 #
 # This software is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as
@@ -73,26 +73,28 @@ def build(t_this,t_prev,universe_this,scenario,arch):
     uninstallables_prev=set(summary_prev.keys())
     
     # reported uninstallable now, but not previously
-    uninstallables_in  = sorted(uninstallables_this - uninstallables_prev)
+    uninstallables_in  = uninstallables_this - uninstallables_prev
 
     # reported uninstallable previously, but not now
-    uninstallables_out = sorted(uninstallables_prev - uninstallables_this)
+    uninstallables_out = uninstallables_prev - uninstallables_this
 
     # write html page for differences
     html_diff=html.diff(t_this,t_prev,scenario,arch)
     
-    html_diff.section('Old packages that became not installable')
     # in uninstallable in, and in previous foreground
-    for package in uninstallables_in:
-        if package in foreground_prev:
+    uninstallables_in_old=uninstallables_in & foreground_prev
+    if len(uninstallables_in_old) > 0:
+        html_diff.section('Old packages that became not installable')
+        for package in sorted(uninstallables_in_old):
             record=summary_this[package]
             html_diff.write_record(package,record)
             counter_in.incr(record['isnative'])
 
-    html_diff.section('New packages that are not installable')
     # in uninstallable in, but not in previous foreground
-    for package in uninstallables_in:
-        if package not in foreground_prev:
+    uninstallables_in_new=uninstallables_in - foreground_prev
+    if len(uninstallables_in_new) > 0:
+        html_diff.section('New packages that are not installable')
+        for package in sorted(uninstallables_in_new):
             record=summary_this[package]
             html_diff.write(package,record)
             counter_in.incr(record['isnative'])
@@ -100,18 +102,22 @@ def build(t_this,t_prev,universe_this,scenario,arch):
     # from here on, explanations are to be found in the previous run
     html_diff.set_path_to_packages('../'+t_prev+'/packages/')
 
-    html_diff.section('Old packages that became installable')
     # in uninstallable out, and in current foreground
-    for package in uninstallables_out:
-        if universe_this.is_in_foreground_someversion(package):
+    uninstallables_out_kept={p for p in uninstallables_out
+                             if universe_this.is_in_foreground_someversion(p)}
+    if len(uninstallables_out_kept) > 0:
+        html_diff.section('Old packages that became installable')
+        for package in sorted(uninstallables_out_kept):
             record=summary_prev[package]
             html_diff.write(package,record)
             counter_out.incr(record['isnative'])
 
-    html_diff.section('Not-installable packages that disappeared')
     # in uninstallable out, but not in current foreground
-    for package in uninstallables_out:
-        if not universe_this.is_in_foreground_someversion(package):
+    uninstallables_out_removed={p for p in uninstallables_out
+                         if not universe_this.is_in_foreground_someversion(p)}
+    if len(uninstallables_out_removed) > 0:
+        html_diff.section('Not-installable packages that disappeared')
+        for package in sorted(uninstallables_out_removed):
             record=summary_prev[package]
             html_diff.write(package,record)
             counter_out.incr(record['isnative'])
