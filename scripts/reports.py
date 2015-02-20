@@ -335,10 +335,12 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
     # number of uninstallable arch=native/all packages per slice
     counter={i: bicounter() for i in conf.hlengths.keys()}
 
-    uninstallables=set()
     if report and report['report']:
         p=arch+':'
         n=len(p)
+        # set of names of not installable packages, foreground or background 
+        uninstallable_packages={ccp(stanza['package'],p,n)
+                                for  stanza in report['report']}
         for stanza in report['report']:
             package  = ccp(stanza['package'],p,n)
             version  = stanza['version']
@@ -351,8 +353,6 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
                 # package with Extra-Source-Only set, or cruft packages.
                 continue
     
-            uninstallables.add(package)
-
             # create short and complete explanation, add complete
             # explanation to the corresponding file
             reasons_hash=hash_reasons(reasons)
@@ -360,8 +360,8 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
             reasons_filename = pooldir + '/' + str(reasons_hash)
             if not os.path.isfile(reasons_filename):
                 create_reasons_file(package,version,scenario['type'],
-                                    reasons,reasons_filename,
-                                    universe,arch,bugtable,uninstallables)
+                                    reasons,reasons_filename,universe,
+                                    arch,bugtable,uninstallable_packages)
 
             # write to html summary for that day
             html_today.write(package,isnative,version,
