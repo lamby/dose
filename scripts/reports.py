@@ -338,9 +338,11 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
     if report and report['report']:
         p=arch+':'
         n=len(p)
-        # set of names of not installable packages, foreground or background 
-        uninstallable_packages={ccp(stanza['package'],p,n)
-                                for  stanza in report['report']}
+        # set of names of not installable foreground packages 
+        uninstallable_fg_packages={
+            ccp(st['package'],p,n)
+            for st in report['report']
+            if universe.is_in_foreground(st['package'],st['version'])}
         for stanza in report['report']:
             package  = ccp(stanza['package'],p,n)
             version  = stanza['version']
@@ -361,7 +363,7 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
             if not os.path.isfile(reasons_filename):
                 create_reasons_file(package,version,scenario['type'],
                                     reasons,reasons_filename,universe,
-                                    arch,bugtable,uninstallable_packages)
+                                    arch,bugtable,uninstallable_fg_packages)
 
             # write to html summary for that day
             html_today.write(package,isnative,version,
