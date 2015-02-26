@@ -66,16 +66,10 @@ def build(t_this,t_prev,universe_this,scenario,arch):
     foreground_prev = { p.rstrip() for p in infile }
     infile.close()
 
-    # reported uninstallable now
     uninstallables_this=set(summary_this.keys())
-
-    # reported uninstallable previously
     uninstallables_prev=set(summary_prev.keys())
     
-    # reported uninstallable now, but not previously
     uninstallables_in  = uninstallables_this - uninstallables_prev
-
-    # reported uninstallable previously, but not now
     uninstallables_out = uninstallables_prev - uninstallables_this
 
     # write html page for differences
@@ -229,24 +223,26 @@ def build_multi(t_this,t_prev,scenario,what,summary):
     uninstallables_this=set(summary_this.keys())
     uninstallables_prev=set(summary_prev.keys())
 
-    uninstallables_in  = sorted(uninstallables_this - uninstallables_prev)
-    uninstallables_out = sorted(uninstallables_prev - uninstallables_this)
+    uninstallables_in  = uninstallables_this - uninstallables_prev
+    uninstallables_out = uninstallables_prev - uninstallables_this
 
     # write html page for differences
     html_diff=html.diff_multi(t_this,t_prev,scenario,what)
     
-    html_diff.section('Old packages that became not installable')
     # in uninstallable in, and in previous foreground
-    for package in uninstallables_in:
-        if package in foreground_prev:
+    uninstallables_in_old = uninstallables_in & foreground_prev
+    if len(uninstallables_in_old) > 0:
+        html_diff.section('Old packages that became not installable')
+        for package in sorted(uninstallables_in_old):
             record=summary_this[package]
             html_diff.write(package,record)
             counter_in.incr(record)
 
-    html_diff.section('New packages that are not installable')
     # in uninstallable in, but not in previous foreground
-    for package in uninstallables_in:
-        if package not in foreground_prev:
+    uninstallables_in_new = uninstallables_in - foreground_prev
+    if len(uninstallables_in_new) > 0:
+        html_diff.section('New packages that are not installable')
+        for package in sorted(uninstallables_in_new):
             record=summary_this[package]
             html_diff.write(package,record)
             counter_in.incr(record)
@@ -254,18 +250,20 @@ def build_multi(t_this,t_prev,scenario,what,summary):
     # from here on, explanations are to be found in the previous run
     html_diff.set_path_to_packages('../'+t_prev+'/packages/')
 
-    html_diff.section('Old packages that became installable')
     # in uninstallable out, and in current foreground
-    for package in uninstallables_out:
-        if package in foreground_this:
+    uninstallables_out_kept = uninstallables_out & foreground_this
+    if len(uninstallables_out_kept) > 0:
+        html_diff.section('Old packages that became installable')
+        for package in sorted(uninstallables_out_kept):
             record=summary_prev[package]
             html_diff.write(package,record)
             counter_out.incr(record)
 
-    html_diff.section('Not-installable packages that disappeared')
     # in uninstallable out, but not in current foreground
-    for package in uninstallables_out:
-        if package not in foreground_this:
+    uninstallables_out_removed = uninstallables_out - foreground_this
+    if len(uninstallables_out_removed) > 0:
+        html_diff.section('Not-installable packages that disappeared')
+        for package in sorted(uninstallables_out_removed):
             record=summary_prev[package]
             html_diff.write(package,record)
             counter_out.incr(record)
