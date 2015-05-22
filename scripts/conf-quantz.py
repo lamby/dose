@@ -70,22 +70,23 @@ scenarios = [
         'bgs'   : [ '{m}/testing/main/binary-{a}/Packages.gz' ],
         'description' : 'Debian testing (contrib and non-free only)'
     },
-    {
-        'name'  : 'src_unstable_main',
-        'type'  : 'source',
-        'archs' : architectures['unstable'],
-        'src'   : '{m}/unstable/main/source/Sources.gz',
-        'bins'  : [ '{m}/unstable/main/binary-{a}/Packages.gz' ],
-        'description' : 'Build-dependencies unstable (main only)'
-    },
-    {
-        'name'  : 'src_testing_main',
-        'type'  : 'source',
-        'archs' : architectures['testing'],
-        'src'   : '{m}/testing/main/source/Sources.gz',
-        'bins'  : [ '{m}/testing/main/binary-{a}/Packages.gz' ],
-        'description' : 'Build-dependencies testing (main only)'
-    },
+    # temporarily disabled
+    # {
+    #     'name'  : 'src_unstable_main',
+    #     'type'  : 'source',
+    #     'archs' : architectures['unstable'],
+    #     'src'   : '{m}/unstable/main/source/Sources.gz',
+    #     'bins'  : [ '{m}/unstable/main/binary-{a}/Packages.gz' ],
+    #     'description' : 'Build-dependencies unstable (main only)'
+    # },
+    # {
+    #     'name'  : 'src_testing_main',
+    #     'type'  : 'source',
+    #     'archs' : architectures['testing'],
+    #     'src'   : '{m}/testing/main/source/Sources.gz',
+    #     'bins'  : [ '{m}/testing/main/binary-{a}/Packages.gz' ],
+    #     'description' : 'Build-dependencies testing (main only)'
+    # },
 ]
 
 # number of runs that are diplays
