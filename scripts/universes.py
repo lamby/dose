@@ -23,6 +23,7 @@ def run_debcheck(scenario,arch,outdir):
     info('running debcheck for {s} on {a}'.format(a=arch,s=scenario_name))
     if (scenario['type'] == 'binary'):
         invocation = ['dose-debcheck', '-e', '-f', '--latest' ]
+        invocation.append('--deb-native-arch='+arch)
         for fg in scenario['fgs']:
             invocation.append('--fg')
             invocation.append(fg.format(m=conf.locations['debmirror'],a=arch))
