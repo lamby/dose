@@ -9,9 +9,7 @@ $(STAMP): $(FILES)
 	echo $(FILES)
 	cd $(SVNDIR) && svn update
 	cp -a $(FILES) $(SVNDIR)/$(SUBDIR)
-	cd $(SVNDIR)/$(SUBDIR) && \
-		rm -f conf-test.py conf.py && \
-		mv conf-quantz.py conf.py && svn commit
+	cd $(SVNDIR)/$(SUBDIR) && svn commit
 	touch $(STAMP)
 
 .phony: install
