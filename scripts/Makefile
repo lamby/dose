@@ -1,6 +1,7 @@
 SVNDIR  = $(HOME)/debian/qa.svn/trunk
 SUBDIR  = dose
-FILES   = $(wildcard *.py)
+PYFILES = $(filter-out conf.py,$(wildcard *.py))
+# conf.py is a symlink in git, and should not be installed
 STAMP   = .upload.stamp
 
 install: $(STAMP)
@@ -8,7 +9,7 @@ install: $(STAMP)
 $(STAMP): $(FILES)
 	echo $(FILES)
 	cd $(SVNDIR) && svn update
-	cp -a $(FILES) $(SVNDIR)/$(SUBDIR)
+	cp -a $(PYFILES) $(SVNDIR)/$(SUBDIR)
 	cd $(SVNDIR)/$(SUBDIR) && svn commit
 	touch $(STAMP)
 
