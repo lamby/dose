@@ -6,8 +6,7 @@ STAMP   = .upload.stamp
 
 install: $(STAMP)
 
-$(STAMP): $(FILES)
-	echo $(FILES)
+$(STAMP): $(PYFILES)
 	cd $(SVNDIR) && svn update
 	cp -a $(PYFILES) $(SVNDIR)/$(SUBDIR)
 	cd $(SVNDIR)/$(SUBDIR) && svn commit
