@@ -48,17 +48,6 @@ def freeze_recursive(structure,p,n):
     else:
         return(ccp(structure,p,n))
 
-def freeze_depchain(depchain):
-    '''
-    freeze a dependency chain. We only keep package, version, and dependency
-    '''
-
-    if depchain is None:
-        return(None)
-    else:
-        return( [ ( x['package'],x['version'],x['depends'] )
-                            for x in depchain ])
-
 def hash_reasons(structure,p,n):
     '''
     return a hash of a set of reasons, abstracting from architecture.
