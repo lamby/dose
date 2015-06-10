@@ -34,19 +34,19 @@ def ccp(s,p,n):
 ##########################################################################
 # hashing reasons
 
-def freeze_recursive(structure):
+def freeze_recursive(structure,p,n):
     '''
     recursively transform dictionaries into hashable structures
     '''
     
     if isinstance(structure,list):
-        return([freeze_recursive(x) for x in structure])
+        return([freeze_recursive(x,p,n) for x in structure])
     elif isinstance(structure,dict):
-        return( [ (key,freeze_recursive(structure[key])) 
+        return( [ (key,freeze_recursive(structure[key],p,n)) 
                   for key in sorted(structure.keys ())
                   if not key in {'architecture', 'source', 'essential'} ])
     else:
-        return(structure)
+        return(ccp(structure,p,n))
 
 def freeze_depchain(depchain):
     '''
@@ -59,12 +59,13 @@ def freeze_depchain(depchain):
         return( [ ( x['package'],x['version'],x['depends'] )
                             for x in depchain ])
 
-def hash_reasons(structure):
+def hash_reasons(structure,p,n):
     '''
-    return a hash of a set of reasons, abstracting from architecture
+    return a hash of a set of reasons, abstracting from architecture.
+    p is the architecture prefix from which we wish to abstract, n its length
     '''
 
-    return(hashlib.md5(str(freeze_recursive(structure)).encode()).hexdigest())
+    return(hashlib.md5(str(freeze_recursive(structure,p,n)).encode()).hexdigest())
 
 
 ########################################################################
@@ -357,7 +358,7 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
     
             # create short and complete explanation, add complete
             # explanation to the corresponding file
-            reasons_hash=hash_reasons(reasons)
+            reasons_hash=hash_reasons(reasons,p,n)
             reasons_summary=summary_of_reasons(reasons,p,n)
             reasons_filename = pooldir + '/' + str(reasons_hash)
             if not os.path.isfile(reasons_filename):
