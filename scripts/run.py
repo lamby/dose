@@ -7,6 +7,11 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
+############################################################################
+# please push all changes to the git repository, otherwise they might get  #
+# overwritten:    git+ssh://git.debian.org/git/qa/dose.git                 #
+############################################################################
+
 import time, os, re
 import conf, universes, reports, horizontal, vertical, cleanup, common, diffs, weather, bts
 

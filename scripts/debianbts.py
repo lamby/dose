@@ -17,6 +17,11 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+############################################################################
+# please push all changes to the git repository, otherwise they might get  #
+# overwritten:    git+ssh://git.debian.org/git/qa/dose.git                 #
+############################################################################
+
 # local copy, with bug #670446 fixed
 
 """Query Debian's Bug Tracking System (BTS).
