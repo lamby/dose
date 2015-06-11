@@ -31,15 +31,18 @@ from datetime import datetime
 from string import strip
 
 import SOAPpy
+import os
 
+ca_path = '/etc/ssl/ca-debian'
+if os.path.isdir(ca_path):
+    os.environ['SSL_CERT_DIR'] = ca_path
 
 # Setup the soap server
 # TODO: recognize HTTP proxy environment variable
 # Default values
-URL = 'http://bugs.debian.org/cgi-bin/soap.cgi'
+URL = 'https://bugs.debian.org/cgi-bin/soap.cgi'
 NS = 'Debbugs/SOAP/V1'
 server = SOAPpy.SOAPProxy(URL, NS)
-BTS_URL = 'http://bugs.debian.org/'
 
 class Bugreport(object):
     """Represents a bugreport from Debian's Bug Tracking System.
@@ -158,21 +161,22 @@ class Bugreport(object):
         return val
 
 
-def get_status(*nr):
+def get_status(*args):
     """Returns a list of Bugreport objects."""
-    reply = server.get_status(*nr)
+    status = []
     # If we called get_status with one single bug, we get a single bug,
     # if we called it with a list of bugs, we get a list,
     # No available bugreports returns an enmpy list
-    bugs = []
-    if not reply:
-        pass
-    elif type(reply[0]) == type([]):
-        for elem in reply[0]:
-            bugs.append(_parse_status(elem))
-    else:
-        bugs.append(_parse_status(reply[0]))
-    return bugs
+    for arg in args:
+        if isinstance(arg, list):
+            for i in range(0, len(arg), 500):
+                reply = server.get_status(arg[i:i+500])
+                for elem in reply[0]:
+                    status.append(_parse_status(elem))
+        else:
+            reply = server.get_status(arg)
+            status.append(_parse_status(reply[0]))
+    return status
 
 
 def get_usertag(email, *tags):
