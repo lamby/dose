@@ -119,6 +119,28 @@ class SrcUniverse:
         with open(outdir + '/fg-packages', 'w') as outfile:
             for f in self.fg_packages: print(f,file=outfile)
 
+        # collect source package name and version for binary packages
+        self.source_packages=dict()
+        self.source_version_table=dict()
+        for inputspec in scenario['bins']:
+            inputpath = inputspec.format(
+                m=conf.locations['debmirror'],a=architecture)
+            if inputspec[-3:]=='.gz':
+                infile = codecs.getreader('utf-8')(gzip.open(inputpath,'r'))
+            else:
+                infile = open(inputpath)
+            for line in infile:
+                if line.startswith('Package:'):
+                    current_package=line.split()[1]
+                if line.startswith('Source:'):
+                    l=line.split()
+                    self.source_packages[current_package]=l[1]
+                    if len(l) == 3:
+                        # the first and last character are parantheses ()
+                        self.source_version_table[current_package]=l[2][1:-1]
+            infile.close ()
+
+            
     def is_in_foreground(self,package_name,version):
         '''
         tell whether a package is in the foregound
@@ -135,10 +157,18 @@ class SrcUniverse:
         return(package_name in self.fg_packages.keys())
 
     def source(self,package):
-        return(package)
+        '''
+        return the source package name pertaining to a binary package
+        '''
+        return self.source_packages.get(package,package)
 
     def source_version(self,package):
-        return(0)
+        '''
+        return the source version of package if one was specified in the
+        Packages file, or None otherwise (in that case the source version
+        is equal to the package version)
+        '''
+        return self.source_version_table.get(package)
 
 #############################################################################
 class BinUniverse:
@@ -157,17 +187,13 @@ class BinUniverse:
         self.source_packages=dict()
         self.source_version_table=dict()
 
-        if scenario['type'] == 'binary' : 
-            filelist = scenario['fgs']
-        elif scenario['type'] == 'source' :
-            filelist = [ scenario['src'] ]
-        for fg in filelist:
-            fg_filename = fg.format(
+        for inputspec in scenario['fgs']:
+            inputpath = inputspec.format(
                 m=conf.locations['debmirror'],a=architecture)
-            if fg[-3:]=='.gz':
-                infile = codecs.getreader('utf-8')(gzip.open(fg_filename,'r'))
+            if inputspec[-3:]=='.gz':
+                infile = codecs.getreader('utf-8')(gzip.open(inputpath,'r'))
             else:
-                infile = open(fg_filename)
+                infile = open(inputpath)
             for line in infile:
                 if line.startswith('Package:'):
                     current_package=line.split()[1]
@@ -179,7 +205,24 @@ class BinUniverse:
                     if len(l) == 3:
                         # the first and last character are parantheses ()
                         self.source_version_table[current_package]=l[2][1:-1]
+            infile.close ()
 
+        for inputspec in scenario['bgs']:
+            inputpath = inputspec.format(
+                m=conf.locations['debmirror'],a=architecture)
+            if inputspec[-3:]=='.gz':
+                infile = codecs.getreader('utf-8')(gzip.open(inputpath,'r'))
+            else:
+                infile = open(inputpath)
+            for line in infile:
+                if line.startswith('Package:'):
+                    current_package=line.split()[1]
+                if line.startswith('Source:'):
+                    l=line.split()
+                    self.source_packages[current_package]=l[1]
+                    if len(l) == 3:
+                        # the first and last character are parantheses ()
+                        self.source_version_table[current_package]=l[2][1:-1]
             infile.close ()
 
         outdir=cachedir(timestamp,scenario_name,architecture)
@@ -210,7 +253,7 @@ class BinUniverse:
     def source_version(self,package):
         '''
         return the source version of package if one was specified in the
-        Packages file, or None othewise (in that case the source version
+        Packages file, or None otherwise (in that case the source version
         is equal to the package version)
         '''
         return self.source_version_table.get(package)
