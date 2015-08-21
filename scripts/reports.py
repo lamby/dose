@@ -258,8 +258,8 @@ def print_reason(root_package,root_version,scenario_type,
     print('</table>',file=outfile)
 
 
-def create_reasons_file(package,version,scenario_type,reasons,outfile_name,
-                        universe,arch,bugtable,uninstallables):
+def create_reasons_file(package,version,scenario_type,reasons,reasons_summary,
+                        outfile_name,universe,arch,bugtable,uninstallables):
     '''
     print to outfile_name the detailed explanation why (package,version) is
     not installable, according to reason.
@@ -267,6 +267,8 @@ def create_reasons_file(package,version,scenario_type,reasons,outfile_name,
     
     outfile=open(outfile_name, 'w')
 
+    print('Summary: ',reasons_summary,'<p>',file=outfile)
+    
     if len(reasons)==1:
         print_reason(package,version,scenario_type,reasons[0],outfile,
                      universe,arch,bugtable,uninstallables)
@@ -357,7 +359,8 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
             reasons_filename = pooldir + '/' + str(reasons_hash)
             if not os.path.isfile(reasons_filename):
                 create_reasons_file(package,version,scenario['type'],
-                                    reasons,reasons_filename,universe,
+                                    reasons,reasons_summary,
+                                    reasons_filename,universe,
                                     arch,bugtable,uninstallable_fg_packages)
 
             # write to html summary for that day

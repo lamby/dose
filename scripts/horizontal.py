@@ -199,7 +199,7 @@ def write_package_pages(timestamp,scenario):
                 d=datetime.datetime.utcfromtimestamp(float(timestamp))),
               file=outfile)
         for hash in uninstallables[package]:
-            print('<a name={h}><b>Architectures: {a}</b></a><br>'.format(
+            print('<a name={h}><b>Architectures: {a}</b></a><p>'.format(
                     h=hash,
                     a=str_of_list(uninstallables[package][hash]['archs'])),
                   file=outfile)
