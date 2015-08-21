@@ -7,9 +7,9 @@ STAMP   = .upload.stamp
 install: $(STAMP)
 
 $(STAMP): $(PYFILES)
-	cd $(SVNDIR) && svn update
+	cd $(SVNDIR)/$(SUBDIR) && svn update
 	cp -a $(PYFILES) $(SVNDIR)/$(SUBDIR)
-	cd $(SVNDIR)/$(SUBDIR) && svn commit
+	@echo 'no svn commit done'
 	touch $(STAMP)
 
 .phony: install
