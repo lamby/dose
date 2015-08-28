@@ -260,13 +260,22 @@ def write_tables(timestamp,day,scenario,what,includes,excludes,
 
     for package in sorted(includes.keys()):
         if not package in excludes:
-            html_today.write(package,uninstallables[package])
+
+            # since when is the package not installable?
+            if package in history:
+                firstday=int(history[package])
+                duration=day-firstday
+            else:
+                firstday=day
+                duration=0
+
+            # write to today's package summary
+            html_today.write(package,uninstallables[package],
+                             since=date_of_days(firstday))
             
             # write to the corresponding historic html page
             # and count archall/native uninstallable packages per slice
             if package in history:
-                firstday=int(history[package])
-                duration=day-firstday
                 hslice=-1
                 for i in sorted(conf.hlengths.keys(),reverse=True):
                     if duration >= conf.hlengths[i]:

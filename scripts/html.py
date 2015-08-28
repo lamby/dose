@@ -261,6 +261,7 @@ Foreground: {total} packages</b>
 <table border=1>
 <tr>
 <th>Package</th>
+<th>Since</th>
 <th>Version</th>
 <th>Short explanation (click for detailed explanation)</th>
 <th>Tracking</th>
@@ -277,7 +278,8 @@ Foreground: {total} packages</b>
             utctime=datetime.datetime.utcfromtimestamp(float(timestamp)))
 
         html_table.__init__(self,output_path,output_name,
-                            header,table_header,bugtable=bugtable)
+                            header,table_header,
+                            display_since=True,bugtable=bugtable)
         self.start_table()
 
 ###########################################################################
@@ -302,6 +304,7 @@ Foreground: {total} packages</b>
 <table border=1>
 <tr>
 <th>Package</th>
+<th>Since</th>
 <th>Version</th>
 <th>Architectures</th>
 <th>Short explanation (click for detailed explanation)</th>
@@ -317,7 +320,8 @@ Foreground: {total} packages</b>
             total=total,
             utctime=datetime.datetime.utcfromtimestamp(float(timestamp)))
         html_table_multi.__init__(self,output_path,output_name,
-                              header,table_header,bugtable=bugtable)
+                                  header,table_header,
+                                  display_since=True,bugtable=bugtable)
         self.start_table()
 
 ############################################################################
@@ -407,9 +411,9 @@ same explanation all the time).<p>
             architecture=architecture,
             days=since_days,
             utctime=datetime.datetime.utcfromtimestamp(float(timestamp)))
-        html_table.__init__(self,output_path,output_name,
-                            header,table_header,
-                            display_since=True,bugtable=bugtable)
+        html_table_multi.__init__(self,output_path,output_name,
+                                  header,table_header,
+                                  display_since=True,bugtable=bugtable)
         self.start_table()
 
 

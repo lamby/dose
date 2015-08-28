@@ -363,9 +363,19 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
                                     reasons_filename,universe,
                                     arch,bugtable,uninstallable_fg_packages)
 
+            # since when is the package not installable?
+            if package in history:
+                firstday=int(history[package])
+                duration=day-firstday
+            else:
+                firstday=day
+                duration=0
+
             # write to html summary for that day
+
             html_today.write(package,isnative,version,
-                               reasons_hash,reasons_summary)
+                             reasons_hash,reasons_summary,
+                             since=date_of_days(firstday))
 
             # write to the corresponding historic html page
             # and count archall/native uninstallable packages per slice
