@@ -22,7 +22,7 @@ html_header='''<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
   <title>Debian QA: dose-debcheck</title>
   <link rev="made" href="mailto:debian-qa@lists.debian.org">
   <link rel="shortcut icon" href="/favicon.ico">
-  <link type="text/css" rel="stylesheet" href="/debian.css">
+  <link type="text/css" rel="stylesheet" href="https://www.debian.org/debian.css">
   <link type="text/css" rel="stylesheet" href="debian.css">
   <style>
     td, th {
