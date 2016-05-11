@@ -72,7 +72,7 @@ html_footer='''</div>
       Made by Ralf Treinen; code is
       <a href="https://alioth.debian.org/plugins/scmgit/cgi-bin/gitweb.cgi?p=qa/dose.git;a=summary">
       available</a>.<br>
-      Copyright &copy; 2014, 2015
+      Copyright &copy; 2014, 2015, 2016
       <a href="http://www.spi-inc.org/">SPI</a>;
       see <a href="http://www.debian.org/license" rel="copyright">license terms</a>.<br>
       Debian is a registered <a href="http://www.debian.org/trademark">trademark</a> of
