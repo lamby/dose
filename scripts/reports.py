@@ -26,13 +26,13 @@ format_short_con="conflict between {c1} and {c2}"
 
 #######################################################################
 # return s without prefix p: (ouputversion=0),
-# or without suffix :p (outputversion=1) where n is the length of p
+# or without suffix :p (outputversion>=1) where n is the length of p
 # otherwise return s without prefix 'src:'  or 'src%3a'
 
 def ccp(s,p,n,outputversion):
     if outputversion=='0' and s.startswith(p) and s[n]==':':
         return(s[n+1:])
-    elif outputversion=='1.0' and s.endswith(p) and s[-n-1]==':':
+    elif outputversion in {'1.0','1.1','1.2'} and s.endswith(p) and s[-n-1]==':':
         return(s[:-n-1])
     elif s.startswith('src%3a'):
         return(s[6:])
