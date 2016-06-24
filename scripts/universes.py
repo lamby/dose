@@ -14,10 +14,20 @@
 Functions that operate on package universes.
 """
 
-import os, subprocess, gzip, codecs
+import os, subprocess, gzip, lzma, codecs
 import conf
 from common import *
 
+def openr(filename):
+    # open a possibly compressed file for reading
+    if filename[-3:]=='.gz':
+        infile = codecs.getreader('utf-8')(gzip.open(filename,mode='r'))
+    elif filename[-3:]=='.xz':
+        infile = codecs.getreader('utf-8')(lzma.open(filename,mode='r'))
+    else:
+        infile = open(filename,mode='r')
+    return(infile)
+    
 def run_debcheck(scenario,arch,outdir):
 
     """
@@ -60,10 +70,7 @@ def getsources(filename):
     version_table={}
     archs_table={}
     saved=True
-    if filename[-3:]=='.gz':
-        infile = codecs.getreader('utf-8')(gzip.open(filename,'r'))
-    else:
-        infile = open(filename)
+    infile = openr(filename)
     for line in infile:
         if line.startswith('Package:'):
             current_package=line.split()[1]
@@ -125,10 +132,7 @@ class SrcUniverse:
         for inputspec in scenario['bins']:
             inputpath = inputspec.format(
                 m=conf.locations['debmirror'],a=architecture)
-            if inputspec[-3:]=='.gz':
-                infile = codecs.getreader('utf-8')(gzip.open(inputpath,'r'))
-            else:
-                infile = open(inputpath)
+            infile = openr(inputpath)
             for line in infile:
                 if line.startswith('Package:'):
                     current_package=line.split()[1]
@@ -190,10 +194,7 @@ class BinUniverse:
         for inputspec in scenario['fgs']:
             inputpath = inputspec.format(
                 m=conf.locations['debmirror'],a=architecture)
-            if inputspec[-3:]=='.gz':
-                infile = codecs.getreader('utf-8')(gzip.open(inputpath,'r'))
-            else:
-                infile = open(inputpath)
+            infile = openr(inputpath)
             for line in infile:
                 if line.startswith('Package:'):
                     current_package=line.split()[1]
@@ -210,10 +211,7 @@ class BinUniverse:
         for inputspec in scenario['bgs']:
             inputpath = inputspec.format(
                 m=conf.locations['debmirror'],a=architecture)
-            if inputspec[-3:]=='.gz':
-                infile = codecs.getreader('utf-8')(gzip.open(inputpath,'r'))
-            else:
-                infile = open(inputpath)
+            infile = openr(inputpath)
             for line in infile:
                 if line.startswith('Package:'):
                     current_package=line.split()[1]
