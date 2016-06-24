@@ -19,14 +19,55 @@ import conf
 from common import *
 
 def openr(filename):
-    # open a possibly compressed file for reading
+
+    """
+    open a possibly compressed file for reading
+    """
+    
     if filename[-3:]=='.gz':
-        infile = codecs.getreader('utf-8')(gzip.open(filename,mode='r'))
+        reader = codecs.getreader('utf-8')(gzip.open(filename,mode='r'))
     elif filename[-3:]=='.xz':
-        infile = codecs.getreader('utf-8')(lzma.open(filename,mode='r'))
+        reader = codecs.getreader('utf-8')(lzma.open(filename,mode='r'))
     else:
-        infile = open(filename,mode='r')
-    return(infile)
+        reader = open(filename,mode='r')
+    return(reader)
+
+def uncompress(to_uncompress):
+
+    """
+    Uncompress (xz) all files as given by to_uncompress, then reset 
+    to_uncompress to the empty list.
+    """
+
+    print(to_uncompress)
+    for (orig,new) in to_uncompress:
+        if not os.path.exists(new):
+            os.makedirs(os.path.dirname(new))
+            with open(new,mode='w') as outfile:
+                subprocess.call(['unxz', orig],stdout=outfile)
+    to_uncompress.clear()
+
+def realfilename(filespec,architecture,outdir,to_uncompress):
+
+    """
+    translates a specification string of a filename (a format) into
+    a real file name, taking into account the architecture.
+ 
+    Modifies to_uncompress.
+    """
+    
+    if filespec[-3:]=='.xz':
+        # for xz files, the real file name is a cached file since we have
+        # to explicitely uncompress these files. Uncompressed xz files
+        # are cached under the directory specified by the cacheroot
+        # configuration variable.
+        f=filespec.format(m=outdir,a=architecture)
+        f=f[:-3]
+        orig=filespec.format(m=conf.locations['debmirror'],a=architecture)
+        to_uncompress.append((orig,f))
+    else:
+        f=filespec.format(m=conf.locations['debmirror'],a=architecture)
+    return(f)
     
 def run_debcheck(scenario,arch,outdir):
 
@@ -35,27 +76,28 @@ def run_debcheck(scenario,arch,outdir):
     """
 
     scenario_name = scenario['name']
+    to_uncompress = [] 
     info('running debcheck for {s} on {a}'.format(a=arch,s=scenario_name))
     if (scenario['type'] == 'binary'):
         invocation = ['dose-debcheck', '-e', '-f', '--latest' ]
         invocation.append('--deb-native-arch='+arch)
         for fg in scenario['fgs']:
             invocation.append('--fg')
-            invocation.append(fg.format(m=conf.locations['debmirror'],a=arch))
+            invocation.append(realfilename(fg,arch,outdir,to_uncompress))
         for bg in scenario['bgs']:
             invocation.append('--bg')
-            invocation.append(bg.format(m=conf.locations['debmirror'],a=arch))
+            invocation.append(realfilename(bg,arch,outdir,to_uncompress))
     elif (scenario['type'] == 'source'):
         invocation = ['dose-builddebcheck', '-e', '-f', '--quiet' ]
         invocation.append('--deb-native-arch='+arch)
         for bg in scenario['bins']:
-            invocation.append(bg.format(m=conf.locations['debmirror'],a=arch))
-        invocation.append(scenario['src'].format(
-            m=conf.locations['debmirror']))
+            invocation.append(realfilename(bg,arch,outdir,to_uncompress))
+        invocation.append(realfilename(scenario['src'],arch,outdir,to_uncompress))
     else:
         warning('unknown scenario type: ' + scenario['type'])
     outfile=open(outdir + "/debcheck.out", 'w')
     try:
+        uncompress(to_uncompress)
         subprocess.call(invocation,stdout=outfile)
     except OSError as exc:
         warning('debcheck for {s} on {a} raised {e}'.format(
