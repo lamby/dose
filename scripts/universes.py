@@ -32,43 +32,21 @@ def openr(filename):
         reader = open(filename,mode='r')
     return(reader)
 
-def uncompress(to_uncompress):
-
-    """
-    Uncompress (xz) all files as given by to_uncompress, then reset 
-    to_uncompress to the empty list.
-    """
-
-    print(to_uncompress)
-    for (orig,new) in to_uncompress:
-        if not os.path.exists(new):
-            os.makedirs(os.path.dirname(new))
-            with open(new,mode='w') as outfile:
-                subprocess.call(['unxz', orig],stdout=outfile)
-    to_uncompress.clear()
-
-def realfilename(filespec,architecture,outdir,to_uncompress):
+def realfilename(filespec,architecture,outdir):
 
     """
     translates a specification string of a filename (a format) into
     a real file name, taking into account the architecture.
- 
-    Modifies to_uncompress.
     """
+
+    return(filespec.format(m=conf.locations['debmirror'],a=architecture))
     
-    if filespec[-3:]=='.xz':
-        # for xz files, the real file name is a cached file since we have
-        # to explicitely uncompress these files. Uncompressed xz files
-        # are cached under the directory specified by the cacheroot
-        # configuration variable.
-        f=filespec.format(m=outdir,a=architecture)
-        f=f[:-3]
-        orig=filespec.format(m=conf.locations['debmirror'],a=architecture)
-        to_uncompress.append((orig,f))
-    else:
-        f=filespec.format(m=conf.locations['debmirror'],a=architecture)
-    return(f)
-    
+# this should be dropped when we have transitionend to dose3 v5
+def dose_has_version5():
+  with subprocess.Popen(['dose-debcheck', '--version'],
+                        stdout=subprocess.PIPE) as p:
+    return(p.stdout.readline().decode("utf-8").startswith("Build version 5"))
+
 def run_debcheck(scenario,arch,outdir):
 
     """
@@ -76,28 +54,29 @@ def run_debcheck(scenario,arch,outdir):
     """
 
     scenario_name = scenario['name']
-    to_uncompress = [] 
     info('running debcheck for {s} on {a}'.format(a=arch,s=scenario_name))
     if (scenario['type'] == 'binary'):
         invocation = ['dose-debcheck', '-e', '-f', '--latest' ]
+        # this should be simplified when we have transitionend to dose3 v5
+        if dose_has_version5():
+            invocation.append('1')
         invocation.append('--deb-native-arch='+arch)
         for fg in scenario['fgs']:
             invocation.append('--fg')
-            invocation.append(realfilename(fg,arch,outdir,to_uncompress))
+            invocation.append(realfilename(fg,arch,outdir))
         for bg in scenario['bgs']:
             invocation.append('--bg')
-            invocation.append(realfilename(bg,arch,outdir,to_uncompress))
+            invocation.append(realfilename(bg,arch,outdir))
     elif (scenario['type'] == 'source'):
         invocation = ['dose-builddebcheck', '-e', '-f', '--quiet' ]
         invocation.append('--deb-native-arch='+arch)
         for bg in scenario['bins']:
-            invocation.append(realfilename(bg,arch,outdir,to_uncompress))
-        invocation.append(realfilename(scenario['src'],arch,outdir,to_uncompress))
+            invocation.append(realfilename(bg,arch,outdir))
+        invocation.append(realfilename(scenario['src'],arch,outdir))
     else:
         warning('unknown scenario type: ' + scenario['type'])
     outfile=open(outdir + "/debcheck.out", 'w')
     try:
-        uncompress(to_uncompress)
         subprocess.call(invocation,stdout=outfile)
     except OSError as exc:
         warning('debcheck for {s} on {a} raised {e}'.format(
