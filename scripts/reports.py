@@ -171,7 +171,8 @@ def print_reason(root_package,root_version,scenario_type,
             package=ccp(member['package'],p,n,outputversion)
             if not firstiteration:
                 print_p(package,member['version'],root_package)
-            print_d(member['depends'],outputversion)
+            if 'depends' in member:
+                print_d(member['depends'],outputversion)
             firstiteration=False
 
     def print_depchains(depchains,outputversion):
