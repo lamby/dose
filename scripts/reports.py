@@ -24,80 +24,65 @@ except ImportError:
 format_short_dep="unsatisfied dependency on {d}"
 format_short_con="conflict between {c1} and {c2}"
 
-#######################################################################
-# return s without prefix p: (ouputversion=0),
-# or without suffix :p (outputversion>=1) where n is the length of p
-# otherwise return s without prefix 'src:'  or 'src%3a'
-
-def ccp(s,p,n,outputversion):
-    if outputversion=='0' and s.startswith(p) and s[n]==':':
-        return(s[n+1:])
-    elif outputversion in {'1.0','1.1','1.2'} and s.endswith(p) and s[-n-1]==':':
-        return(s[:-n-1])
-    elif s.startswith('src%3a'):
-        return(s[6:])
-    elif s.startswith('src:'):
-        return(s[4:])
-    else:
-        return(s)
+def droparch(p,s):
+    # drop p anywhere in s
+    return(s.replace(p,''))
 
 ##########################################################################
 # hashing reasons
 
-def freeze_recursive(structure,p,n,outputversion):
+def freeze_recursive(structure,archsuffix):
     '''
     recursively transform dictionaries into hashable structures
     '''
     
     if isinstance(structure,list):
-        return([freeze_recursive(x,p,n,outputversion) for x in structure])
+        return([freeze_recursive(x,archsuffix) for x in structure])
     elif isinstance(structure,dict):
-        return( [ (key,freeze_recursive(structure[key],p,n,outputversion)) 
+        return( [ (key,freeze_recursive(structure[key],archsuffix)) 
                   for key in sorted(structure.keys ())
                   if not key in {'architecture', 'source', 'essential'} ])
     else:
-        return(ccp(structure,p,n,outputversion))
+        return(droparch(archsuffix,structure))
 
-def hash_reasons(structure,p,n,outputversion):
+def hash_reasons(structure,archsuffix):
     '''
     return a hash of a set of reasons, abstracting from architecture.
     p is the architecture prefix from which we wish to abstract, n its length
     '''
 
     return(hashlib.md5(str(
-        freeze_recursive(structure,p,n,outputversion)).encode()).hexdigest())
+        freeze_recursive(structure,archsuffix)).encode()).hexdigest())
 
 
 ########################################################################
 # summaries of reasons
 
-def summary_of_reason (reason,p,n,outputversion):
+def summary_of_reason (reason,archsuffix):
     '''
     return a summary of one reason
     '''
 
     if 'missing' in reason:
         return(format_short_dep.format(
-                d=ccp(reason['missing']['pkg']['unsat-dependency'],p,n,
-                      outputversion)))
+            d=droparch(archsuffix,
+                       (reason['missing']['pkg']['unsat-dependency']))))
     elif 'conflict' in reason:
         return(format_short_con.format(
-                c1=ccp(reason['conflict']['pkg1']['package'],p,n,
-                       outputversion),
-                c2=ccp(reason['conflict']['pkg2']['package'],p,n,
-                       outputversion)))
+            c1=droparch(archsuffix,reason['conflict']['pkg1']['package']),
+            c2=droparch(archsuffix,reason['conflict']['pkg2']['package'])))
     else:
         raise Exception('Unknown reason')
 
-def summary_of_reasons (reasons,p,n,outputversion):
+def summary_of_reasons (reasons,archsuffix):
     '''
     return a summary of a list of reasons
     '''
     
     head, *tail = reasons
-    summary=summary_of_reason(head,p,n,outputversion)
+    summary=summary_of_reason(head,archsuffix)
     for reason in tail:
-        summary += '; ' + summary_of_reason(reason,p,n,outputversion)
+        summary += '; ' + summary_of_reason(reason,archsuffix)
     return(summary)
 
 
@@ -106,7 +91,7 @@ def summary_of_reasons (reasons,p,n,outputversion):
 
 def print_reason(root_package,root_version,scenario_type,
                  reason,outfile,universe,arch,bugtable,uninstallables,
-                 outputversion):
+                 archsuffix):
     '''
     Detailed printing of reason why root_package (root_version) is
     not installable, in HTML to outfile.
@@ -118,9 +103,6 @@ def print_reason(root_package,root_version,scenario_type,
     there also may no dependency chain in case the conflciting package is
     essential.
     '''
-
-    p=arch
-    n=len(p)
     
     def print_p(package,version,root_package):
         '''print a single package as part of a detailed explanation'''
@@ -156,43 +138,43 @@ def print_reason(root_package,root_version,scenario_type,
         '''drop --virtual-* packages, see upstream bug report #17736'''
         return(virtualdep_re.sub('',dependency))
 
-    def print_d(dependency,outputversion):
+    def print_d(dependency):
         '''print a dependency as part of a detailed explanation'''
         print('&nbsp;&nbsp;&nbsp;&darr;&nbsp;',
-              ccp(sanitize_d(dependency),p,n,outputversion),'<br>',
+              droparch(archsuffix,(sanitize_d(dependency))),'<br>',
               file=outfile,sep='')
 
-    def print_depchain(depchain,outputversion):
+    def print_depchain(depchain):
         '''print a single dependency chain'''
     
-        root_package=ccp(depchain['depchain'][0]['package'],p,n,outputversion)
+        root_package=droparch(archsuffix,depchain['depchain'][0]['package'])
         firstiteration=True
         for member in depchain['depchain']:
-            package=ccp(member['package'],p,n,outputversion)
+            package=droparch(archsuffix,member['package'])
             if not firstiteration:
                 print_p(package,member['version'],root_package)
             if 'depends' in member:
-                print_d(member['depends'],outputversion)
+                print_d(member['depends'])
             firstiteration=False
 
-    def print_depchains(depchains,outputversion):
+    def print_depchains(depchains):
         '''print multiple dependency chains'''
 
         if not depchains:
             return
         elif len(depchains) == 1:
-            print_depchain(depchains[0],outputversion)
+            print_depchain(depchains[0])
         else:
             print('<table><tr>',file=outfile)
             for depchain in depchains:
                 print('<td>',file=outfile)
-                print_depchain(depchain,outputversion)
+                print_depchain(depchain)
                 print('</td>',file=outfile)
             print('</tr></table>',file=outfile)
 
     print('<table>',file=outfile)
     if 'missing' in reason:
-        last_package=ccp(reason['missing']['pkg']['package'],p,n,outputversion)
+        last_package=droparch(archsuffix,reason['missing']['pkg']['package'])
         last_version=reason['missing']['pkg']['version']
         last_dependency=reason['missing']['pkg']['unsat-dependency']
 
@@ -206,7 +188,7 @@ def print_reason(root_package,root_version,scenario_type,
                 print_s(root_package,root_version)
             else:
                 warning('unknown scenario type: '+scenario_type)
-            print_d(last_dependency,outputversion)
+            print_d(last_dependency)
             print('<font color=red>MISSING</font>',file=outfile)
             print('</td></tr>',file=outfile)
         else:
@@ -218,9 +200,9 @@ def print_reason(root_package,root_version,scenario_type,
                     print_p(root_package,root_version,root_package)
                 elif scenario_type == 'source':
                     print_s(root_package,root_version)
-                print_depchains(depchains,outputversion)
+                print_depchains(depchains)
                 print_p(last_package,last_version,root_package)
-                print_d(last_dependency,outputversion)
+                print_d(last_dependency)
                 print('<font color=red>MISSING</font>',file=outfile)
                 print('</td></tr>',file=outfile)
             else :
@@ -231,18 +213,18 @@ def print_reason(root_package,root_version,scenario_type,
                 elif scenario_type == 'source':
                     print_s(root_package,root_version)
                 print('</td></tr><tr><td>',file=outfile)
-                print_depchains(depchains,outputversion)
+                print_depchains(depchains)
                 print('</td></tr><tr><td style="text-align:center">',
                       '<table><tr><td>',file=outfile,sep='')
                 print_p(last_package,last_version,root_package)
-                print_d(last_dependency,outputversion)
+                print_d(last_dependency)
                 print('<font color=red>MISSING</font></td></tr></table>',
                       file=outfile)
     elif 'conflict' in reason:
-        last_package1=ccp(reason['conflict']['pkg1']['package'],p,n,
-                          outputversion)
-        last_package2=ccp(reason['conflict']['pkg2']['package'],p,n,
-                          outputversion)
+        last_package1=droparch(archsuffix,
+                               reason['conflict']['pkg1']['package'])
+        last_package2=droparch(archsuffix,
+                               reason['conflict']['pkg2']['package'])
         last_version1=reason['conflict']['pkg1']['version']
         last_version2=reason['conflict']['pkg2']['version']
         
@@ -254,10 +236,10 @@ def print_reason(root_package,root_version,scenario_type,
         print('</td></tr>',file=outfile)
         print('<tr><td>',file=outfile)
         if 'depchain1' in reason['conflict']:
-            print_depchains(reason['conflict']['depchain1'],outputversion)
+            print_depchains(reason['conflict']['depchain1'])
         print('</td><td>',file=outfile)
         if 'depchain2' in reason['conflict']:
-            print_depchains(reason['conflict']['depchain2'],outputversion)
+            print_depchains(reason['conflict']['depchain2'])
         print('</td></tr>',file=outfile)
         print('<tr><td style="text-align:center">',file=outfile)
         print_p(last_package1,last_version1,root_package)
@@ -273,7 +255,7 @@ def print_reason(root_package,root_version,scenario_type,
 
 def create_reasons_file(package,version,scenario_type,reasons,reasons_summary,
                         outfile_name,universe,arch,bugtable,uninstallables,
-                        outputversion):
+                        archsuffix):
     '''
     print to outfile_name the detailed explanation why (package,version) is
     not installable, according to reason.
@@ -285,13 +267,13 @@ def create_reasons_file(package,version,scenario_type,reasons,reasons_summary,
     
     if len(reasons)==1:
         print_reason(package,version,scenario_type,reasons[0],outfile,
-                     universe,arch,bugtable,uninstallables,outputversion)
+                     universe,arch,bugtable,uninstallables,archsuffix)
     else:
         print('Conjunction of multiple reasons:','<ol>',file=outfile)
         for reason in reasons:
             print('<li>',file=outfile)
             print_reason(package,version,scenario_type,reason,outfile,
-                         universe,arch,bugtable,uninstallables,outputversion)
+                         universe,arch,bugtable,uninstallables,archsuffix)
         print('</ol>',file=outfile)
 
     outfile.close ()
@@ -351,15 +333,14 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
         outputversion=report.get('output-version','0')
     
     if report and report['report']:
-        p=arch
-        n=len(p)
+        archsuffix=':'+arch
         # set of names of not installable foreground packages 
         uninstallable_fg_packages={
-            ccp(st['package'],p,n,outputversion)
+            droparch(archsuffix,st['package'])
             for st in report['report']
             if universe.is_in_foreground(st['package'],st['version'])}
         for stanza in report['report']:
-            package  = ccp(stanza['package'],p,n,outputversion)
+            package  = droparch(archsuffix,stanza['package'])
             version  = stanza['version']
             reasons  = stanza['reasons']
             isnative = stanza['architecture'] != 'all'
@@ -372,15 +353,15 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
     
             # create short and complete explanation, add complete
             # explanation to the corresponding file
-            reasons_hash=hash_reasons(reasons,p,n,outputversion)
-            reasons_summary=summary_of_reasons(reasons,p,n,outputversion)
+            reasons_hash=hash_reasons(reasons,archsuffix)
+            reasons_summary=summary_of_reasons(reasons,archsuffix)
             reasons_filename = pooldir + '/' + str(reasons_hash)
             if not os.path.isfile(reasons_filename):
                 create_reasons_file(package,version,scenario['type'],
                                     reasons,reasons_summary,
                                     reasons_filename,universe,
                                     arch,bugtable,uninstallable_fg_packages,
-                                    outputversion)
+                                    archsuffix)
 
             # since when is the package not installable?
             if package in history:
@@ -395,7 +376,7 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
             html_today.write(package,isnative,version,
                              reasons_hash,reasons_summary,
                              since=date_of_days(firstday))
-
+            
             # write to the corresponding historic html page
             # and count archall/native uninstallable packages per slice
             if package in history:
