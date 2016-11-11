@@ -41,12 +41,6 @@ def realfilename(filespec,architecture,outdir):
 
     return(filespec.format(m=conf.locations['debmirror'],a=architecture))
     
-# this should be dropped when we have transitionend to dose3 v5
-def dose_has_version5():
-  with subprocess.Popen(['dose-debcheck', '--version'],
-                        stdout=subprocess.PIPE) as p:
-    return(p.stdout.readline().decode("utf-8").startswith("Build version 5"))
-
 def run_debcheck(scenario,arch,outdir):
 
     """
@@ -56,10 +50,7 @@ def run_debcheck(scenario,arch,outdir):
     scenario_name = scenario['name']
     info('running debcheck for {s} on {a}'.format(a=arch,s=scenario_name))
     if (scenario['type'] == 'binary'):
-        invocation = ['dose-debcheck', '-e', '-f', '--latest' ]
-        # this should be simplified when we have transitionend to dose3 v5
-        if dose_has_version5():
-            invocation.append('1')
+        invocation = ['dose-debcheck', '-e', '-f', '--latest', '1' ]
         invocation.append('--deb-native-arch='+arch)
         for fg in scenario['fgs']:
             invocation.append('--fg')
