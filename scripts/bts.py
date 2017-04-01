@@ -35,21 +35,23 @@ class Bugtable(object):
         self.binbugs=collections.defaultdict(set)
         self.srcbugs=collections.defaultdict(set)
         self.indbugs=collections.defaultdict(set)
-        query_script=conf.locations['scriptdir']+'/query-bts.py'
-        with subprocess.Popen([query_script],
-                              stdout=subprocess.PIPE) as bts_query:
-            for rawline in bts_query.stdout:
-                line=rawline.split()
-                bugnr=int(line[0])
-                for word in line[1:]:
-                    package=str(word,'utf-8')
-                    if package[0:4] == 'src:':
-                        # bug against a source package
-                        source=package[4:]
-                        self.srcbugs[source].add(bugnr)
-                    else:
-                        # bug against a binary package
-                        self.binbugs[package].add(bugnr)
+        # disable running query-bts, until python-debianbts on quantz.d.o
+        # is upgraded to >= 2.5.2
+        # query_script=conf.locations['scriptdir']+'/query-bts.py'
+        # with subprocess.Popen([query_script],
+        #                       stdout=subprocess.PIPE) as bts_query:
+        #     for rawline in bts_query.stdout:
+        #         line=rawline.split()
+        #         bugnr=int(line[0])
+        #         for word in line[1:]:
+        #             package=str(word,'utf-8')
+        #             if package[0:4] == 'src:':
+        #                 # bug against a source package
+        #                 source=package[4:]
+        #                 self.srcbugs[source].add(bugnr)
+        #             else:
+        #                 # bug against a binary package
+        #                 self.binbugs[package].add(bugnr)
 
     def dump(self):
         print('Direct Binary:')
