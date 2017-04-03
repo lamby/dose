@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright (C) 2014 Ralf Treinen <treinen@debian.org>
+# Copyright (C) 2014-2017 Ralf Treinen <treinen@debian.org>
 #
 # This software is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as
@@ -12,8 +12,10 @@
 # overwritten:    git+ssh://git.debian.org/git/qa/dose.git                 #
 ############################################################################
 
-import os, subprocess, collections
+import socket,itertools,sys,debianbts,collections
 import common, conf
+
+socket.setdefaulttimeout(30)
 
 class Bugtable(object):
     """
@@ -35,23 +37,29 @@ class Bugtable(object):
         self.binbugs=collections.defaultdict(set)
         self.srcbugs=collections.defaultdict(set)
         self.indbugs=collections.defaultdict(set)
-        # disable running query-bts, until python-debianbts on quantz.d.o
-        # is upgraded to >= 2.5.2
-        # query_script=conf.locations['scriptdir']+'/query-bts.py'
-        # with subprocess.Popen([query_script],
-        #                       stdout=subprocess.PIPE) as bts_query:
-        #     for rawline in bts_query.stdout:
-        #         line=rawline.split()
-        #         bugnr=int(line[0])
-        #         for word in line[1:]:
-        #             package=str(word,'utf-8')
-        #             if package[0:4] == 'src:':
-        #                 # bug against a source package
-        #                 source=package[4:]
-        #                 self.srcbugs[source].add(bugnr)
-        #             else:
-        #                 # bug against a binary package
-        #                 self.binbugs[package].add(bugnr)
+
+        umail='treinen@debian.org'
+        utags=['edos-outdated', 'edos-uninstallable']
+
+        try:
+            bugnrs=itertools.chain.from_iterable(
+                debianbts.get_usertag(umail,*utags).values())
+            for status in debianbts.get_status(list(bugnrs)):
+                if not status.done:
+                    bugnr=status.bug_num
+                    packages=status.affects
+                    packages.append(status.package)
+                    for package in packages:
+                        if package[0:4] == 'src:':
+                            # bug against a source package
+                            source=package[4:]
+                            self.srcbugs[source].add(bugnr)
+                        else:
+                            # bug against a binary package
+                            self.binbugs[package].add(bugnr)
+        except:
+            sys.stderr.write("BTS query error - ignored\n")
+
 
     def dump(self):
         print('Direct Binary:')
