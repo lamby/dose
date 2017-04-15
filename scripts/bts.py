@@ -12,8 +12,15 @@
 # overwritten:    git+ssh://git.debian.org/git/qa/dose.git                 #
 ############################################################################
 
-import socket,itertools,sys,debianbts,collections
-import common, conf
+import socket,itertools,os,collections
+import common,conf
+
+# see https://wiki.debian.org/ServicesSSL
+bundle = '/etc/ssl/ca-debian/ca-certificates.crt'
+if os.path.exists(bundle):
+  httplib2.CA_CERTS = bundle
+
+import debianbts
 
 socket.setdefaulttimeout(30)
 
@@ -58,7 +65,7 @@ class Bugtable(object):
                             # bug against a binary package
                             self.binbugs[package].add(bugnr)
         except:
-            sys.stderr.write("BTS query error - ignored\n")
+            warning("BTS query error - ignored\n")
 
 
     def dump(self):
