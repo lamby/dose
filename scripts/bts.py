@@ -12,7 +12,7 @@
 # overwritten:    git+ssh://git.debian.org/git/qa/dose.git                 #
 ############################################################################
 
-import socket,itertools,os,collections
+import socket,itertools,os,collections,httplib2
 import common,conf
 
 # see https://wiki.debian.org/ServicesSSL
