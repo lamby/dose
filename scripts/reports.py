@@ -127,7 +127,7 @@ def print_reason(root_package,root_version,scenario_type,
         '''print a single source package (which must be the root)'''
         print('src:',package,file=outfile,sep='',end=' ')
         print('(',version,')',file=outfile,sep='')
-        print('[<a href=https://packages.qa.debian.org/',package,'>PTS</a>]',
+        print('[<a href=https://tracker.debian.org/pkg/',package,'>PTS</a>]',
               file=outfile,sep='')
         print('[<a href=http://sources.debian.net/src/{s}/{v}/debian/control>ctrl</a>]'.format(s=package,v=version),file=outfile)
         bugtable.print_source(package,outfile)
