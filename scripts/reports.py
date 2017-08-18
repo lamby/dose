@@ -35,11 +35,11 @@ def freeze_recursive(structure,archsuffix):
     '''
     recursively transform dictionaries into hashable structures
     '''
-    
+
     if isinstance(structure,list):
         return([freeze_recursive(x,archsuffix) for x in structure])
     elif isinstance(structure,dict):
-        return( [ (key,freeze_recursive(structure[key],archsuffix)) 
+        return( [ (key,freeze_recursive(structure[key],archsuffix))
                   for key in sorted(structure.keys ())
                   if not key in {'architecture', 'source', 'essential'} ])
     else:
@@ -78,7 +78,7 @@ def summary_of_reasons (reasons,archsuffix):
     '''
     return a summary of a list of reasons
     '''
-    
+
     head, *tail = reasons
     summary=summary_of_reason(head,archsuffix)
     for reason in tail:
@@ -103,7 +103,7 @@ def print_reason(root_package,root_version,scenario_type,
     there also may no dependency chain in case the conflciting package is
     essential.
     '''
-    
+
     def print_p(package,version,root_package):
         '''print a single package as part of a detailed explanation'''
 
@@ -132,7 +132,7 @@ def print_reason(root_package,root_version,scenario_type,
         print('[<a href=http://sources.debian.net/src/{s}/{v}/debian/control>ctrl</a>]'.format(s=package,v=version),file=outfile)
         bugtable.print_source(package,outfile)
         print('<br>',file=outfile)
-        
+
     virtualdep_re=re.compile('\| --virtual-\S+\s*')
     def sanitize_d(dependency):
         '''drop --virtual-* packages, see upstream bug report #17736'''
@@ -146,7 +146,7 @@ def print_reason(root_package,root_version,scenario_type,
 
     def print_depchain(depchain):
         '''print a single dependency chain'''
-    
+
         root_package=droparch(archsuffix,depchain['depchain'][0]['package'])
         firstiteration=True
         for member in depchain['depchain']:
@@ -227,7 +227,7 @@ def print_reason(root_package,root_version,scenario_type,
                                reason['conflict']['pkg2']['package'])
         last_version1=reason['conflict']['pkg1']['version']
         last_version2=reason['conflict']['pkg2']['version']
-        
+
         print('<tr><td style="text-align:center" colspan=2>',file=outfile)
         if scenario_type == 'binary':
             print_p(root_package,root_version,root_package)
@@ -260,11 +260,11 @@ def create_reasons_file(package,version,scenario_type,reasons,reasons_summary,
     print to outfile_name the detailed explanation why (package,version) is
     not installable, according to reason.
     '''
-    
+
     outfile=open(outfile_name, 'w')
 
     print('Summary: ',reasons_summary,'<p>',file=outfile)
-    
+
     if len(reasons)==1:
         print_reason(package,version,scenario_type,reasons[0],outfile,
                      universe,arch,bugtable,uninstallables,archsuffix)
@@ -279,11 +279,11 @@ def create_reasons_file(package,version,scenario_type,reasons,reasons_summary,
     outfile.close ()
 
 #########################################################################
-# top level 
+# top level
 def build(timestamp,day,universe,scenario,arch,bugtable,summary):
     '''
     summarize a complete output produced by dose-debcheck to outfilename,
-    and prettyprint chunks of detailed explanations that do not yet exist in 
+    and prettyprint chunks of detailed explanations that do not yet exist in
     the pool.
     '''
 
@@ -331,10 +331,10 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
     # the default ouput version is 0
     if report:
         outputversion=report.get('output-version','0')
-    
+
     if report and report['report']:
         archsuffix=':'+arch
-        # set of names of not installable foreground packages 
+        # set of names of not installable foreground packages
         uninstallable_fg_packages={
             droparch(archsuffix,st['package'])
             for st in report['report']
@@ -350,7 +350,7 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
                 # ignore packages that are not in the foreground, e.g. source
                 # package with Extra-Source-Only set, or cruft packages.
                 continue
-    
+
             # create short and complete explanation, add complete
             # explanation to the corresponding file
             reasons_hash=hash_reasons(reasons,archsuffix)
@@ -376,7 +376,7 @@ def build(timestamp,day,universe,scenario,arch,bugtable,summary):
             html_today.write(package,isnative,version,
                              reasons_hash,reasons_summary,
                              since=date_of_days(firstday))
-            
+
             # write to the corresponding historic html page
             # and count archall/native uninstallable packages per slice
             if package in history:
